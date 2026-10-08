@@ -1,0 +1,11 @@
+# Local development dependencies
+
+`make local-up` starts MongoDB 7 as a single-node replica set and Mailpit. The replica set is needed for atomic food-log transactions once Core is implemented. `make local-status` shows container status; `make local-down` stops containers without deleting the MongoDB volume. Mailpit's inbox is at `http://localhost:8025`; SMTP is at `localhost:1025`.
+
+Run `make local-config` once to create ignored, permission-restricted development credentials in `deploy/local/.env`, then `make local-run` to build and start API and Core alongside the dependencies. Run the web app separately using `npm run dev:web`. Local API is at `http://localhost:18080/api/v1`; host port 8080 was already used by another local process.
+
+Google login is optional in local development until you obtain OAuth credentials. To enable it, add `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `GOOGLE_REDIRECT_URI=http://localhost:18080/api/v1/auth/google/callback` to `deploy/local/.env`, and set `VITE_GOOGLE_SIGNIN_ENABLED=true` in `apps/web/.env.local`. Configure the same redirect URI in Google's OAuth client. New Google users start with `UTC` and are sent to profile settings to choose their default timezone manually. Existing email/password accounts are never silently merged with Google identities; an authenticated user can explicitly link Google from settings.
+
+MongoDB has no authentication in this local-only stack. Its exposed port is bound to loopback. Never reuse this Compose file as a public deployment or open its MongoDB port to a network. For production, Atlas or a separately secured self-hosted replica set will be configured through the Core service's MongoDB URI.
+
+The `mongo-init` service runs `rs.initiate` only when needed; on a reused volume it leaves the existing replica set intact. A host application can connect with `mongodb://localhost:27017/atethat_dev?replicaSet=rs0&directConnection=true`. Inside Compose, use `mongo:27017` instead of `localhost`.

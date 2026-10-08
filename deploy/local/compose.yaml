@@ -1,0 +1,49 @@
+name: atethat-local
+
+# Development dependencies only. API/Core images are added when handlers exist.
+# Ports bind to loopback; this unauthenticated MongoDB must never be deployed publicly.
+services:
+  mongo:
+    image: mongo:7.0
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [private]
+
+  mongo-init:
+    image: mongo:7.0
+    depends_on:
+      mongo:
+        condition: service_healthy
+    command:
+      - mongosh
+      - --host
+      - mongo:27017
+      - --quiet
+      - --eval
+      - |
+        try { rs.status(); } catch (error) {
+          rs.initiate({_id: 'rs0', members: [{_id: 0, host: 'mongo:27017'}]});
+        }
+    restart: "no"
+    networks: [private]
+
+  mailpit:
+    image: axllent/mailpit:v1.21
+    ports:
+      - "127.0.0.1:1025:1025"
+      - "127.0.0.1:8025:8025"
+    networks: [private]
+
+networks:
+  private:
+
+volumes:
+  mongo_data:

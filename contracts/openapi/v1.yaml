@@ -1,0 +1,464 @@
+openapi: 3.0.3
+info:
+  title: AteThat API
+  version: 0.1.0
+  description: |
+    Executable contract for the first local-email identity, profile, and preferences slice.
+    The complete Phase 1 route inventory remains in docs/5. API_DESIGN.md until formalized here.
+    All persisted instants are UTC. Browser access tokens stay in memory; refresh tokens
+    are carried only in a Secure, HttpOnly, SameSite=Lax cookie outside local development.
+servers:
+  - url: http://localhost:18080/api/v1
+    description: Local API service (when implemented)
+tags:
+  - name: Identity
+  - name: Profile
+  - name: Preferences
+security:
+  - bearerAuth: []
+paths:
+  /auth/register:
+    post:
+      tags: [Identity]
+      operationId: register
+      summary: Register an email-and-password account
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterRequest' }
+      responses:
+        '202':
+          description: Generic, enumeration-resistant acknowledgment
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GenericMessage' }
+        default: { $ref: '#/components/responses/Problem' }
+  /auth/verify-email:
+    post:
+      tags: [Identity]
+      operationId: verifyEmail
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TokenRequest' }
+      responses:
+        '200':
+          description: Email verified
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VerifyEmailResponse' }
+        default: { $ref: '#/components/responses/Problem' }
+  /auth/resend-verification:
+    post:
+      tags: [Identity]
+      operationId: resendVerification
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EmailRequest' }
+      responses:
+        '202':
+          description: Generic, enumeration-resistant acknowledgment
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GenericMessage' }
+        default: { $ref: '#/components/responses/Problem' }
+  /auth/login:
+    post:
+      tags: [Identity]
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200':
+          description: Session created; refresh token is set in HttpOnly cookie
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+            Set-Cookie:
+              description: Rotated refresh cookie; never contains the access token
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SessionResponse' }
+        default: { $ref: '#/components/responses/Problem' }
+  /auth/google/start:
+    get:
+      tags: [Identity]
+      operationId: startGoogleSignIn
+      summary: Start backend-managed Google OAuth with PKCE and one-time state
+      security: []
+      parameters:
+        - name: return_to
+          in: query
+          required: true
+          schema: { type: string, enum: [/app, /app/settings] }
+      responses:
+        '302':
+          description: Redirect to Google authorization endpoint
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+            Location: { schema: { type: string, format: uri } }
+        default: { $ref: '#/components/responses/Problem' }
+  /auth/google/callback:
+    get:
+      tags: [Identity]
+      operationId: completeGoogleSignIn
+      summary: Consume one-time state, validate Google ID token, create AteThat session
+      security: []
+      parameters:
+        - name: code
+          in: query
+          schema: { type: string }
+        - name: state
+          in: query
+          schema: { type: string }
+        - name: error
+          in: query
+          schema: { type: string }
+      responses:
+        '302':
+          description: Redirect to an allowed frontend path, with refresh cookie on success
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+            Location: { schema: { type: string, format: uri } }
+            Set-Cookie: { schema: { type: string } }
+        default: { $ref: '#/components/responses/Problem' }
+  /account/identities/google/link/start:
+    get:
+      tags: [Identity]
+      operationId: startGoogleLink
+      summary: Start explicit Google identity linking for an authenticated account
+      responses:
+        '200':
+          description: One-time Google authorization URL
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [authorization_url]
+                properties:
+                  authorization_url: { type: string, format: uri }
+        default: { $ref: '#/components/responses/Problem' }
+  /auth/refresh:
+    post:
+      tags: [Identity]
+      operationId: refreshSession
+      summary: Rotate refresh cookie and return a new short-lived access token
+      description: The implementation must validate the configured frontend origin and enforce CSRF protection appropriate to its cookie deployment.
+      security: []
+      responses:
+        '200':
+          description: Session refreshed
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+            Set-Cookie:
+              description: Rotated HttpOnly refresh cookie
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SessionResponse' }
+        default: { $ref: '#/components/responses/Problem' }
+  /auth/logout:
+    post:
+      tags: [Identity]
+      operationId: logout
+      description: Accepts a valid bearer token or refresh cookie and clears the current session family.
+      security:
+        - bearerAuth: []
+        - {}
+      responses:
+        '204':
+          description: Session revoked or already absent; refresh cookie cleared
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+        default: { $ref: '#/components/responses/Problem' }
+  /auth/forgot-password:
+    post:
+      tags: [Identity]
+      operationId: requestPasswordReset
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EmailRequest' }
+      responses:
+        '202':
+          description: Generic, enumeration-resistant acknowledgment
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GenericMessage' }
+        default: { $ref: '#/components/responses/Problem' }
+  /auth/reset-password:
+    post:
+      tags: [Identity]
+      operationId: resetPassword
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ResetPasswordRequest' }
+      responses:
+        '204':
+          description: Password changed; all existing sessions revoked
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+        default: { $ref: '#/components/responses/Problem' }
+  /profile:
+    get:
+      tags: [Profile]
+      operationId: getProfile
+      responses:
+        '200':
+          description: Current owned profile
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Profile' }
+        default: { $ref: '#/components/responses/Problem' }
+    patch:
+      tags: [Profile]
+      operationId: updateProfile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateProfileRequest' }
+      responses:
+        '200':
+          description: Updated profile
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Profile' }
+        default: { $ref: '#/components/responses/Problem' }
+  /preferences:
+    get:
+      tags: [Preferences]
+      operationId: getPreferences
+      responses:
+        '200':
+          description: Current owned preferences
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Preferences' }
+        default: { $ref: '#/components/responses/Problem' }
+    patch:
+      tags: [Preferences]
+      operationId: updatePreferences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdatePreferencesRequest' }
+      responses:
+        '200':
+          description: Updated preferences
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Preferences' }
+        default: { $ref: '#/components/responses/Problem' }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  headers:
+    RequestId:
+      description: Safe request correlation identifier; never carries personal data
+      schema: { type: string }
+  responses:
+    Problem:
+      description: API problem; status and code depend on the failure
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/RequestId' }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+  schemas:
+    ObjectId:
+      type: string
+      pattern: '^[0-9a-f]{24}$'
+    UtcInstant:
+      type: string
+      format: date-time
+      description: RFC 3339 instant serialized in UTC
+      example: '2026-09-28T02:30:00Z'
+    Decimal:
+      type: string
+      pattern: '^-?[0-9]+(\.[0-9]+)?$'
+      description: Decimal string, never a JSON floating-point number
+    Quantity:
+      type: object
+      additionalProperties: false
+      required: [amount, unit]
+      properties:
+        amount: { $ref: '#/components/schemas/Decimal' }
+        unit: { type: string, minLength: 1 }
+    GenericMessage:
+      type: object
+      additionalProperties: false
+      required: [message]
+      properties:
+        message: { type: string }
+    RegisterRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password, display_name, timezone]
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+        password: { type: string, minLength: 1, writeOnly: true, description: Server-side policy is configured with the identity service }
+        display_name: { type: string, minLength: 1, maxLength: 80 }
+        timezone: { type: string, minLength: 1, example: Asia/Kolkata, description: IANA timezone name }
+    EmailRequest:
+      type: object
+      additionalProperties: false
+      required: [email]
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+    TokenRequest:
+      type: object
+      additionalProperties: false
+      required: [token]
+      properties:
+        token: { type: string, minLength: 1, writeOnly: true }
+    VerifyEmailResponse:
+      type: object
+      additionalProperties: false
+      required: [email_verified]
+      properties:
+        email_verified: { type: boolean, enum: [true] }
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password]
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+        password: { type: string, minLength: 1, writeOnly: true }
+    ResetPasswordRequest:
+      type: object
+      additionalProperties: false
+      required: [token, new_password]
+      properties:
+        token: { type: string, minLength: 1, writeOnly: true }
+        new_password: { type: string, minLength: 1, writeOnly: true, description: Server-side policy is configured with the identity service }
+    User:
+      type: object
+      additionalProperties: false
+      required: [id, email, email_verified, status]
+      properties:
+        id: { $ref: '#/components/schemas/ObjectId' }
+        email: { type: string, format: email }
+        email_verified: { type: boolean }
+        status: { type: string, enum: [ACTIVE, PENDING_EMAIL_VERIFICATION, DELETION_PENDING] }
+    SessionResponse:
+      type: object
+      additionalProperties: false
+      required: [access_token, token_type, expires_in_seconds, user]
+      properties:
+        access_token: { type: string, minLength: 1 }
+        token_type: { type: string, enum: [Bearer] }
+        expires_in_seconds: { type: integer, minimum: 1, example: 900 }
+        user: { $ref: '#/components/schemas/User' }
+    Profile:
+      type: object
+      additionalProperties: false
+      required: [id, version, display_name, timezone, updated_at]
+      properties:
+        id: { $ref: '#/components/schemas/ObjectId' }
+        version: { type: integer, minimum: 1 }
+        display_name: { type: string, minLength: 1, maxLength: 80 }
+        date_of_birth: { type: string, format: date, nullable: true }
+        sex: { type: string, nullable: true }
+        height: { $ref: '#/components/schemas/Quantity' }
+        weight: { $ref: '#/components/schemas/Quantity' }
+        activity_level: { type: string, nullable: true }
+        goal: { type: string, nullable: true }
+        timezone: { type: string, minLength: 1, example: Asia/Kolkata }
+        updated_at: { $ref: '#/components/schemas/UtcInstant' }
+    UpdateProfileRequest:
+      type: object
+      additionalProperties: false
+      required: [version]
+      properties:
+        version: { type: integer, minimum: 1 }
+        display_name: { type: string, minLength: 1, maxLength: 80 }
+        date_of_birth: { type: string, format: date, nullable: true }
+        sex: { type: string, nullable: true }
+        height: { $ref: '#/components/schemas/Quantity' }
+        weight: { $ref: '#/components/schemas/Quantity' }
+        activity_level: { type: string }
+        goal: { type: string }
+        timezone: { type: string, minLength: 1, example: Asia/Kolkata }
+    Preferences:
+      type: object
+      additionalProperties: false
+      required: [id, version, daily_reset_time, unit_system, dashboard_nutrients]
+      properties:
+        id: { $ref: '#/components/schemas/ObjectId' }
+        version: { type: integer, minimum: 1 }
+        daily_reset_time: { type: string, pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$', example: '04:00' }
+        unit_system: { type: string, enum: [METRIC, IMPERIAL] }
+        dashboard_nutrients:
+          type: array
+          items: { type: string, pattern: '^[A-Z][A-Z_]*$' }
+    UpdatePreferencesRequest:
+      type: object
+      additionalProperties: false
+      required: [version]
+      properties:
+        version: { type: integer, minimum: 1 }
+        daily_reset_time: { type: string, pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$' }
+        unit_system: { type: string, enum: [METRIC, IMPERIAL] }
+        dashboard_nutrients:
+          type: array
+          items: { type: string, pattern: '^[A-Z][A-Z_]*$' }
+    FieldError:
+      type: object
+      required: [field, code, message]
+      properties:
+        field: { type: string }
+        code: { type: string }
+        message: { type: string }
+    Problem:
+      type: object
+      required: [type, title, status, code, detail, request_id]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer, minimum: 400 }
+        code: { type: string, pattern: '^[A-Z][A-Z_]*$' }
+        detail: { type: string }
+        request_id: { type: string }
+        field_errors:
+          type: array
+          items: { $ref: '#/components/schemas/FieldError' }
