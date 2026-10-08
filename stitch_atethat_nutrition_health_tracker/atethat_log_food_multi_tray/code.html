@@ -1,0 +1,608 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_dashboard" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-tertiary-container": "#ef8946", "secondary": "#236960", "on-tertiary-fixed": "#321200", "secondary-container": "#a9ede1", "error-container": "#ffdad6", "secondary-fixed-dim": "#90d3c8", "inverse-on-surface": "#eaf1ff", "on-error": "#ffffff", "on-surface-variant": "#43474e", "on-secondary-fixed": "#00201c", "surface-container-low": "#eff4ff", "on-secondary": "#ffffff", "error": "#ba1a1a", "primary-fixed-dim": "#adc8f5", "inverse-surface": "#213145", "on-secondary-fixed-variant": "#005049", "on-primary-container": "#8aa4cf", "on-primary": "#ffffff", "tertiary-container": "#602900", "surface-tint": "#455f87", "on-surface": "#0b1c30", "background": "#f8f9ff", "on-primary-fixed-variant": "#2d486d", "primary-container": "#1e3a5f", "surface-container": "#e5eeff", "on-background": "#0b1c30", "tertiary": "#3f1900", "tertiary-fixed": "#ffdbc9", "surface-container-highest": "#d3e4fe", "on-tertiary": "#ffffff", "primary": "#022448", "on-secondary-container": "#286d64", "on-tertiary-fixed-variant": "#753400", "surface-container-high": "#dce9ff", "surface-bright": "#f8f9ff", "outline": "#74777f", "tertiary-fixed-dim": "#ffb68c", "primary-fixed": "#d5e3ff", "surface": "#f8f9ff", "surface-variant": "#d3e4fe", "surface-container-lowest": "#ffffff", "on-primary-fixed": "#001c3b", "outline-variant": "#c4c6cf", "secondary-fixed": "#acefe4", "inverse-primary": "#adc8f5", "on-error-container": "#93000a", "surface-dim": "#cbdbf5" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-xl": "2rem", "space-sm": "0.5rem", "space-xs": "0.25rem", "margin-mobile": "1rem", "margin": "2rem", "space-2xl": "3rem", "space-md": "1rem", "gutter": "1.5rem", "gutter-mobile": "1rem", "space-lg": "1.5rem" }, "fontFamily": { "label-sm": [ "Inter" ], "headline-sm": [ "Plus Jakarta Sans" ], "headline-xl-mobile": [ "Plus Jakarta Sans" ], "headline-md": [ "Plus Jakarta Sans" ], "data-metric": [ "Inter" ], "body-md": [ "Inter" ], "label-md": [ "Inter" ], "label-lg": [ "Inter" ], "body-lg": [ "Inter" ], "headline-xl": [ "Plus Jakarta Sans" ], "headline-lg": [ "Plus Jakarta Sans" ], "body-sm": [ "Inter" ] }, "fontSize": { "label-sm": [ "0.6875rem", { "lineHeight": "0.875rem", "letterSpacing": "0.04em", "fontWeight": "600" } ], "headline-sm": [ "1.125rem", { "lineHeight": "1.5rem", "letterSpacing": "-0.01em", "fontWeight": "600" } ], "headline-xl-mobile": [ "1.75rem", { "lineHeight": "2.25rem", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "headline-md": [ "1.25rem", { "lineHeight": "1.75rem", "letterSpacing": "-0.015em", "fontWeight": "600" } ], "data-metric": [ "1.375rem", { "lineHeight": "1.625rem", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "body-md": [ "1rem", { "lineHeight": "1.5rem", "fontWeight": "400" } ], "label-md": [ "0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.02em", "fontWeight": "500" } ], "label-lg": [ "0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "0.01em", "fontWeight": "500" } ], "body-lg": [ "1.125rem", { "lineHeight": "1.75rem", "fontWeight": "400" } ], "headline-xl": [ "2.25rem", { "lineHeight": "2.75rem", "letterSpacing": "-0.025em", "fontWeight": "600" } ], "headline-lg": [ "1.5rem", { "lineHeight": "2rem", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "body-sm": [ "0.875rem", { "lineHeight": "1.25rem", "fontWeight": "400" } ] } } } }</script></head><body class="bg-background font-body-md text-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-low/80 backdrop-blur-xl z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col pt-6"><div class="px-6 pb-6 flex items-center justify-between"><div class="flex items-center gap-3"><img alt="AteThat Wordmark Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UBnqyvHv4zwe867pCIMwGRQxdxwpwa1OQ64bVHJMBRU9LAmzlrwgkZuoDzI1d7g-F9sZvSrjWYHfg2XMde1wWUh3t2sV5paUdGwCqq_gNA-WSF_KR-fX9xYdVa80N6bfRxprM-ISuz2JnJ7cxDUs8IRvUmjq2QvT-t-VszfvhOyOaYj0tTQK0Hd-obrbVwHMt0KXSVNBuoxxhE7iAMHesBUrQAIi9LZv9hM6MbnD53f2-hmkPjBboFTJc"><span class="font-headline-sm text-headline-sm text-primary tracking-tight">AteThat</span></div></div><div class="px-6 pb-4"><p class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant/70">Know what nourishes you</p></div><nav class="flex flex-col px-3 gap-1" data-active-classes="bg-primary-container text-on-primary font-label-lg rounded-lg shadow-sm"><a class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[20px]">grid_view</span><span class="">Dashboard</span></a><a aria-current="page" class="flex items-center justify-between px-3 py-2.5 transition-colors bg-primary-container text-on-primary font-label-lg rounded-lg shadow-sm" data-path="log-food" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-[20px]">add_circle</span><span class="">Log Food</span></div><span class="font-label-sm text-label-sm bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full">+ Multi-Tray</span></a><a class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="history" href="#"><span class="material-symbols-outlined text-[20px]">calendar_today</span><span class="">History</span></a><a class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="meals" href="#"><span class="material-symbols-outlined text-[20px]">restaurant_menu</span><span class="">Meals</span></a><a class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="health-items" href="#"><span class="material-symbols-outlined text-[20px]">medication</span><span class="">Health Items</span></a><a class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="nutrition-targets" href="#"><span class="material-symbols-outlined text-[20px]">tune</span><span class="">Nutrition Targets</span></a><a class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="profile-settings" href="#"><span class="material-symbols-outlined text-[20px]">settings</span><span class="">Profile &amp; Settings</span></a></nav></div><div class="p-4 mx-3 mb-4 rounded-xl bg-surface-container"><div class="flex items-center gap-2 mb-1"><span class="material-symbols-outlined text-secondary text-[18px]">spa</span><span class="font-label-sm text-label-sm text-secondary font-semibold uppercase tracking-wider">Mindful Pace</span></div><p class="font-body-sm text-body-sm text-on-surface-variant">Sustenance tracked without anxiety.</p></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-gutter"><div class="flex items-center gap-4"><div class="flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded-full"><span class="material-symbols-outlined text-[18px] text-secondary">event</span><span class="font-label-md text-label-md text-on-surface font-medium">Today, Oct 24</span><span class="text-on-surface-variant/40">•</span><span class="font-label-sm text-label-sm text-on-surface-variant font-mono">IST (UTC+05:30)</span><span class="material-symbols-outlined text-[16px] text-on-surface-variant cursor-pointer hover:text-on-surface transition-colors">arrow_drop_down</span></div><div class="flex items-center gap-2 bg-surface-container-lowest px-3 py-2 rounded-lg w-80 shadow-[0_1px_4px_rgba(0,0,0,0.03)]"><span class="material-symbols-outlined text-[18px] text-on-surface-variant">search</span><input class="w-full bg-transparent border-0 p-0 font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none" placeholder="Search foods or health items..." type="text"><kbd class="font-label-sm text-label-sm bg-surface-container px-1.5 py-0.5 rounded text-on-surface-variant">⌘K</kbd></div></div><div class="flex items-center gap-3"><a class="inline-flex items-center gap-1.5 bg-primary text-on-primary font-label-lg text-label-lg px-4 py-2 rounded-lg hover:bg-primary-container transition-colors shadow-sm" data-path="log-food" href="#"><span class="material-symbols-outlined text-[18px]">add</span><span class="">Log Food</span></a><div class="flex items-center bg-surface-container-low p-1 rounded-full gap-1"><button class="flex items-center justify-center w-7 h-7 rounded-full bg-surface-container-lowest text-on-surface shadow-xs" type="button"><span class="material-symbols-outlined text-[16px]">light_mode</span></button><button class="flex items-center justify-center w-7 h-7 rounded-full text-on-surface-variant hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[16px]">dark_mode</span></button></div><div class="flex items-center gap-2 pl-2 cursor-pointer"><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-2 ring-surface-container-highest" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYSM7uYh5StprhJl460C-akoNfTMZHCkbfSdIt-uSNt5A6IYwPafFnM-3fHfR7gacd2q2l4d-_HN-GAwFcxfieR3VKAQ8QKMLLEQWORWSDauOAVJZuUplnLwSfIXaQWfIOZYB6tJS6b61vAjbYOqqhYz5dUWtmTO3tA9fNn1bqi548URJVtC2IKpXtnEK0MWwh5HG9XVygyj05L9OwA_C9ziEDa0BYoe2KQSQoDrYfWZJu16w4DhIl"><span class="material-symbols-outlined text-[18px] text-on-surface-variant hover:text-on-surface transition-colors">expand_more</span></div></div></header><main class="w-full pt-16 bg-background min-h-screen"><div class="flex flex-col w-full">
+<div class="max-w-[1400px] w-full mx-auto px-6 py-6 lg:px-10 lg:py-8 flex flex-col gap-6">
+<!-- Top Status / Context Header -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"><div class="flex flex-col"><div class="flex items-center gap-2 mb-1"><span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm"><span class="w-2 h-2 rounded-full bg-secondary"></span>Building Today's Plate</span><span class="font-label-sm text-label-sm text-on-surface-variant font-mono">Oct 24 • IST (UTC+05:30)</span></div><p class="font-headline-lg text-headline-lg text-primary tracking-tight font-bold">Log Your Meals &amp; Snacks</p><p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Search wholesome foods, home recipes, or quick bites. Build your plate at your own rhythm.</p></div><div class="flex items-center gap-2.5 self-start sm:self-center"><button class="flex items-center gap-2 bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md px-4 py-2.5 rounded-xl transition-colors shadow-xs" type="button"><span class="material-symbols-outlined text-[18px] text-primary">barcode_scanner</span><span class="">Scan Barcode</span></button><button class="flex items-center gap-2 bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md px-4 py-2.5 rounded-xl transition-colors shadow-xs" type="button"><span class="material-symbols-outlined text-[18px] text-primary">favorite</span><span class="">Saved Recipes</span></button></div></div>
+<!-- Main Two-Column Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+<!-- LEFT / PRIMARY COLUMN: Search & Results & Configurator (7 Cols) -->
+<div class="lg:col-span-7 flex flex-col gap-6">
+<!-- Search Bar with Floating Context -->
+<div class="flex flex-col gap-3"><div class="relative bg-surface-container-lowest rounded-2xl shadow-sm p-1.5 transition-all focus-within:shadow-md ring-1 ring-surface-container-highest"><div class="flex items-center gap-3 px-3.5 py-2.5"><span class="material-symbols-outlined text-primary text-[24px]">search</span><input class="w-full bg-transparent border-0 font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none" id="foodSearchInput" placeholder="Search whole foods, homemade meals, snacks (e.g. Rolled Oats, Paneer, Dosa)..." type="text" value="Rolled Oats"><button class="text-on-surface-variant hover:text-on-surface p-1 rounded-full" id="clearSearchBtn" type="button"><span class="material-symbols-outlined text-[18px]">cancel</span></button></div></div><div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none"><button class="filter-chip px-3.5 py-1.5 rounded-full font-label-md text-label-md whitespace-nowrap bg-primary text-on-primary shadow-xs transition-colors" type="button">All Foods</button><button class="filter-chip px-3.5 py-1.5 rounded-full font-label-md text-label-md whitespace-nowrap bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors" type="button">Verified Food Library</button><button class="filter-chip px-3.5 py-1.5 rounded-full font-label-md text-label-md whitespace-nowrap bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors" type="button">My Kitchen &amp; Recipes</button><button class="filter-chip px-3.5 py-1.5 rounded-full font-label-md text-label-md whitespace-nowrap bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors" type="button">Frequent Favorites</button><button class="filter-chip px-3.5 py-1.5 rounded-full font-label-md text-label-md whitespace-nowrap bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors flex items-center gap-1" type="button"><span class="material-symbols-outlined text-[14px] text-tertiary">spa</span>High Nourish</button></div></div>
+<!-- Food Search Results Header -->
+<div class="flex items-center justify-between px-1"><div class="flex items-center gap-2"><span class="font-label-lg text-label-lg text-on-surface font-semibold">Found Foods</span><span class="font-label-sm text-label-sm px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-mono">5 choices</span></div><span class="font-label-sm text-label-sm text-on-surface-variant">Wholesome curated library</span></div>
+<!-- Results List -->
+<div class="flex flex-col gap-3" id="searchResultsContainer">
+<!-- Item 1 (Selected State Triggering Configurator) -->
+<div class="group relative flex flex-col p-4 rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-all">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+<div class="flex items-start gap-3.5">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-secondary shrink-0 overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="Warm rustic ceramic bowl filled with raw dry rolled oats and organic oat flakes on a minimalist slate background with gentle morning sunlight." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDzVLOYt-anoZkVRPW6mXssrqgqagx3PcqfDQAyxyEKQwLIOFMPr-J4XpYlfDyQaKN1j2LBgQ8NkboI47HpZ0kG-ph67i-eYS77g0TE4eEw1c9yuGzyCDOJHdyKL9aej0vlLqN-tGnzKsNaQmZDnyro8H6AePF8lgJjKfhI1lzeUajrDHUUqI1-rVTNAFAI-ZqQ0semmzzNCnEGn02TlRx5rMAObTeDN2YLpWbfpOCBsTp1NZs6uwy">
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="font-headline-sm text-headline-sm text-primary tracking-tight">Rolled Oats, Dry</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-mono">USDA #173904</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Reference portion: 1 cup (81g) • 307 kcal</span>
+</div>
+</div>
+<button class="self-end sm:self-center inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-secondary text-on-secondary font-label-md text-label-md hover:bg-secondary/90 transition-colors shadow-xs" onclick="toggleConfigurator(true)" type="button">
+<span class="material-symbols-outlined text-[16px]">tune</span>
+<span class="">Configure &amp; Add</span>
+</button>
+</div>
+<!-- Macro Pills Grid -->
+<div class="grid grid-cols-4 gap-2 mt-3 pt-3 bg-surface-container-low/60 rounded-lg p-2.5">
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant/70 uppercase">Protein</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">10.7g</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant/70 uppercase">Carbs</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">54.8g</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant/70 uppercase">Fat</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">5.3g</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-label-sm text-secondary uppercase font-semibold">Fibre</span>
+<span class="font-label-md text-label-md text-secondary font-semibold">8.2g</span>
+</div>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="group relative flex flex-col p-4 rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-all">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+<div class="flex items-start gap-3.5">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-secondary shrink-0 overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="Fresh white paneer cubes diced cleanly on a natural wooden board surrounded by subtle green culinary herbs in soft clinical studio lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhVxE8QWQPTY5wpXlh-cZXk8nddk8kZxeDn-fHdgxaki-UGiSH-WKC5vGziLiVfGM_GrRPCGq6bcWWD5n1rrkGIp2FhBSVv-m-n2T7cPhoSxS1ff2HGYXUvpNobtPbpzPMZaXyJUU8xCzVqBt4XDaRxOnKRRYC54V6CWrsYqd0Qz-2OukNU2B1IZRrBfPk8xLSj6HhDf97egU3fZY-MMg2mwyJio428z7hWPKwEMxwn7-6ODBkLvQd">
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="font-headline-sm text-headline-sm text-primary tracking-tight">Paneer (Indian Cottage Cheese, Fresh)</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-mono">Custom Verified</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Reference portion: 100g • 296 kcal</span>
+</div>
+</div>
+<button class="quick-add-btn self-end sm:self-center inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-surface-container-high text-primary hover:bg-primary hover:text-on-primary font-label-md text-label-md transition-colors shadow-xs" data-c="3.4" data-cal="296" data-f="22.8" data-name="Paneer (Fresh)" data-p="18.3" data-qty="100g" type="button">
+<span class="material-symbols-outlined text-[16px]">add</span>
+<span class="">+ Add to Tray</span>
+</button>
+</div>
+<div class="grid grid-cols-4 gap-2 mt-3 pt-3 bg-surface-container-low/60 rounded-lg p-2.5">
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant/70 uppercase">Protein</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">18.3g</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant/70 uppercase">Carbs</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">3.4g</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant/70 uppercase">Fat</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">22.8g</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-label-sm text-secondary uppercase font-semibold">Fibre</span>
+<span class="font-label-md text-label-md text-secondary font-semibold">0.0g</span>
+</div>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="group relative flex flex-col p-4 rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-all">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+<div class="flex items-start gap-3.5">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-secondary shrink-0 overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="Traditional yellow toor dal soup with cumin tempering served in a muted earthenware bowl on a clean textured surface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRp-BdCUhLh-lkTH2c50rzQt68O54tlUJvJTHd7Br7pb9J682ibRY7SGklt2sLsesEfTSg0g66I8NeCuLGkWklG93yh5WcPV81HySfpI9HfXeydk5EL0LZ45rS0nu_yCiJlP5UAzhGmyvpnd-O8owW2ne7eaBt3clVwUMhZRSw5PO4O0gCejMaeLkI7R6bgCn8kBzFuvndlnRje9iDc8H9e8oqx2nascSEMJ3uGxE22JRasUHZICGR">
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="font-headline-sm text-headline-sm text-primary tracking-tight">Cooked Yellow Lentils (Dal)</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-mono">USDA #16070</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Reference portion: 1 cup (198g) • 230 kcal</span>
+</div>
+</div>
+<button class="quick-add-btn self-end sm:self-center inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-surface-container-high text-primary hover:bg-primary hover:text-on-primary font-label-md text-label-md transition-colors shadow-xs" data-c="39.9" data-cal="230" data-f="0.8" data-name="Cooked Yellow Dal" data-p="17.9" data-qty="1 cup (198g)" type="button">
+<span class="material-symbols-outlined text-[16px]">add</span>
+<span class="">+ Add to Tray</span>
+</button>
+</div>
+<div class="grid grid-cols-4 gap-2 mt-3 pt-3 bg-surface-container-low/60 rounded-lg p-2.5">
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant/70 uppercase">Protein</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">17.9g</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant/70 uppercase">Carbs</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">39.9g</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant/70 uppercase">Fat</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">0.8g</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-label-sm text-secondary uppercase font-semibold">Fibre</span>
+<span class="font-label-md text-label-md text-secondary font-semibold">15.6g</span>
+</div>
+</div>
+</div>
+<!-- Item 4 -->
+<div class="group relative flex flex-col p-4 rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-all">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+<div class="flex items-start gap-3.5">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-secondary shrink-0 overflow-hidden">
+<span class="material-symbols-outlined text-[24px]">bakery_dining</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="font-headline-sm text-headline-sm text-primary tracking-tight">Whole Wheat Flatbread (Chapati/Roti)</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-mono">Frequent</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Reference portion: 1 medium (45g) • 120 kcal</span>
+</div>
+</div>
+<button class="quick-add-btn self-end sm:self-center inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-surface-container-high text-primary hover:bg-primary hover:text-on-primary font-label-md text-label-md transition-colors shadow-xs" data-c="24.1" data-cal="120" data-f="1.2" data-name="Chapati / Whole Wheat Roti" data-p="3.8" data-qty="1 medium (45g)" type="button">
+<span class="material-symbols-outlined text-[16px]">add</span>
+<span class="">+ Add to Tray</span>
+</button>
+</div>
+<div class="grid grid-cols-4 gap-2 mt-3 pt-3 bg-surface-container-low/60 rounded-lg p-2.5">
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant/70 uppercase">Protein</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">3.8g</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant/70 uppercase">Carbs</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">24.1g</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant/70 uppercase">Fat</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">1.2g</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-label-sm text-secondary uppercase font-semibold">Fibre</span>
+<span class="font-label-md text-label-md text-secondary font-semibold">3.9g</span>
+</div>
+</div>
+</div>
+<!-- Item 5 -->
+<div class="group relative flex flex-col p-4 rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-all">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+<div class="flex items-start gap-3.5">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-secondary shrink-0 overflow-hidden">
+<span class="material-symbols-outlined text-[24px]">nutrition</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="font-headline-sm text-headline-sm text-primary tracking-tight">Raw Almonds, Unsalted</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-mono">USDA #170567</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Reference portion: 28g (approx 23 kernels) • 164 kcal</span>
+</div>
+</div>
+<button class="quick-add-btn self-end sm:self-center inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-surface-container-high text-primary hover:bg-primary hover:text-on-primary font-label-md text-label-md transition-colors shadow-xs" data-c="6.1" data-cal="164" data-f="14.1" data-name="Raw Almonds" data-p="6.0" data-qty="28g" type="button">
+<span class="material-symbols-outlined text-[16px]">add</span>
+<span class="">+ Add to Tray</span>
+</button>
+</div>
+<div class="grid grid-cols-4 gap-2 mt-3 pt-3 bg-surface-container-low/60 rounded-lg p-2.5">
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant/70 uppercase">Protein</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">6.0g</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant/70 uppercase">Carbs</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">6.1g</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant/70 uppercase">Fat</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">14.1g</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-label-sm text-secondary uppercase font-semibold">Fibre</span>
+<span class="font-label-md text-label-md text-secondary font-semibold">3.5g</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Detailed Item Configurator Drawer / Box (Active View) -->
+<div class="flex flex-col p-6 rounded-2xl bg-surface-container-lowest shadow-md transition-all" id="itemConfiguratorCard"><div class="flex items-center justify-between pb-4 border-b border-surface-container"><div class="flex items-center gap-2.5"><span class="material-symbols-outlined text-primary text-[22px]">soup_kitchen</span><span class="font-headline-sm text-headline-sm text-primary font-bold">Serving Size &amp; Meal Details</span></div><span class="font-label-sm text-label-sm bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-mono">Rolled Oats, Dry</span></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5"><div class="flex flex-col gap-1.5"><label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Portion Size</label><div class="flex items-center gap-2"><input class="w-24 px-3 py-2.5 bg-surface-container-low rounded-xl font-data-metric text-data-metric text-primary focus:outline-none focus:ring-1 focus:ring-primary" id="configQty" step="0.1" type="number" value="1.5"><select class="flex-1 px-3 py-2.5 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none" id="configUnit"><option selected="" value="cup">cup (81g)</option><option value="grams">grams (g)</option><option value="oz">ounces (oz)</option><option value="tbsp">tablespoon (5g)</option></select></div></div><div class="flex flex-col gap-1.5"><label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">How Was It Prepared?</label><div class="grid grid-cols-3 gap-2"><button class="prep-btn py-2 px-2 rounded-xl font-label-md text-label-md bg-primary text-on-primary text-center transition-colors shadow-xs" type="button">Raw / Dry</button><button class="prep-btn py-2 px-2 rounded-xl font-label-md text-label-md bg-surface-container text-on-surface-variant hover:bg-surface-container-high text-center transition-colors" type="button">Warm Boiled</button><button class="prep-btn py-2 px-2 rounded-xl font-label-md text-label-md bg-surface-container text-on-surface-variant hover:bg-surface-container-high text-center transition-colors" type="button">Toasted</button></div></div><div class="flex flex-col gap-1.5 md:col-span-2"><label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Which Meal?</label><div class="grid grid-cols-4 gap-2"><button class="meal-tag-btn py-2 rounded-xl font-label-md text-label-md bg-surface-container text-on-surface-variant hover:bg-surface-container-high text-center transition-colors" type="button">Breakfast</button><button class="meal-tag-btn py-2 rounded-xl font-label-md text-label-md bg-primary-container text-on-primary font-semibold text-center transition-colors shadow-xs" type="button">Lunch</button><button class="meal-tag-btn py-2 rounded-xl font-label-md text-label-md bg-surface-container text-on-surface-variant hover:bg-surface-container-high text-center transition-colors" type="button">Dinner</button><button class="meal-tag-btn py-2 rounded-xl font-label-md text-label-md bg-surface-container text-on-surface-variant hover:bg-surface-container-high text-center transition-colors" type="button">Gentle Snack</button></div></div><div class="flex items-center justify-between md:col-span-2 pt-2 text-on-surface-variant"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px] text-primary">schedule</span><span class="font-body-sm text-body-sm">Time: <strong class="text-on-surface font-medium">Today at 01:15 PM</strong></span></div><span class="font-label-sm text-label-sm bg-surface-container px-2.5 py-1 rounded-full font-mono text-primary font-medium">Nourishment: ~460 kcal</span></div></div><div class="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-surface-container"><button class="px-4 py-2 rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container transition-colors" onclick="toggleConfigurator(false)" type="button">Cancel</button><button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-on-primary font-label-lg text-label-lg hover:bg-primary-container transition-colors shadow-sm" id="stageConfiguredFoodBtn" type="button"><span class="material-symbols-outlined text-[18px]">add_circle</span><span class="">Add to Today's Plate (460 kcal)</span></button></div></div>
+</div>
+<!-- RIGHT COLUMN / PERSISTENT MULTI-FOOD STAGING TRAY (5 Cols) -->
+<div class="lg:col-span-5 flex flex-col gap-5 sticky top-20">
+<!-- Tray Container Card -->
+<div class="flex flex-col bg-surface-container-lowest rounded-2xl shadow-md p-6">
+<!-- Tray Header with Count -->
+<div class="flex items-start justify-between pb-4"><div class="flex flex-col"><div class="flex items-center gap-2"><span class="font-headline-md text-headline-md text-primary tracking-tight font-bold">Your Plate Today</span><span class="font-label-sm text-label-sm px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-semibold" id="trayBadgeCount">3 items</span></div><span class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">Meal: <strong class="text-on-surface">Mindful Lunch</strong> • Oct 24, 2023</span></div><button class="text-error hover:bg-error-container/40 p-2 rounded-xl transition-colors flex items-center gap-1 font-label-sm text-label-sm" id="clearTrayBtn" title="Clear your plate" type="button"><span class="material-symbols-outlined text-[18px]">delete_sweep</span><span class="hidden sm:inline">Clear Plate</span></button></div>
+<!-- Staged Item Stream -->
+<div class="flex flex-col gap-3 my-2" id="stagedItemsList"><div class="staged-card flex flex-col p-3.5 rounded-xl bg-surface-container-low transition-all">
+        <div class="flex items-start justify-between gap-2">
+          <div class="flex flex-col">
+            <span class="font-label-lg text-label-lg text-primary font-semibold">Chapati / Whole Wheat Roti</span>
+            <span class="font-body-sm text-body-sm text-on-surface-variant">2 medium (90g) • <strong class="text-on-surface font-medium">240 kcal</strong></span>
+          </div>
+          <div class="flex items-center gap-1">
+            <button type="button" class="p-1 text-on-surface-variant hover:text-primary transition-colors" title="Edit portion">
+              <span class="material-symbols-outlined text-[18px]">edit</span>
+            </button>
+            <button type="button" class="remove-btn p-1 text-on-surface-variant hover:text-error transition-colors" data-id="1">
+              <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 mt-2 font-label-sm text-label-sm text-on-surface-variant">
+          <span>P: <strong class="text-on-surface">7.6g</strong></span>
+          <span>•</span>
+          <span>C: <strong class="text-on-surface">48.0g</strong></span>
+          <span>•</span>
+          <span>F: <strong class="text-on-surface">2.4g</strong></span>
+        </div>
+      </div><div class="staged-card flex flex-col p-3.5 rounded-xl bg-surface-container-low transition-all">
+        <div class="flex items-start justify-between gap-2">
+          <div class="flex flex-col">
+            <span class="font-label-lg text-label-lg text-primary font-semibold">Paneer Bhurji</span>
+            <span class="font-body-sm text-body-sm text-on-surface-variant">120g • <strong class="text-on-surface font-medium">310 kcal</strong></span>
+          </div>
+          <div class="flex items-center gap-1">
+            <button type="button" class="p-1 text-on-surface-variant hover:text-primary transition-colors" title="Edit portion">
+              <span class="material-symbols-outlined text-[18px]">edit</span>
+            </button>
+            <button type="button" class="remove-btn p-1 text-on-surface-variant hover:text-error transition-colors" data-id="2">
+              <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 mt-2 font-label-sm text-label-sm text-on-surface-variant">
+          <span>P: <strong class="text-on-surface">19.0g</strong></span>
+          <span>•</span>
+          <span>C: <strong class="text-on-surface">4.2g</strong></span>
+          <span>•</span>
+          <span>F: <strong class="text-on-surface">24.0g</strong></span>
+        </div>
+      </div><div class="staged-card flex flex-col p-3.5 rounded-xl bg-surface-container-low transition-all">
+        <div class="flex items-start justify-between gap-2">
+          <div class="flex flex-col">
+            <span class="font-label-lg text-label-lg text-primary font-semibold">Cucumber &amp; Tomato Salad</span>
+            <span class="font-body-sm text-body-sm text-on-surface-variant">1 bowl (150g) • <strong class="text-on-surface font-medium">45 kcal</strong></span>
+          </div>
+          <div class="flex items-center gap-1">
+            <button type="button" class="p-1 text-on-surface-variant hover:text-primary transition-colors" title="Edit portion">
+              <span class="material-symbols-outlined text-[18px]">edit</span>
+            </button>
+            <button type="button" class="remove-btn p-1 text-on-surface-variant hover:text-error transition-colors" data-id="3">
+              <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 mt-2 font-label-sm text-label-sm text-on-surface-variant">
+          <span>P: <strong class="text-on-surface">1.2g</strong></span>
+          <span>•</span>
+          <span>C: <strong class="text-on-surface">9.0g</strong></span>
+          <span>•</span>
+          <span>F: <strong class="text-on-surface">0.4g</strong></span>
+        </div>
+      </div></div>
+<!-- Empty Tray Fallback (hidden when items exist) -->
+<div class="hidden flex-col items-center justify-center p-8 text-center rounded-xl bg-surface-container-low" id="emptyTrayMessage">
+<span class="material-symbols-outlined text-[36px] text-on-surface-variant/40 mb-2">dinner_dining</span>
+<p class="font-headline-sm text-headline-sm text-on-surface">Your staging tray is empty</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Select items from the search catalog to begin aggregating your meal.</p>
+</div>
+<!-- Aggregate Totals Card -->
+<div class="flex flex-col p-4 mt-3 rounded-xl bg-surface-container">
+<div class="flex items-baseline justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Combined Energy</span>
+<div class="flex items-baseline gap-1">
+<span class="font-headline-xl text-headline-xl text-primary font-bold" id="aggCalories">595</span>
+<span class="font-label-md text-label-md text-on-surface-variant font-mono">kcal</span>
+</div>
+</div>
+<!-- Macro Progress breakdown SVG -->
+<div class="mt-3 flex flex-col gap-2">
+<div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden flex">
+<div class="bg-secondary h-full transition-all" id="barProtein" style="width: 19%;" title="Protein: 19%"></div>
+<div class="bg-primary h-full transition-all" id="barCarb" style="width: 41%;" title="Carbs: 41%"></div>
+<div class="bg-on-tertiary-container h-full transition-all" id="barFat" style="width: 40%;" title="Fat: 40%"></div>
+</div>
+<!-- Tabular values -->
+<div class="grid grid-cols-4 gap-2 pt-2 text-center">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-secondary font-semibold">Protein</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface" id="aggProtein">27.8g</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-primary font-semibold">Carbs</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface" id="aggCarbs">61.2g</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-tertiary-container font-semibold">Fat</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface" id="aggFat">26.8g</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-semibold">Fibre</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface" id="aggFibre">6.8g</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Save as Reusable Meal Option -->
+<div class="mt-5 flex items-start gap-3 p-3 rounded-lg bg-surface-container-low/70"><input class="mt-1 w-4 h-4 rounded text-primary accent-primary focus:ring-0" id="saveMealCheckbox" type="checkbox"><label class="flex flex-col cursor-pointer" for="saveMealCheckbox"><span class="font-label-md text-label-md text-on-surface font-semibold">Save as a Favorite Plate</span><span class="font-body-sm text-body-sm text-on-surface-variant">Save this pairing as <span class="text-primary italic font-medium">"Healthy Paneer Lunch"</span> for easy one-tap adding later.</span></label></div>
+<!-- Commit Actions -->
+<div class="flex flex-col gap-2.5 mt-5"><button class="w-full py-3.5 px-4 rounded-xl bg-primary text-on-primary font-label-lg text-label-lg font-semibold hover:bg-primary-container transition-all shadow-md flex items-center justify-center gap-2" id="commitLogBtn" type="button"><span class="material-symbols-outlined text-[20px]">favorite</span><span id="commitBtnLabel" class="">Add to Today's Journal (3 items • 595 kcal)</span></button><p class="font-label-sm text-label-sm text-center text-on-surface-variant/80">✨ Saved gently to your daily food memory without calorie stress.</p></div>
+</div>
+<!-- Ambient Chrono Insight Box -->
+<div class="p-4 rounded-xl bg-surface-container-low flex items-start gap-3"><span class="material-symbols-outlined text-primary text-[24px] shrink-0">eco</span><div class="flex flex-col"><span class="font-label-md text-label-md text-primary font-bold">🌿 Balanced &amp; Nourishing</span><p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Good dietary fiber and healthy fats to keep your energy steady all afternoon, leaving you refreshed and satisfied.</p></div></div>
+</div>
+</div>
+<!-- Notification Toast (Hidden by Default) -->
+<div class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-3 px-5 py-3.5 rounded-xl bg-primary text-on-primary shadow-xl" id="toastNotification">
+<span class="material-symbols-outlined text-secondary-container">task_alt</span>
+<span class="font-label-lg text-label-lg" id="toastMessage">Meal successfully logged to your daily journal.</span>
+</div>
+</div>
+</div>
+<script>
+  // Simple reactive state for the Multi-Food Staging Tray
+  let trayItems = [
+    { id: 1, name: "Chapati / Whole Wheat Roti", portion: "2 medium (90g)", kcal: 240, p: 7.6, c: 48.0, f: 2.4, fib: 3.0 },
+    { id: 2, name: "Paneer Bhurji", portion: "120g", kcal: 310, p: 19.0, c: 4.2, f: 24.0, fib: 0.8 },
+    { id: 3, name: "Cucumber & Tomato Salad", portion: "1 bowl (150g)", kcal: 45, p: 1.2, c: 9.0, f: 0.4, fib: 3.0 }
+  ];
+
+  function recalculateTray() {
+    const totalKcal = trayItems.reduce((acc, item) => acc + item.kcal, 0);
+    const totalP = trayItems.reduce((acc, item) => acc + item.p, 0);
+    const totalC = trayItems.reduce((acc, item) => acc + item.c, 0);
+    const totalF = trayItems.reduce((acc, item) => acc + item.f, 0);
+    const totalFib = trayItems.reduce((acc, item) => acc + item.fib, 0);
+
+    // Update Totals DOM
+    const aggCalories = document.getElementById('aggCalories');
+    const aggProtein = document.getElementById('aggProtein');
+    const aggCarbs = document.getElementById('aggCarbs');
+    const aggFat = document.getElementById('aggFat');
+    const aggFibre = document.getElementById('aggFibre');
+    const trayBadgeCount = document.getElementById('trayBadgeCount');
+    const commitBtnLabel = document.getElementById('commitBtnLabel');
+    const emptyTrayMessage = document.getElementById('emptyTrayMessage');
+    const stagedItemsList = document.getElementById('stagedItemsList');
+    const commitLogBtn = document.getElementById('commitLogBtn');
+
+    if (aggCalories) aggCalories.innerText = Math.round(totalKcal);
+    if (aggProtein) aggProtein.innerText = totalP.toFixed(1) + 'g';
+    if (aggCarbs) aggCarbs.innerText = totalC.toFixed(1) + 'g';
+    if (aggFat) aggFat.innerText = totalF.toFixed(1) + 'g';
+    if (aggFibre) aggFibre.innerText = totalFib.toFixed(1) + 'g';
+
+    const count = trayItems.length;
+    if (trayBadgeCount) trayBadgeCount.innerText = `${count} ${count === 1 ? 'item' : 'items'}`;
+    if (commitBtnLabel) commitBtnLabel.innerText = `Log Entire Meal (${count} items • ${Math.round(totalKcal)} kcal)`;
+
+    // Update Progress Bars ratio
+    const sumMacros = (totalP * 4) + (totalC * 4) + (totalF * 9) || 1;
+    const pPct = Math.round(((totalP * 4) / sumMacros) * 100);
+    const cPct = Math.round(((totalC * 4) / sumMacros) * 100);
+    const fPct = Math.max(0, 100 - pPct - cPct);
+
+    const barProtein = document.getElementById('barProtein');
+    const barCarb = document.getElementById('barCarb');
+    const barFat = document.getElementById('barFat');
+    if (barProtein) barProtein.style.width = pPct + '%';
+    if (barCarb) barCarb.style.width = cPct + '%';
+    if (barFat) barFat.style.width = fPct + '%';
+
+    if (count === 0) {
+      if (emptyTrayMessage) emptyTrayMessage.classList.remove('hidden');
+      if (commitLogBtn) {
+        commitLogBtn.disabled = true;
+        commitLogBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      }
+    } else {
+      if (emptyTrayMessage) emptyTrayMessage.classList.add('hidden');
+      if (commitLogBtn) {
+        commitLogBtn.disabled = false;
+        commitLogBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      }
+    }
+  }
+
+  function renderStagedList() {
+    const list = document.getElementById('stagedItemsList');
+    if (!list) return;
+    list.innerHTML = '';
+
+    trayItems.forEach(item => {
+      const card = document.createElement('div');
+      card.className = "staged-card flex flex-col p-3.5 rounded-xl bg-surface-container-low transition-all";
+      card.innerHTML = `
+        <div class="flex items-start justify-between gap-2">
+          <div class="flex flex-col">
+            <span class="font-label-lg text-label-lg text-primary font-semibold">${item.name}</span>
+            <span class="font-body-sm text-body-sm text-on-surface-variant">${item.portion} • <strong class="text-on-surface font-medium">${item.kcal} kcal</strong></span>
+          </div>
+          <div class="flex items-center gap-1">
+            <button type="button" class="p-1 text-on-surface-variant hover:text-primary transition-colors" title="Edit portion">
+              <span class="material-symbols-outlined text-[18px]">edit</span>
+            </button>
+            <button type="button" class="remove-btn p-1 text-on-surface-variant hover:text-error transition-colors" data-id="${item.id}">
+              <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 mt-2 font-label-sm text-label-sm text-on-surface-variant">
+          <span>P: <strong class="text-on-surface">${item.p.toFixed(1)}g</strong></span>
+          <span>•</span>
+          <span>C: <strong class="text-on-surface">${item.c.toFixed(1)}g</strong></span>
+          <span>•</span>
+          <span>F: <strong class="text-on-surface">${item.f.toFixed(1)}g</strong></span>
+        </div>
+      `;
+      list.appendChild(card);
+    });
+
+    // Reattach remove listeners
+    list.querySelectorAll('.remove-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = parseInt(btn.getAttribute('data-id'), 10);
+        trayItems = trayItems.filter(i => i.id !== id);
+        renderStagedList();
+        recalculateTray();
+        showToast("Item removed from tray");
+      });
+    });
+  }
+
+  function showToast(message) {
+    const toast = document.getElementById('toastNotification');
+    const toastMsg = document.getElementById('toastMessage');
+    if (!toast || !toastMsg) return;
+
+    toastMsg.innerText = message;
+    toast.classList.remove('translate-y-24', 'opacity-0');
+    toast.classList.add('translate-y-0', 'opacity-100');
+
+    setTimeout(() => {
+      toast.classList.add('translate-y-24', 'opacity-0');
+      toast.classList.remove('translate-y-0', 'opacity-100');
+    }, 2800);
+  }
+
+  function toggleConfigurator(show) {
+    const card = document.getElementById('itemConfiguratorCard');
+    if (!card) return;
+    if (show) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      card.classList.add('ring-2', 'ring-secondary');
+      setTimeout(() => card.classList.remove('ring-2', 'ring-secondary'), 1200);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Quick Add Buttons in the Left List
+    document.querySelectorAll('.quick-add-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const name = btn.getAttribute('data-name');
+        const cal = parseFloat(btn.getAttribute('data-cal')) || 100;
+        const p = parseFloat(btn.getAttribute('data-p')) || 0;
+        const c = parseFloat(btn.getAttribute('data-c')) || 0;
+        const f = parseFloat(btn.getAttribute('data-f')) || 0;
+        const qty = btn.getAttribute('data-qty') || "1 serving";
+
+        const newItem = {
+          id: Date.now(),
+          name: name,
+          portion: qty,
+          kcal: cal,
+          p: p,
+          c: c,
+          f: f,
+          fib: (c * 0.15)
+        };
+
+        trayItems.push(newItem);
+        renderStagedList();
+        recalculateTray();
+        showToast(`Added ${name} to staging tray`);
+      });
+    });
+
+    // Stage Configured Food Button
+    const stageConfiguredBtn = document.getElementById('stageConfiguredFoodBtn');
+    if (stageConfiguredBtn) {
+      stageConfiguredBtn.addEventListener('click', () => {
+        const qty = parseFloat(document.getElementById('configQty')?.value || "1.5");
+        const unit = document.getElementById('configUnit')?.value || "cup";
+        const factor = qty;
+
+        const configuredItem = {
+          id: Date.now(),
+          name: "Rolled Oats (Custom)",
+          portion: `${qty} ${unit}`,
+          kcal: Math.round(307 * factor),
+          p: parseFloat((10.7 * factor).toFixed(1)),
+          c: parseFloat((54.8 * factor).toFixed(1)),
+          f: parseFloat((5.3 * factor).toFixed(1)),
+          fib: parseFloat((8.2 * factor).toFixed(1))
+        };
+
+        trayItems.push(configuredItem);
+        renderStagedList();
+        recalculateTray();
+        showToast(`Staged ${qty} ${unit} Rolled Oats`);
+      });
+    }
+
+    // Clear Tray Button
+    const clearTrayBtn = document.getElementById('clearTrayBtn');
+    if (clearTrayBtn) {
+      clearTrayBtn.addEventListener('click', () => {
+        if (trayItems.length === 0) return;
+        trayItems = [];
+        renderStagedList();
+        recalculateTray();
+        showToast("Staging tray cleared");
+      });
+    }
+
+    // Clear Search Input
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    const foodSearchInput = document.getElementById('foodSearchInput');
+    if (clearSearchBtn && foodSearchInput) {
+      clearSearchBtn.addEventListener('click', () => {
+        foodSearchInput.value = '';
+        foodSearchInput.focus();
+      });
+    }
+
+    // Log Entire Meal / Commit Action
+    const commitLogBtn = document.getElementById('commitLogBtn');
+    if (commitLogBtn) {
+      commitLogBtn.addEventListener('click', () => {
+        if (trayItems.length === 0) return;
+        const isSaved = document.getElementById('saveMealCheckbox')?.checked;
+        const msg = isSaved 
+          ? "Logged entire meal & saved as 'Healthy Paneer Lunch'!"
+          : "Logged entire meal successfully!";
+        showToast(msg);
+        trayItems = [];
+        renderStagedList();
+        recalculateTray();
+      });
+    }
+
+    // Filter Chips toggling
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.filter-chip').forEach(c => {
+          c.classList.remove('bg-primary', 'text-on-primary');
+          c.classList.add('bg-surface-container', 'text-on-surface-variant');
+        });
+        chip.classList.add('bg-primary', 'text-on-primary');
+        chip.classList.remove('bg-surface-container', 'text-on-surface-variant');
+      });
+    });
+
+    // Meal Tag Buttons inside configurator
+    document.querySelectorAll('.meal-tag-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.meal-tag-btn').forEach(b => {
+          b.classList.remove('bg-primary-container', 'text-on-primary', 'font-semibold', 'shadow-xs');
+          b.classList.add('bg-surface-container', 'text-on-surface-variant');
+        });
+        btn.classList.add('bg-primary-container', 'text-on-primary', 'font-semibold', 'shadow-xs');
+        btn.classList.remove('bg-surface-container', 'text-on-surface-variant');
+      });
+    });
+
+    // Initial calculation check
+    renderStagedList();
+    recalculateTray();
+  });
+</script></main></div>
+
+</body></html>
