@@ -117,16 +117,49 @@ func (s *Server) startGoogleLink(w http.ResponseWriter, r *http.Request, request
 	s.json(w, 200, map[string]string{"authorization_url": result.AuthorizationUrl})
 }
 
-func (s *Server) completeGoogle(w http.ResponseWriter, r *http.Request, requestID string, ctx context.Context) {
-	isLink := false
-	if cookie, err := r.Cookie("atethat_oauth_mode"); err == nil && cookie.Value == "link" {
-		isLink = true
+func (s *Server) startGoogleDeletionCancellation(w http.ResponseWriter, r *http.Request, requestID string, ctx context.Context) {
+	result, err := s.Identity.StartGoogleDeletionCancellation(s.rpcContext(ctx, pb.IdentityService_StartGoogleDeletionCancellation_FullMethodName, ""), &pb.Empty{})
+	if err != nil {
+		s.rpcProblem(w, requestID, err)
+		return
 	}
+	http.SetCookie(w, &http.Cookie{Name: "atethat_oauth_mode", Value: "deletion_cancel", Path: "/api/v1/auth/google/callback",
+		MaxAge: 600, HttpOnly: true, Secure: s.Config.CookieSecure, SameSite: http.SameSiteLaxMode})
+	s.json(w, http.StatusOK, map[string]string{"authorization_url": result.AuthorizationUrl})
+}
+
+func (s *Server) startGoogleDeletionRequest(w http.ResponseWriter, r *http.Request, requestID string, ctx context.Context) {
+	user, ok := s.authenticated(r, w, requestID)
+	if !ok {
+		return
+	}
+	result, err := s.Identity.StartGoogleDeletionRequest(s.rpcContext(ctx, pb.IdentityService_StartGoogleDeletionRequest_FullMethodName, user.UserID, user.SessionFamily), &pb.Empty{})
+	if err != nil {
+		s.rpcProblem(w, requestID, err)
+		return
+	}
+	http.SetCookie(w, &http.Cookie{Name: "atethat_oauth_mode", Value: "deletion_request", Path: "/api/v1/auth/google/callback",
+		MaxAge: 600, HttpOnly: true, Secure: s.Config.CookieSecure, SameSite: http.SameSiteLaxMode})
+	s.json(w, http.StatusOK, map[string]string{"authorization_url": result.AuthorizationUrl})
+}
+
+func (s *Server) completeGoogle(w http.ResponseWriter, r *http.Request, requestID string, ctx context.Context) {
+	mode := ""
+	if cookie, err := r.Cookie("atethat_oauth_mode"); err == nil {
+		mode = cookie.Value
+	}
+	isLink := mode == "link"
+	isDeletionCancellation := mode == "deletion_cancel"
+	isDeletionRequest := mode == "deletion_request"
 	http.SetCookie(w, &http.Cookie{Name: "atethat_oauth_mode", Path: "/api/v1/auth/google/callback", MaxAge: -1,
 		HttpOnly: true, Secure: s.Config.CookieSecure, SameSite: http.SameSiteLaxMode})
 	failurePath := "/login?error=google"
 	if isLink {
 		failurePath = "/app/settings?error=google_link"
+	} else if isDeletionCancellation {
+		failurePath = "/cancel-deletion?error=google"
+	} else if isDeletionRequest {
+		failurePath = "/app/settings?error=google_deletion"
 	}
 	if r.URL.Query().Get("error") != "" {
 		http.Redirect(w, r, s.Config.FrontendOrigin+failurePath, http.StatusFound)
@@ -138,19 +171,65 @@ func (s *Server) completeGoogle(w http.ResponseWriter, r *http.Request, requestI
 		http.Redirect(w, r, s.Config.FrontendOrigin+failurePath, http.StatusFound)
 		return
 	}
-	s.setRefreshCookie(w, result.Session.RefreshToken)
+	if !isDeletionRequest {
+		s.setRefreshCookie(w, result.Session.RefreshToken)
+	}
 	returnTo := result.ReturnTo
 	if result.NewUser {
 		returnTo = "/app/settings"
 	}
-	if returnTo != "/app" && returnTo != "/app/settings" {
+	if returnTo != "/app" && returnTo != "/app/settings" && !(isDeletionRequest && returnTo == "/cancel-deletion") {
 		s.problem(w, requestID, 503, "CORE_UNAVAILABLE", "Invalid OAuth return path")
 		return
 	}
 	if isLink {
 		returnTo = "/app/settings?linked=google"
+	} else if isDeletionCancellation {
+		returnTo = "/app/settings?deletion_cancelled=google"
+	} else if isDeletionRequest {
+		s.clearRefreshCookie(w)
+		returnTo = "/cancel-deletion?requested=1"
 	}
 	http.Redirect(w, r, s.Config.FrontendOrigin+returnTo, http.StatusFound)
+}
+
+func (s *Server) requestAccountDeletion(w http.ResponseWriter, r *http.Request, requestID string, ctx context.Context) {
+	user, ok := s.authenticated(r, w, requestID)
+	if !ok {
+		return
+	}
+	var body struct {
+		Password string `json:"password"`
+	}
+	if decodeJSON(w, r, &body) != nil {
+		s.problem(w, requestID, http.StatusBadRequest, "INVALID_REQUEST", "Invalid JSON request")
+		return
+	}
+	result, err := s.Identity.RequestAccountDeletion(s.rpcContext(ctx, pb.IdentityService_RequestAccountDeletion_FullMethodName, user.UserID, user.SessionFamily), &pb.RequestAccountDeletionRequest{Password: body.Password})
+	if err != nil {
+		s.rpcProblem(w, requestID, err)
+		return
+	}
+	s.clearRefreshCookie(w)
+	s.json(w, http.StatusAccepted, map[string]string{"status": result.Status, "requested_at": result.RequestedAt, "purge_after": result.PurgeAfter})
+}
+
+func (s *Server) cancelAccountDeletion(w http.ResponseWriter, r *http.Request, requestID string, ctx context.Context) {
+	var body struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	if decodeJSON(w, r, &body) != nil {
+		s.problem(w, requestID, http.StatusBadRequest, "INVALID_REQUEST", "Invalid JSON request")
+		return
+	}
+	result, err := s.Identity.CancelAccountDeletion(s.rpcContext(ctx, pb.IdentityService_CancelAccountDeletion_FullMethodName, ""), &pb.CancelAccountDeletionRequest{Email: body.Email, Password: body.Password})
+	if err != nil {
+		s.rpcProblem(w, requestID, err)
+		return
+	}
+	s.setRefreshCookie(w, result.RefreshToken)
+	s.sessionJSON(w, result)
 }
 
 func (s *Server) refresh(w http.ResponseWriter, r *http.Request, requestID string, ctx context.Context) {

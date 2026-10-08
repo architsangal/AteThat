@@ -7,6 +7,7 @@ import (
 	"time"
 
 	pb "github.com/architsangal/AteThat/services/core/internal/gen/atethat/v1"
+	"github.com/architsangal/AteThat/services/core/internal/trackingday"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -136,6 +137,28 @@ func (s *Server) GetPreferences(ctx context.Context, _ *pb.Empty) (*pb.Preferenc
 		return nil, status.Error(codes.NotFound, "preferences not found")
 	}
 	return preferencesResponse(doc), nil
+}
+
+func (s *Server) GetCurrentTrackingDay(ctx context.Context, _ *pb.Empty) (*pb.TrackingDayContext, error) {
+	userID, err := Principal(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var profile profileDoc
+	if err := s.DB.Collection("user_profiles").FindOne(ctx, bson.M{"user_id": userID}).Decode(&profile); err != nil {
+		return nil, status.Error(codes.NotFound, "profile not found")
+	}
+	var preferences preferencesDoc
+	if err := s.DB.Collection("user_preferences").FindOne(ctx, bson.M{"user_id": userID}).Decode(&preferences); err != nil {
+		return nil, status.Error(codes.NotFound, "preferences not found")
+	}
+	result, err := trackingday.Derive(time.Now().UTC(), profile.Timezone, preferences.DailyResetTime)
+	if err != nil {
+		return nil, internal()
+	}
+	return &pb.TrackingDayContext{TrackingDay: result.Day, Timezone: result.Timezone,
+		DailyResetTime: result.DailyResetTime, RuleVersion: result.RuleVersion,
+		AsOfUtc: result.AsOfUTC.Format(time.RFC3339Nano)}, nil
 }
 
 func (s *Server) UpdatePreferences(ctx context.Context, req *pb.UpdatePreferencesRequest) (*pb.Preferences, error) {

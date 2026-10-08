@@ -34,7 +34,7 @@ func (s *Server) googleConfigured() bool {
 }
 
 func allowedReturnTo(path string) bool {
-	return path == "/app" || path == "/app/settings"
+	return path == "/app" || path == "/app/settings" || path == "/cancel-deletion"
 }
 
 func (s *Server) StartGoogleSignIn(ctx context.Context, req *pb.StartGoogleSignInRequest) (*pb.StartGoogleSignInResponse, error) {
@@ -47,6 +47,21 @@ func (s *Server) StartGoogleLink(ctx context.Context, _ *pb.Empty) (*pb.StartGoo
 		return nil, err
 	}
 	return s.startGoogle(ctx, "LINK", &userID, "/app/settings")
+}
+
+func (s *Server) StartGoogleDeletionRequest(ctx context.Context, _ *pb.Empty) (*pb.StartGoogleSignInResponse, error) {
+	userID, err := Principal(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return s.startGoogle(ctx, "REQUEST_DELETION", &userID, "/cancel-deletion")
+}
+
+// StartGoogleDeletionCancellation intentionally has no authenticated principal:
+// a deletion request revokes every session. A fresh Google consent flow proves
+// control of the linked Google identity before restoring the pending account.
+func (s *Server) StartGoogleDeletionCancellation(ctx context.Context, _ *pb.Empty) (*pb.StartGoogleSignInResponse, error) {
+	return s.startGoogle(ctx, "CANCEL_DELETION", nil, "/app/settings")
 }
 
 func (s *Server) startGoogle(ctx context.Context, operation string, userID *primitive.ObjectID, returnTo string) (*pb.StartGoogleSignInResponse, error) {
@@ -111,6 +126,13 @@ func (s *Server) CompleteGoogleSignIn(ctx context.Context, req *pb.CompleteGoogl
 	var created bool
 	if state.Operation == "LINK" && state.UserID != nil {
 		user, err = s.linkGoogleUser(ctx, *state.UserID, claims)
+	} else if state.Operation == "REQUEST_DELETION" && state.UserID != nil {
+		user, err = s.requestGoogleDeletion(ctx, *state.UserID, claims)
+		if err == nil {
+			return &pb.CompleteGoogleSignInResponse{ReturnTo: "/cancel-deletion"}, nil
+		}
+	} else if state.Operation == "CANCEL_DELETION" {
+		user, err = s.cancelGoogleDeletion(ctx, claims)
 	} else if state.Operation == "SIGN_IN" {
 		user, created, err = s.findOrCreateGoogleUser(ctx, claims)
 	} else {
@@ -124,6 +146,35 @@ func (s *Server) CompleteGoogleSignIn(ctx context.Context, req *pb.CompleteGoogl
 		return nil, err
 	}
 	return &pb.CompleteGoogleSignInResponse{Session: session, ReturnTo: state.ReturnTo, NewUser: created}, nil
+}
+
+func (s *Server) requestGoogleDeletion(ctx context.Context, userID primitive.ObjectID, claims googleClaims) (userDoc, error) {
+	var identity identityDoc
+	if err := s.DB.Collection("auth_identities").FindOne(ctx, bson.M{"user_id": userID, "provider": "GOOGLE", "subject": claims.Subject}).Decode(&identity); err != nil {
+		return userDoc{}, status.Error(codes.Unauthenticated, "Google identity is not linked to this account")
+	}
+	var user userDoc
+	if err := s.DB.Collection("users").FindOne(ctx, bson.M{"_id": userID, "status": "ACTIVE"}).Decode(&user); err != nil {
+		return userDoc{}, status.Error(codes.FailedPrecondition, "account is unavailable for deletion")
+	}
+	_, err := s.requestDeletionForUser(ctx, userID)
+	return user, err
+}
+
+func (s *Server) cancelGoogleDeletion(ctx context.Context, claims googleClaims) (userDoc, error) {
+	var identity identityDoc
+	if err := s.DB.Collection("auth_identities").FindOne(ctx, bson.M{"provider": "GOOGLE", "subject": claims.Subject}).Decode(&identity); err != nil {
+		return userDoc{}, status.Error(codes.Unauthenticated, "Google account cannot cancel deletion")
+	}
+	var user userDoc
+	if err := s.DB.Collection("users").FindOne(ctx, bson.M{"_id": identity.UserID, "status": "DELETION_PENDING"}).Decode(&user); err != nil {
+		return userDoc{}, status.Error(codes.FailedPrecondition, "account deletion is not pending")
+	}
+	if err := s.cancelDeletionForUser(ctx, user.ID); err != nil {
+		return userDoc{}, err
+	}
+	user.Status = "ACTIVE"
+	return user, nil
 }
 
 func (s *Server) linkGoogleUser(ctx context.Context, userID primitive.ObjectID, claims googleClaims) (userDoc, error) {

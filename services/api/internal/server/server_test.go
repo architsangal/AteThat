@@ -9,6 +9,9 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func signedToken(t *testing.T, key ed25519.PrivateKey, expires time.Time) string {
@@ -64,5 +67,14 @@ func TestBasicHTTPBoundaries(t *testing.T) {
 		if test.origin == "https://evil.example" && strings.Contains(response.Header().Get("Access-Control-Allow-Origin"), "evil") {
 			t.Error("untrusted origin allowed")
 		}
+	}
+}
+
+func TestCompactedHistoryErrorIsNotTokenError(t *testing.T) {
+	s := &Server{}
+	w := httptest.NewRecorder()
+	s.rpcProblem(w, "test-request", status.Error(codes.FailedPrecondition, "partial compacted day cannot be analyzed"))
+	if w.Code != 409 || !strings.Contains(w.Body.String(), "HISTORY_COMPACTED") {
+		t.Fatalf("wrong compacted-history response: %d %s", w.Code, w.Body.String())
 	}
 }

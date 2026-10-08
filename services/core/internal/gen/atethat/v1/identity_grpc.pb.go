@@ -19,17 +19,21 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	IdentityService_Register_FullMethodName             = "/atethat.v1.IdentityService/Register"
-	IdentityService_VerifyEmail_FullMethodName          = "/atethat.v1.IdentityService/VerifyEmail"
-	IdentityService_ResendVerification_FullMethodName   = "/atethat.v1.IdentityService/ResendVerification"
-	IdentityService_Login_FullMethodName                = "/atethat.v1.IdentityService/Login"
-	IdentityService_StartGoogleSignIn_FullMethodName    = "/atethat.v1.IdentityService/StartGoogleSignIn"
-	IdentityService_StartGoogleLink_FullMethodName      = "/atethat.v1.IdentityService/StartGoogleLink"
-	IdentityService_CompleteGoogleSignIn_FullMethodName = "/atethat.v1.IdentityService/CompleteGoogleSignIn"
-	IdentityService_RefreshSession_FullMethodName       = "/atethat.v1.IdentityService/RefreshSession"
-	IdentityService_Logout_FullMethodName               = "/atethat.v1.IdentityService/Logout"
-	IdentityService_RequestPasswordReset_FullMethodName = "/atethat.v1.IdentityService/RequestPasswordReset"
-	IdentityService_ResetPassword_FullMethodName        = "/atethat.v1.IdentityService/ResetPassword"
+	IdentityService_Register_FullMethodName                        = "/atethat.v1.IdentityService/Register"
+	IdentityService_VerifyEmail_FullMethodName                     = "/atethat.v1.IdentityService/VerifyEmail"
+	IdentityService_ResendVerification_FullMethodName              = "/atethat.v1.IdentityService/ResendVerification"
+	IdentityService_Login_FullMethodName                           = "/atethat.v1.IdentityService/Login"
+	IdentityService_StartGoogleSignIn_FullMethodName               = "/atethat.v1.IdentityService/StartGoogleSignIn"
+	IdentityService_StartGoogleLink_FullMethodName                 = "/atethat.v1.IdentityService/StartGoogleLink"
+	IdentityService_StartGoogleDeletionRequest_FullMethodName      = "/atethat.v1.IdentityService/StartGoogleDeletionRequest"
+	IdentityService_StartGoogleDeletionCancellation_FullMethodName = "/atethat.v1.IdentityService/StartGoogleDeletionCancellation"
+	IdentityService_CompleteGoogleSignIn_FullMethodName            = "/atethat.v1.IdentityService/CompleteGoogleSignIn"
+	IdentityService_RefreshSession_FullMethodName                  = "/atethat.v1.IdentityService/RefreshSession"
+	IdentityService_Logout_FullMethodName                          = "/atethat.v1.IdentityService/Logout"
+	IdentityService_RequestPasswordReset_FullMethodName            = "/atethat.v1.IdentityService/RequestPasswordReset"
+	IdentityService_ResetPassword_FullMethodName                   = "/atethat.v1.IdentityService/ResetPassword"
+	IdentityService_RequestAccountDeletion_FullMethodName          = "/atethat.v1.IdentityService/RequestAccountDeletion"
+	IdentityService_CancelAccountDeletion_FullMethodName           = "/atethat.v1.IdentityService/CancelAccountDeletion"
 )
 
 // IdentityServiceClient is the client API for IdentityService service.
@@ -42,11 +46,15 @@ type IdentityServiceClient interface {
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*SessionResult, error)
 	StartGoogleSignIn(ctx context.Context, in *StartGoogleSignInRequest, opts ...grpc.CallOption) (*StartGoogleSignInResponse, error)
 	StartGoogleLink(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*StartGoogleSignInResponse, error)
+	StartGoogleDeletionRequest(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*StartGoogleSignInResponse, error)
+	StartGoogleDeletionCancellation(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*StartGoogleSignInResponse, error)
 	CompleteGoogleSignIn(ctx context.Context, in *CompleteGoogleSignInRequest, opts ...grpc.CallOption) (*CompleteGoogleSignInResponse, error)
 	RefreshSession(ctx context.Context, in *RefreshSessionRequest, opts ...grpc.CallOption) (*SessionResult, error)
 	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*Empty, error)
 	RequestPasswordReset(ctx context.Context, in *EmailRequest, opts ...grpc.CallOption) (*GenericMessage, error)
 	ResetPassword(ctx context.Context, in *ResetPasswordRequest, opts ...grpc.CallOption) (*Empty, error)
+	RequestAccountDeletion(ctx context.Context, in *RequestAccountDeletionRequest, opts ...grpc.CallOption) (*AccountDeletionStatus, error)
+	CancelAccountDeletion(ctx context.Context, in *CancelAccountDeletionRequest, opts ...grpc.CallOption) (*SessionResult, error)
 }
 
 type identityServiceClient struct {
@@ -111,6 +119,24 @@ func (c *identityServiceClient) StartGoogleLink(ctx context.Context, in *Empty, 
 	return out, nil
 }
 
+func (c *identityServiceClient) StartGoogleDeletionRequest(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*StartGoogleSignInResponse, error) {
+	out := new(StartGoogleSignInResponse)
+	err := c.cc.Invoke(ctx, IdentityService_StartGoogleDeletionRequest_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *identityServiceClient) StartGoogleDeletionCancellation(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*StartGoogleSignInResponse, error) {
+	out := new(StartGoogleSignInResponse)
+	err := c.cc.Invoke(ctx, IdentityService_StartGoogleDeletionCancellation_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *identityServiceClient) CompleteGoogleSignIn(ctx context.Context, in *CompleteGoogleSignInRequest, opts ...grpc.CallOption) (*CompleteGoogleSignInResponse, error) {
 	out := new(CompleteGoogleSignInResponse)
 	err := c.cc.Invoke(ctx, IdentityService_CompleteGoogleSignIn_FullMethodName, in, out, opts...)
@@ -156,6 +182,24 @@ func (c *identityServiceClient) ResetPassword(ctx context.Context, in *ResetPass
 	return out, nil
 }
 
+func (c *identityServiceClient) RequestAccountDeletion(ctx context.Context, in *RequestAccountDeletionRequest, opts ...grpc.CallOption) (*AccountDeletionStatus, error) {
+	out := new(AccountDeletionStatus)
+	err := c.cc.Invoke(ctx, IdentityService_RequestAccountDeletion_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *identityServiceClient) CancelAccountDeletion(ctx context.Context, in *CancelAccountDeletionRequest, opts ...grpc.CallOption) (*SessionResult, error) {
+	out := new(SessionResult)
+	err := c.cc.Invoke(ctx, IdentityService_CancelAccountDeletion_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // IdentityServiceServer is the server API for IdentityService service.
 // All implementations must embed UnimplementedIdentityServiceServer
 // for forward compatibility
@@ -166,11 +210,15 @@ type IdentityServiceServer interface {
 	Login(context.Context, *LoginRequest) (*SessionResult, error)
 	StartGoogleSignIn(context.Context, *StartGoogleSignInRequest) (*StartGoogleSignInResponse, error)
 	StartGoogleLink(context.Context, *Empty) (*StartGoogleSignInResponse, error)
+	StartGoogleDeletionRequest(context.Context, *Empty) (*StartGoogleSignInResponse, error)
+	StartGoogleDeletionCancellation(context.Context, *Empty) (*StartGoogleSignInResponse, error)
 	CompleteGoogleSignIn(context.Context, *CompleteGoogleSignInRequest) (*CompleteGoogleSignInResponse, error)
 	RefreshSession(context.Context, *RefreshSessionRequest) (*SessionResult, error)
 	Logout(context.Context, *LogoutRequest) (*Empty, error)
 	RequestPasswordReset(context.Context, *EmailRequest) (*GenericMessage, error)
 	ResetPassword(context.Context, *ResetPasswordRequest) (*Empty, error)
+	RequestAccountDeletion(context.Context, *RequestAccountDeletionRequest) (*AccountDeletionStatus, error)
+	CancelAccountDeletion(context.Context, *CancelAccountDeletionRequest) (*SessionResult, error)
 	mustEmbedUnimplementedIdentityServiceServer()
 }
 
@@ -196,6 +244,12 @@ func (UnimplementedIdentityServiceServer) StartGoogleSignIn(context.Context, *St
 func (UnimplementedIdentityServiceServer) StartGoogleLink(context.Context, *Empty) (*StartGoogleSignInResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartGoogleLink not implemented")
 }
+func (UnimplementedIdentityServiceServer) StartGoogleDeletionRequest(context.Context, *Empty) (*StartGoogleSignInResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartGoogleDeletionRequest not implemented")
+}
+func (UnimplementedIdentityServiceServer) StartGoogleDeletionCancellation(context.Context, *Empty) (*StartGoogleSignInResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartGoogleDeletionCancellation not implemented")
+}
 func (UnimplementedIdentityServiceServer) CompleteGoogleSignIn(context.Context, *CompleteGoogleSignInRequest) (*CompleteGoogleSignInResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CompleteGoogleSignIn not implemented")
 }
@@ -210,6 +264,12 @@ func (UnimplementedIdentityServiceServer) RequestPasswordReset(context.Context, 
 }
 func (UnimplementedIdentityServiceServer) ResetPassword(context.Context, *ResetPasswordRequest) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ResetPassword not implemented")
+}
+func (UnimplementedIdentityServiceServer) RequestAccountDeletion(context.Context, *RequestAccountDeletionRequest) (*AccountDeletionStatus, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RequestAccountDeletion not implemented")
+}
+func (UnimplementedIdentityServiceServer) CancelAccountDeletion(context.Context, *CancelAccountDeletionRequest) (*SessionResult, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CancelAccountDeletion not implemented")
 }
 func (UnimplementedIdentityServiceServer) mustEmbedUnimplementedIdentityServiceServer() {}
 
@@ -332,6 +392,42 @@ func _IdentityService_StartGoogleLink_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _IdentityService_StartGoogleDeletionRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IdentityServiceServer).StartGoogleDeletionRequest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: IdentityService_StartGoogleDeletionRequest_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IdentityServiceServer).StartGoogleDeletionRequest(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _IdentityService_StartGoogleDeletionCancellation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IdentityServiceServer).StartGoogleDeletionCancellation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: IdentityService_StartGoogleDeletionCancellation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IdentityServiceServer).StartGoogleDeletionCancellation(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _IdentityService_CompleteGoogleSignIn_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CompleteGoogleSignInRequest)
 	if err := dec(in); err != nil {
@@ -422,6 +518,42 @@ func _IdentityService_ResetPassword_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _IdentityService_RequestAccountDeletion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestAccountDeletionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IdentityServiceServer).RequestAccountDeletion(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: IdentityService_RequestAccountDeletion_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IdentityServiceServer).RequestAccountDeletion(ctx, req.(*RequestAccountDeletionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _IdentityService_CancelAccountDeletion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CancelAccountDeletionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IdentityServiceServer).CancelAccountDeletion(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: IdentityService_CancelAccountDeletion_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IdentityServiceServer).CancelAccountDeletion(ctx, req.(*CancelAccountDeletionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // IdentityService_ServiceDesc is the grpc.ServiceDesc for IdentityService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -454,6 +586,14 @@ var IdentityService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _IdentityService_StartGoogleLink_Handler,
 		},
 		{
+			MethodName: "StartGoogleDeletionRequest",
+			Handler:    _IdentityService_StartGoogleDeletionRequest_Handler,
+		},
+		{
+			MethodName: "StartGoogleDeletionCancellation",
+			Handler:    _IdentityService_StartGoogleDeletionCancellation_Handler,
+		},
+		{
 			MethodName: "CompleteGoogleSignIn",
 			Handler:    _IdentityService_CompleteGoogleSignIn_Handler,
 		},
@@ -473,16 +613,25 @@ var IdentityService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "ResetPassword",
 			Handler:    _IdentityService_ResetPassword_Handler,
 		},
+		{
+			MethodName: "RequestAccountDeletion",
+			Handler:    _IdentityService_RequestAccountDeletion_Handler,
+		},
+		{
+			MethodName: "CancelAccountDeletion",
+			Handler:    _IdentityService_CancelAccountDeletion_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "atethat/v1/identity.proto",
 }
 
 const (
-	ProfileService_GetProfile_FullMethodName        = "/atethat.v1.ProfileService/GetProfile"
-	ProfileService_UpdateProfile_FullMethodName     = "/atethat.v1.ProfileService/UpdateProfile"
-	ProfileService_GetPreferences_FullMethodName    = "/atethat.v1.ProfileService/GetPreferences"
-	ProfileService_UpdatePreferences_FullMethodName = "/atethat.v1.ProfileService/UpdatePreferences"
+	ProfileService_GetProfile_FullMethodName            = "/atethat.v1.ProfileService/GetProfile"
+	ProfileService_UpdateProfile_FullMethodName         = "/atethat.v1.ProfileService/UpdateProfile"
+	ProfileService_GetPreferences_FullMethodName        = "/atethat.v1.ProfileService/GetPreferences"
+	ProfileService_UpdatePreferences_FullMethodName     = "/atethat.v1.ProfileService/UpdatePreferences"
+	ProfileService_GetCurrentTrackingDay_FullMethodName = "/atethat.v1.ProfileService/GetCurrentTrackingDay"
 )
 
 // ProfileServiceClient is the client API for ProfileService service.
@@ -493,6 +642,7 @@ type ProfileServiceClient interface {
 	UpdateProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*Profile, error)
 	GetPreferences(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Preferences, error)
 	UpdatePreferences(ctx context.Context, in *UpdatePreferencesRequest, opts ...grpc.CallOption) (*Preferences, error)
+	GetCurrentTrackingDay(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*TrackingDayContext, error)
 }
 
 type profileServiceClient struct {
@@ -539,6 +689,15 @@ func (c *profileServiceClient) UpdatePreferences(ctx context.Context, in *Update
 	return out, nil
 }
 
+func (c *profileServiceClient) GetCurrentTrackingDay(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*TrackingDayContext, error) {
+	out := new(TrackingDayContext)
+	err := c.cc.Invoke(ctx, ProfileService_GetCurrentTrackingDay_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ProfileServiceServer is the server API for ProfileService service.
 // All implementations must embed UnimplementedProfileServiceServer
 // for forward compatibility
@@ -547,6 +706,7 @@ type ProfileServiceServer interface {
 	UpdateProfile(context.Context, *UpdateProfileRequest) (*Profile, error)
 	GetPreferences(context.Context, *Empty) (*Preferences, error)
 	UpdatePreferences(context.Context, *UpdatePreferencesRequest) (*Preferences, error)
+	GetCurrentTrackingDay(context.Context, *Empty) (*TrackingDayContext, error)
 	mustEmbedUnimplementedProfileServiceServer()
 }
 
@@ -565,6 +725,9 @@ func (UnimplementedProfileServiceServer) GetPreferences(context.Context, *Empty)
 }
 func (UnimplementedProfileServiceServer) UpdatePreferences(context.Context, *UpdatePreferencesRequest) (*Preferences, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdatePreferences not implemented")
+}
+func (UnimplementedProfileServiceServer) GetCurrentTrackingDay(context.Context, *Empty) (*TrackingDayContext, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCurrentTrackingDay not implemented")
 }
 func (UnimplementedProfileServiceServer) mustEmbedUnimplementedProfileServiceServer() {}
 
@@ -651,6 +814,24 @@ func _ProfileService_UpdatePreferences_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ProfileService_GetCurrentTrackingDay_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProfileServiceServer).GetCurrentTrackingDay(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ProfileService_GetCurrentTrackingDay_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProfileServiceServer).GetCurrentTrackingDay(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ProfileService_ServiceDesc is the grpc.ServiceDesc for ProfileService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -673,6 +854,10 @@ var ProfileService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdatePreferences",
 			Handler:    _ProfileService_UpdatePreferences_Handler,
+		},
+		{
+			MethodName: "GetCurrentTrackingDay",
+			Handler:    _ProfileService_GetCurrentTrackingDay_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

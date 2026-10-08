@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package atethat.v1;
+
+import "atethat/v1/foods.proto";
+import "atethat/v1/logs.proto";
+
+service DashboardService {
+  rpc GetDashboard(DashboardRequest) returns (DashboardResponse);
+}
+
+message DashboardRequest { string tracking_day = 1; }
+
+message NutritionProgress {
+  string consumed_amount = 1;
+  string target_amount = 2;
+  string unit = 3;
+  string percent = 4;
+}
+
+message DashboardResponse {
+  string tracking_day = 1;
+  string timezone = 2;
+  string daily_reset_time = 3;
+  map<string, FoodNutrient> totals = 4;
+  map<string, FoodNutrient> targets = 5;
+  map<string, NutritionProgress> progress = 6;
+  repeated FoodLogGroup food_log_groups = 7;
+  bool food_groups_has_more = 8;
+}

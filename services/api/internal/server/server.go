@@ -12,6 +12,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -33,10 +34,17 @@ type Config struct {
 }
 
 type Server struct {
-	Config   Config
-	Conn     *grpc.ClientConn
-	Identity pb.IdentityServiceClient
-	Profile  pb.ProfileServiceClient
+	Config      Config
+	Conn        *grpc.ClientConn
+	Identity    pb.IdentityServiceClient
+	Profile     pb.ProfileServiceClient
+	Target      pb.TargetServiceClient
+	Food        pb.FoodServiceClient
+	FoodLog     pb.FoodLogServiceClient
+	Dashboard   pb.DashboardServiceClient
+	Health      pb.HealthServiceClient
+	Analysis    pb.AnalysisServiceClient
+	authLimiter rateLimiter
 }
 
 func New(ctx context.Context, cfg Config) (*Server, error) {
@@ -47,14 +55,29 @@ func New(ctx context.Context, cfg Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Server{Config: cfg, Conn: conn, Identity: pb.NewIdentityServiceClient(conn), Profile: pb.NewProfileServiceClient(conn)}, nil
+	return &Server{Config: cfg, Conn: conn, Identity: pb.NewIdentityServiceClient(conn),
+		Profile: pb.NewProfileServiceClient(conn), Target: pb.NewTargetServiceClient(conn), Food: pb.NewFoodServiceClient(conn),
+		FoodLog: pb.NewFoodLogServiceClient(conn), Dashboard: pb.NewDashboardServiceClient(conn),
+		Health: pb.NewHealthServiceClient(conn), Analysis: pb.NewAnalysisServiceClient(conn)}, nil
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	startedAt := time.Now()
+	recorded := &statusRecorder{ResponseWriter: w, status: http.StatusOK}
+	w = recorded
 	requestID := r.Header.Get("X-Request-Id")
 	if len(requestID) < 8 || len(requestID) > 64 || strings.ContainsAny(requestID, " \r\n") {
 		requestID = randomID()
 	}
+	defer func() {
+		if r.URL.Path == "/healthz" {
+			return
+		}
+		entry, _ := json.Marshal(map[string]interface{}{"event": "http_request", "request_id": requestID,
+			"method": r.Method, "path": r.URL.Path, "status": recorded.status,
+			"duration_ms": time.Since(startedAt).Milliseconds()})
+		log.Print(string(entry))
+	}()
 	w.Header().Set("X-Request-Id", requestID)
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.Header().Set("Cache-Control", "no-store")
@@ -62,8 +85,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", origin)
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Vary", "Origin")
-		w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Request-Id")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Request-Id, Idempotency-Key")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
 	}
 	if r.Method == http.MethodOptions {
 		if r.Header.Get("Origin") != s.Config.FrontendOrigin {
@@ -79,6 +102,9 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if !strings.HasPrefix(r.URL.Path, "/api/v1/") {
 		s.problem(w, requestID, http.StatusNotFound, "RESOURCE_NOT_FOUND", "Route not found")
+		return
+	}
+	if !s.limitPublicAuth(w, r, requestID) {
 		return
 	}
 	path := strings.TrimPrefix(r.URL.Path, "/api/v1")
@@ -99,6 +125,10 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		s.completeGoogle(w, r, requestID, ctx)
 	case path == "/account/identities/google/link/start" && r.Method == http.MethodGet:
 		s.startGoogleLink(w, r, requestID, ctx)
+	case path == "/auth/google/cancel-deletion/start" && r.Method == http.MethodGet:
+		s.startGoogleDeletionCancellation(w, r, requestID, ctx)
+	case path == "/account/deletion-request/google/start" && r.Method == http.MethodGet:
+		s.startGoogleDeletionRequest(w, r, requestID, ctx)
 	case path == "/auth/refresh" && r.Method == http.MethodPost:
 		s.refresh(w, r, requestID, ctx)
 	case path == "/auth/logout" && r.Method == http.MethodPost:
@@ -107,6 +137,10 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		s.emailAction(w, r, requestID, ctx, "reset")
 	case path == "/auth/reset-password" && r.Method == http.MethodPost:
 		s.resetPassword(w, r, requestID, ctx)
+	case path == "/account/deletion-request" && r.Method == http.MethodPost:
+		s.requestAccountDeletion(w, r, requestID, ctx)
+	case path == "/auth/cancel-deletion" && r.Method == http.MethodPost:
+		s.cancelAccountDeletion(w, r, requestID, ctx)
 	case path == "/profile" && r.Method == http.MethodGet:
 		s.getProfile(w, r, requestID, ctx)
 	case path == "/profile" && r.Method == http.MethodPatch:
@@ -115,6 +149,102 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		s.getPreferences(w, r, requestID, ctx)
 	case path == "/preferences" && r.Method == http.MethodPatch:
 		s.updatePreferences(w, r, requestID, ctx)
+	case path == "/tracking-day/current" && r.Method == http.MethodGet:
+		s.getCurrentTrackingDay(w, r, requestID, ctx)
+	case path == "/nutrition/targets/calculate" && r.Method == http.MethodPost:
+		s.calculateTargets(w, r, requestID, ctx)
+	case path == "/nutrition/targets" && r.Method == http.MethodGet:
+		s.getTargets(w, r, requestID, ctx)
+	case path == "/nutrition/targets/history" && r.Method == http.MethodGet:
+		s.targetHistory(w, r, requestID, ctx)
+	case strings.HasPrefix(path, "/nutrition/targets/") && strings.HasSuffix(path, "/accept") && r.Method == http.MethodPost:
+		s.acceptTargets(w, r, requestID, ctx, strings.TrimSuffix(strings.TrimPrefix(path, "/nutrition/targets/"), "/accept"))
+	case strings.HasPrefix(path, "/nutrition/targets/") && strings.HasSuffix(path, "/reject") && r.Method == http.MethodPost:
+		s.rejectTargets(w, r, requestID, ctx, strings.TrimSuffix(strings.TrimPrefix(path, "/nutrition/targets/"), "/reject"))
+	case path == "/foods/search" && r.Method == http.MethodGet:
+		s.searchFoods(w, r, requestID, ctx)
+	case strings.HasPrefix(path, "/foods/provider/") && r.Method == http.MethodGet:
+		s.getProviderFood(w, r, requestID, ctx, strings.TrimPrefix(path, "/foods/provider/"))
+	case path == "/foods/favourites" && r.Method == http.MethodGet:
+		s.listFavourites(w, r, requestID, ctx)
+	case path == "/foods/favourites" && r.Method == http.MethodPost:
+		s.addFavourite(w, r, requestID, ctx)
+	case strings.HasPrefix(path, "/foods/favourites/") && r.Method == http.MethodDelete:
+		s.deleteFavourite(w, r, requestID, ctx, strings.TrimPrefix(path, "/foods/favourites/"))
+	case path == "/foods/recent" && r.Method == http.MethodGet:
+		s.listUsedFoods(w, r, requestID, ctx, "RECENT")
+	case path == "/foods/frequent" && r.Method == http.MethodGet:
+		s.listUsedFoods(w, r, requestID, ctx, "FREQUENT")
+	case path == "/foods/custom" && r.Method == http.MethodGet:
+		s.listCustomFoods(w, r, requestID, ctx)
+	case path == "/foods/custom" && r.Method == http.MethodPost:
+		s.createCustomFood(w, r, requestID, ctx)
+	case strings.HasPrefix(path, "/foods/custom/") && r.Method == http.MethodGet:
+		s.getCustomFood(w, r, requestID, ctx, strings.TrimPrefix(path, "/foods/custom/"))
+	case strings.HasPrefix(path, "/foods/custom/") && r.Method == http.MethodPatch:
+		s.updateCustomFood(w, r, requestID, ctx, strings.TrimPrefix(path, "/foods/custom/"))
+	case strings.HasPrefix(path, "/foods/custom/") && r.Method == http.MethodDelete:
+		s.deleteCustomFood(w, r, requestID, ctx, strings.TrimPrefix(path, "/foods/custom/"))
+	case path == "/meals" && r.Method == http.MethodGet:
+		s.listMeals(w, r, requestID, ctx)
+	case path == "/servings" && r.Method == http.MethodGet:
+		s.listServings(w, r, requestID, ctx)
+	case path == "/servings" && r.Method == http.MethodPost:
+		s.createServing(w, r, requestID, ctx)
+	case strings.HasPrefix(path, "/servings/") && r.Method == http.MethodGet:
+		s.getServing(w, r, requestID, ctx, strings.TrimPrefix(path, "/servings/"))
+	case strings.HasPrefix(path, "/servings/") && r.Method == http.MethodPatch:
+		s.updateServing(w, r, requestID, ctx, strings.TrimPrefix(path, "/servings/"))
+	case strings.HasPrefix(path, "/servings/") && r.Method == http.MethodDelete:
+		s.deleteServing(w, r, requestID, ctx, strings.TrimPrefix(path, "/servings/"))
+	case path == "/meals" && r.Method == http.MethodPost:
+		s.createMeal(w, r, requestID, ctx)
+	case strings.HasPrefix(path, "/meals/") && strings.HasSuffix(path, "/preview") && r.Method == http.MethodPost:
+		s.previewMeal(w, r, requestID, ctx, strings.TrimSuffix(strings.TrimPrefix(path, "/meals/"), "/preview"))
+	case strings.HasPrefix(path, "/meals/") && r.Method == http.MethodGet:
+		s.getMeal(w, r, requestID, ctx, strings.TrimPrefix(path, "/meals/"))
+	case strings.HasPrefix(path, "/meals/") && r.Method == http.MethodPatch:
+		s.updateMeal(w, r, requestID, ctx, strings.TrimPrefix(path, "/meals/"))
+	case strings.HasPrefix(path, "/meals/") && r.Method == http.MethodDelete:
+		s.deleteMeal(w, r, requestID, ctx, strings.TrimPrefix(path, "/meals/"))
+	case path == "/food-log-groups/preview" && r.Method == http.MethodPost:
+		s.previewFoodGroup(w, r, requestID, ctx)
+	case path == "/food-log-groups/confirm" && r.Method == http.MethodPost:
+		s.confirmFoodGroup(w, r, requestID, ctx)
+	case path == "/food-log-groups" && r.Method == http.MethodGet:
+		s.listFoodGroups(w, r, requestID, ctx)
+	case strings.HasPrefix(path, "/food-log-groups/") && r.Method == http.MethodGet:
+		s.getFoodGroup(w, r, requestID, ctx, strings.TrimPrefix(path, "/food-log-groups/"))
+	case strings.HasPrefix(path, "/food-log-groups/") && r.Method == http.MethodDelete:
+		s.voidFoodGroup(w, r, requestID, ctx, strings.TrimPrefix(path, "/food-log-groups/"))
+	case strings.HasPrefix(path, "/food-logs/") && r.Method == http.MethodGet:
+		s.getFoodLogItem(w, r, requestID, ctx, strings.TrimPrefix(path, "/food-logs/"))
+	case strings.HasPrefix(path, "/food-logs/") && r.Method == http.MethodPatch:
+		s.correctFoodLogItem(w, r, requestID, ctx, strings.TrimPrefix(path, "/food-logs/"))
+	case strings.HasPrefix(path, "/food-logs/") && r.Method == http.MethodDelete:
+		s.voidFoodLogItem(w, r, requestID, ctx, strings.TrimPrefix(path, "/food-logs/"))
+	case path == "/dashboard" && r.Method == http.MethodGet:
+		s.getDashboard(w, r, requestID, ctx)
+	case path == "/history/nutrition" && r.Method == http.MethodGet:
+		s.nutritionHistory(w, r, requestID, ctx)
+	case path == "/nutrition/full-analysis" && r.Method == http.MethodGet:
+		s.fullAnalysis(w, r, requestID, ctx)
+	case path == "/history/health-items" && r.Method == http.MethodGet:
+		s.healthActionHistory(w, r, requestID, ctx)
+	case path == "/health-items" && r.Method == http.MethodGet:
+		s.listHealthItems(w, r, requestID, ctx)
+	case path == "/health-items" && r.Method == http.MethodPost:
+		s.createHealthItem(w, r, requestID, ctx)
+	case path == "/health-items/occurrences" && r.Method == http.MethodGet:
+		s.listHealthOccurrences(w, r, requestID, ctx)
+	case strings.HasPrefix(path, "/health-items/occurrences/") && r.Method == http.MethodPut:
+		s.recordHealthOccurrence(w, r, requestID, ctx, strings.TrimPrefix(path, "/health-items/occurrences/"))
+	case strings.HasPrefix(path, "/health-items/") && strings.HasSuffix(path, "/deactivate") && r.Method == http.MethodPost:
+		s.deactivateHealthItem(w, r, requestID, ctx, strings.TrimSuffix(strings.TrimPrefix(path, "/health-items/"), "/deactivate"))
+	case strings.HasPrefix(path, "/health-items/") && r.Method == http.MethodGet:
+		s.getHealthItem(w, r, requestID, ctx, strings.TrimPrefix(path, "/health-items/"))
+	case strings.HasPrefix(path, "/health-items/") && r.Method == http.MethodPatch:
+		s.updateHealthItem(w, r, requestID, ctx, strings.TrimPrefix(path, "/health-items/"))
 	default:
 		s.problem(w, requestID, http.StatusNotFound, "RESOURCE_NOT_FOUND", "Route not found")
 	}
@@ -144,6 +274,16 @@ func (s *Server) rpcContext(ctx context.Context, method, userID string, family .
 type principal struct {
 	UserID        string
 	SessionFamily string
+}
+
+type statusRecorder struct {
+	http.ResponseWriter
+	status int
+}
+
+func (w *statusRecorder) WriteHeader(code int) {
+	w.status = code
+	w.ResponseWriter.WriteHeader(code)
 }
 
 func (s *Server) principal(r *http.Request) (principal, error) {
@@ -240,8 +380,17 @@ func (s *Server) rpcProblem(w http.ResponseWriter, requestID string, err error) 
 		s.problem(w, requestID, 404, "RESOURCE_NOT_FOUND", "Resource not found")
 	case codes.Aborted:
 		s.problem(w, requestID, 409, "VERSION_CONFLICT", "Resource has changed")
+	case codes.AlreadyExists:
+		s.problem(w, requestID, 409, "IDEMPOTENCY_KEY_REUSED", "Idempotency key was used for a different request")
 	case codes.FailedPrecondition:
-		s.problem(w, requestID, 410, "TOKEN_EXPIRED", "Token expired or already used")
+		message := strings.ToLower(status.Convert(err).Message())
+		if strings.Contains(message, "compacted") || strings.Contains(message, "retention window") {
+			s.problem(w, requestID, 409, "HISTORY_COMPACTED", "Detailed history is no longer available for this range; use complete daily summaries")
+		} else if strings.Contains(message, "confirmed group") {
+			s.problem(w, requestID, 409, "PRECONDITION_FAILED", "The food group is no longer available for correction")
+		} else {
+			s.problem(w, requestID, 410, "TOKEN_EXPIRED", "Token expired or already used")
+		}
 	default:
 		s.problem(w, requestID, 503, "CORE_UNAVAILABLE", "Service temporarily unavailable")
 	}

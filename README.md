@@ -32,6 +32,8 @@ The first executable API and gRPC contract slice is in [`contracts/`](contracts)
 - Never invent successful mutations in the UI. Show errors or empty states until the backend operation succeeds.
 - Run the relevant build and typecheck before committing.
 
-## Current frontend scope
+## Current local scope
 
-The first slice provides responsive navigation, theme switching, a landing page, authentication forms, and layouts for the Phase 1 sections. Email registration/verification, login, reset, Google sign-in (when configured), session refresh/logout, and profile/timezone settings now have API-backed paths. Food, nutrition, meal, and health screens remain empty states. Backend identity still needs live integration verification and remaining Phase 1 security/account-lifecycle work.
+The local stack has API-backed email registration/verification, login/reset, Google sign-in and linking hooks, profile/timezone and daily reset settings, FDA general nutrition benchmarks, USDA search, custom foods, named servings, grouped food logging, corrections, dashboard, nutrition history/analysis, favourites, recent/frequent foods, reusable meals, and medication/supplement schedules and actions. The UI is responsive and supports light/dark themes.
+
+USDA uses `DEMO_KEY` by default. Set `USDA_API_KEY` in `deploy/local/.env` to use your own key. Google sign-in needs OAuth credentials and has not been live-tested. Email in local development is captured by Mailpit. Account deletion is a verified request that immediately signs out all sessions, permits verified cancellation for 30 days, then is purged by Core's hourly worker. The local stack is not a production deployment. See `deploy/local/README.md` for startup and local URLs.

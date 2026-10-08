@@ -44,11 +44,19 @@ type Config struct {
 	GoogleClientID     string
 	GoogleClientSecret string
 	GoogleRedirectURI  string
+	USDAAPIKey         string
+	USDAAPIBaseURL     string
 }
 
 type Server struct {
 	pb.UnimplementedIdentityServiceServer
 	pb.UnimplementedProfileServiceServer
+	pb.UnimplementedTargetServiceServer
+	pb.UnimplementedFoodServiceServer
+	pb.UnimplementedFoodLogServiceServer
+	pb.UnimplementedDashboardServiceServer
+	pb.UnimplementedHealthServiceServer
+	pb.UnimplementedAnalysisServiceServer
 	DB     *mongo.Database
 	Client *mongo.Client
 	Cfg    Config
@@ -78,13 +86,24 @@ func New(ctx context.Context, cfg Config) (*Server, error) {
 		_ = client.Disconnect(ctx)
 		return nil, err
 	}
-	return &Server{DB: db, Client: client, Cfg: cfg}, nil
+	server := &Server{DB: db, Client: client, Cfg: cfg}
+	if err := ensureFDADailyValues(ctx, server); err != nil {
+		_ = client.Disconnect(ctx)
+		return nil, err
+	}
+	return server, nil
 }
 
 func (s *Server) GRPC() *grpc.Server {
 	server := grpc.NewServer(grpc.UnaryInterceptor(s.authenticateRPC))
 	pb.RegisterIdentityServiceServer(server, s)
 	pb.RegisterProfileServiceServer(server, s)
+	pb.RegisterTargetServiceServer(server, s)
+	pb.RegisterFoodServiceServer(server, s)
+	pb.RegisterFoodLogServiceServer(server, s)
+	pb.RegisterDashboardServiceServer(server, s)
+	pb.RegisterHealthServiceServer(server, s)
+	pb.RegisterAnalysisServiceServer(server, s)
 	return server
 }
 
@@ -158,7 +177,7 @@ func validEmail(raw string) (string, bool) {
 }
 
 func validTimezone(zone string) bool {
-	if len(zone) > 100 || zone == "" {
+	if len(zone) > 100 || zone == "" || zone == "Local" {
 		return false
 	}
 	_, err := time.LoadLocation(zone)

@@ -144,3 +144,20 @@ func preferencesJSON(value *pb.Preferences) map[string]interface{} {
 	return map[string]interface{}{"id": value.Id, "version": value.Version, "daily_reset_time": value.DailyResetTime,
 		"unit_system": value.UnitSystem, "dashboard_nutrients": value.DashboardNutrients}
 }
+
+func (s *Server) getCurrentTrackingDay(w http.ResponseWriter, r *http.Request, requestID string, ctx context.Context) {
+	userID, ok := s.authenticated(r, w, requestID)
+	if !ok {
+		return
+	}
+	result, err := s.Profile.GetCurrentTrackingDay(s.rpcContext(ctx, pb.ProfileService_GetCurrentTrackingDay_FullMethodName, userID.UserID, userID.SessionFamily), &pb.Empty{})
+	if err != nil {
+		s.rpcProblem(w, requestID, err)
+		return
+	}
+	s.json(w, 200, map[string]interface{}{
+		"tracking_day": result.TrackingDay, "timezone": result.Timezone,
+		"daily_reset_time": result.DailyResetTime, "rule_version": result.RuleVersion,
+		"as_of_utc": result.AsOfUtc,
+	})
+}

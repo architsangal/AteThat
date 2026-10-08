@@ -41,6 +41,7 @@ func main() {
 		SMTPUsername: os.Getenv("SMTP_USERNAME"), SMTPPassword: os.Getenv("SMTP_PASSWORD"),
 		GoogleClientID: os.Getenv("GOOGLE_CLIENT_ID"), GoogleClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
 		GoogleRedirectURI: os.Getenv("GOOGLE_REDIRECT_URI"),
+		USDAAPIKey:        env("USDA_API_KEY", "DEMO_KEY"), USDAAPIBaseURL: env("USDA_API_BASE_URL", "https://api.nal.usda.gov/fdc/v1"),
 	}
 	core, err := server.New(ctx, cfg)
 	if err != nil {
@@ -58,9 +59,13 @@ func main() {
 		}
 	}()
 	log.Printf("Core listening on %s", cfg.ListenAddr)
+	retentionCtx, stopRetention := context.WithCancel(context.Background())
+	go core.RunRetentionLoop(retentionCtx)
+	go core.RunAccountDeletionPurgeLoop(retentionCtx)
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
 	<-stop
+	stopRetention()
 	grpcServer.GracefulStop()
 }
 
