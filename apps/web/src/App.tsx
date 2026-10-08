@@ -1,11 +1,11 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
-import { Link, NavLink, Route, Routes, useNavigate, useSearchParams } from 'react-router-dom'
+import { createContext, useContext, useEffect, useId, useMemo, useState, type FormEvent, type ReactNode } from 'react'
+import { Link, NavLink, Route, Routes, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import {
-  Activity, ArrowLeft, ArrowRight, CalendarDays, Check,
+  Activity, ArrowLeft, ArrowRight, CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight,
   CircleHelp, Clock3, HeartPulse, Home, Info, LockKeyhole, Menu,
   Moon, Plus, Search, Settings2, ShieldCheck, Sun, UtensilsCrossed, X,
 } from 'lucide-react'
-import { apiBaseUrl, deleteAuthenticatedJson, getAuthenticatedJson, getJson, patchAuthenticatedJson, postAuthenticatedIdempotentJson, postAuthenticatedJson, postJson, putAuthenticatedJson } from './api'
+import { apiBaseUrl, deleteAuthenticatedJson, getAuthenticatedJson, getJson, patchAuthenticatedJson, postAuthenticatedIdempotentJson, postAuthenticatedJson, postJson, putAuthenticatedJson, refreshAccessToken } from './api'
 import { clearAccessToken, getAccessToken, setAccessToken } from './session'
 import { ThemeProvider, useTheme } from './theme'
 
@@ -56,7 +56,7 @@ function RedirectIfAuthenticated({ children }: { children: ReactNode }) {
       navigate('/app', { replace: true })
       return () => { active = false }
     }
-    postJson<SessionResponse>('/auth/refresh', {}).then(session => {
+    refreshAccessToken().then(session => {
       if (!active) return
       setAccessToken(session.access_token)
       navigate('/app', { replace: true })
@@ -207,6 +207,7 @@ function AppShell({ children }: { children: ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [authenticated, setAuthenticated] = useState(!!getAccessToken())
   const navigate = useNavigate()
+  const location = useLocation()
   useEffect(() => {
     const redirectToLogin = () => {
       clearAccessToken()
@@ -220,7 +221,7 @@ function AppShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (getAccessToken()) return
     let active = true
-    postJson<SessionResponse>('/auth/refresh', {}).then(session => {
+    refreshAccessToken().then(session => {
       if (active) { setAccessToken(session.access_token); setAuthenticated(true) }
     }).catch(() => { if (active) navigate('/login', { replace: true }) })
     return () => { active = false }
@@ -228,7 +229,7 @@ function AppShell({ children }: { children: ReactNode }) {
   if (!authenticated) return <div className="not-found"><Brand /><p>Checking your session…</p></div>
   return <div className="app-shell"><aside className={`sidebar ${menuOpen ? 'sidebar-open' : ''}`}><div className="sidebar-head"><Brand /><button className="icon-button mobile-only" type="button" onClick={() => setMenuOpen(false)} aria-label="Close menu"><X size={20} /></button></div><nav className="sidebar-nav" aria-label="Main navigation">{navigation.map(({ label, to, icon: IconComponent }) => <NavLink onClick={() => setMenuOpen(false)} key={to} to={to} end={to === '/app'} className={({ isActive }) => `nav-item ${isActive ? 'nav-item-active' : ''}`}><IconComponent size={19} /><span>{label}</span></NavLink>)}</nav><div className="sidebar-foot"><span className="sidebar-foot-icon"><ShieldCheck size={18} /></span><p>Know what nourishes you.<small>Your daily view, at your pace.</small></p></div></aside>
     {menuOpen && <button className="mobile-scrim" type="button" aria-label="Close menu" onClick={() => setMenuOpen(false)} />}
-    <div className="app-main"><header className="app-header"><div className="app-header-left"><button className="icon-button mobile-only" type="button" aria-label="Open menu" onClick={() => setMenuOpen(true)}><Menu size={21} /></button><span className="app-header-title">AteThat</span></div><div className="app-header-right"><span className="header-timezone"><Clock3 size={15} /> Time shown in your account timezone</span><ThemeButton /><Link className="button button-primary button-small header-log" to="/app/log-food"><Plus size={17} /> Log food</Link></div></header><main className="content">{children}</main></div>
+    <div className="app-main"><header className="app-header"><div className="app-header-left"><button className="icon-button mobile-only" type="button" aria-label="Open menu" onClick={() => setMenuOpen(true)}><Menu size={21} /></button><span className="app-header-title">AteThat</span></div><div className="app-header-right"><span className="header-timezone"><Clock3 size={15} /> Time shown in your account timezone</span><ThemeButton /><Link className="button button-primary button-small header-log" to="/app/log-food"><Plus size={17} /> Log food</Link></div></header><main className="content"><div className="app-page-enter" key={location.pathname}>{children}</div></main></div>
     <nav className="bottom-nav" aria-label="Mobile navigation">{navigation.slice(0, 4).map(({ label, to, icon: IconComponent }) => <NavLink key={to} to={to} end={to === '/app'} className={({ isActive }) => isActive ? 'bottom-item bottom-item-active' : 'bottom-item'}><IconComponent size={20} /><span>{label}</span></NavLink>)}<button type="button" className="bottom-item" onClick={() => setMenuOpen(true)}><Menu size={20} /><span>More</span></button></nav>
   </div>
 }
@@ -270,6 +271,45 @@ type SavedServing = { id: string; version: number; label: string; food_reference
 type DraftFood = { key: string; type: 'USDA' | 'CUSTOM'; id: string; name: string; foodState: string; quantity: string; unit: string; overrides: Record<string, { status: string; amount: string; unit: string }> }
 type LoggedGroup = { id: string | null; tracking_day: string; item_count: number; meal_category: string; label: string; aggregate_final_nutrition: FoodResult['nutrients']; items: { id: string | null; position: number; food_source: { name: string }; quantity: { amount: string; unit: string }; final_nutrition: FoodResult['nutrients'] }[] }
 type GroupPreview = { preview_token: string; expires_at: string; group: LoggedGroup }
+
+type DatePickerContextValue = { openPickerId: string | null; setOpenPickerId: (id: string | null) => void }
+const DatePickerContext = createContext<DatePickerContextValue | null>(null)
+function DatePickerProvider({ children }: { children: ReactNode }) {
+  const [openPickerId, setOpenPickerId] = useState<string | null>(null)
+  return <DatePickerContext.Provider value={{ openPickerId, setOpenPickerId }}>{children}</DatePickerContext.Provider>
+}
+
+function parseLocalDate(value: string) {
+  const [year, month, day] = value.split('-').map(Number)
+  return new Date(year, month - 1, day)
+}
+
+function isoLocalDate(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
+
+function AppDatePicker({ label, value, name, onChange, className = '' }: { label: string; value: string; name?: string; onChange: (value: string) => void; className?: string }) {
+  const context = useContext(DatePickerContext)
+  if (!context) throw new Error('AppDatePicker must be rendered inside DatePickerProvider.')
+  const generatedId = useId()
+  const pickerId = `date-${generatedId}`
+  const open = context.openPickerId === pickerId
+  const [visibleMonth, setVisibleMonth] = useState(() => parseLocalDate(value || isoLocalDate(new Date())))
+  const selected = value ? parseLocalDate(value) : null
+  const days = useMemo(() => {
+    const first = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), 1)
+    const dayCount = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 0).getDate()
+    return Array.from({ length: first.getDay() + dayCount }, (_, index) => index < first.getDay() ? null : new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), index - first.getDay() + 1))
+  }, [visibleMonth])
+  useEffect(() => {
+    if (!open) return
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') context.setOpenPickerId(null) }
+    window.addEventListener('keydown', closeOnEscape)
+    return () => window.removeEventListener('keydown', closeOnEscape)
+  }, [context, open])
+  const displayValue = selected?.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }) || 'Select date'
+  return <div className={`app-date-picker ${className}`}><span className="app-date-label">{label}</span>{name && <input type="hidden" name={name} value={value} />}<button className="app-date-trigger" type="button" aria-haspopup="dialog" aria-expanded={open} onClick={() => { setVisibleMonth(selected || new Date()); context.setOpenPickerId(open ? null : pickerId) }}><CalendarDays size={17} /><span>{displayValue}</span><ChevronDown size={16} /></button>{open && <div className="app-calendar" role="dialog" aria-label={`${label} date picker`}><div className="app-calendar-head"><button type="button" className="calendar-nav" aria-label="Previous month" onClick={() => setVisibleMonth(previous => new Date(previous.getFullYear(), previous.getMonth() - 1, 1))}><ChevronLeft size={17} /></button><strong>{visibleMonth.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</strong><button type="button" className="calendar-nav" aria-label="Next month" onClick={() => setVisibleMonth(previous => new Date(previous.getFullYear(), previous.getMonth() + 1, 1))}><ChevronRight size={17} /></button></div><div className="calendar-weekdays">{['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => <span key={day}>{day}</span>)}</div><div className="calendar-days">{days.map((date, index) => date ? <button type="button" key={isoLocalDate(date)} className={`calendar-day ${isoLocalDate(date) === value ? 'calendar-day-selected' : ''} ${isoLocalDate(date) === isoLocalDate(new Date()) ? 'calendar-day-today' : ''}`} onClick={() => { onChange(isoLocalDate(date)); context.setOpenPickerId(null) }}>{date.getDate()}</button> : <span key={`blank-${index}`} aria-hidden="true" />)}</div></div>}</div>
+}
 
 function LogFood() {
   const [query, setQuery] = useState('')
@@ -582,7 +622,7 @@ function HistoryPage() {
     finally { setBusy(false) }
   }
   return <><PageHead eyebrow="Your records" title="Food history" description="Confirmed food groups are shown by Tracking Day. Removing a group takes it out of normal totals." />
-    <section className="panel section-panel"><label className="history-date">Tracking Day <input type="date" value={day} onChange={event => setDay(event.target.value)} /></label>{error && <p className="form-message form-error" role="alert">{error}</p>}{summary && <p className="muted">Daily total: {summary.totals.ENERGY?.status === 'KNOWN' ? `${summary.totals.ENERGY.amount} kcal` : 'energy unknown'} · {summary.confirmed_group_count} groups · {summary.confirmed_item_count} foods · {summary.timezone}{summary.detail_compacted ? ' · Older item details compacted after 90 days' : ''}</p>}{groups.length === 0 && !summary && <EmptyState icon={CalendarDays} title="No food logged for this day" text="Confirmed groups will appear here." />}{groups.map(group => <article className="history-group" key={group.id}><div><h2>{group.label || group.meal_category.toLowerCase()}</h2><p>{group.item_count} foods · {group.tracking_day}</p><p>Energy: {group.aggregate_final_nutrition.ENERGY?.status === 'KNOWN' ? `${group.aggregate_final_nutrition.ENERGY.amount} kcal` : 'unknown'}</p></div><div className="history-actions"><button className="button button-outline button-small" type="button" onClick={() => group.id && expand(group.id)}>{group.id && expanded[group.id] ? 'Hide details' : 'Show details'}</button><button className="quiet-link" type="button" disabled={busy} onClick={() => group.id && remove(group.id)}>Remove group</button></div>{group.id && expanded[group.id] && <div className="history-details">{expanded[group.id].items.map(item => <div className="history-item" key={item.position}><p>{item.food_source.name} · {item.quantity.amount} {item.quantity.unit} · energy {item.final_nutrition.ENERGY?.status === 'KNOWN' ? `${item.final_nutrition.ENERGY.amount} kcal` : 'unknown'}</p><button className="quiet-link" type="button" disabled={busy} onClick={() => correct(item)}>Correct amount</button></div>)}</div>}</article>)}{cursor && <button className="button button-outline button-small" type="button" disabled={busy} onClick={more}>Load more</button>}{correction && <div className="group-review"><h2>Review correction</h2><p>This replaces the entire food group after confirmation. The old revision remains as an audit record.</p><p>New energy: {correction.preview.group.aggregate_final_nutrition.ENERGY?.status === 'KNOWN' ? `${correction.preview.group.aggregate_final_nutrition.ENERGY.amount} kcal` : 'unknown'}</p><button className="button button-primary" type="button" disabled={busy} onClick={confirmCorrection}>Confirm correction</button><button className="quiet-link" type="button" onClick={() => setCorrection(null)}>Cancel</button></div>}</section>
+    <section className="panel section-panel"><AppDatePicker className="history-date" label="Tracking Day" value={day} onChange={setDay} />{error && <p className="form-message form-error" role="alert">{error}</p>}{summary && <p className="muted">Daily total: {summary.totals.ENERGY?.status === 'KNOWN' ? `${summary.totals.ENERGY.amount} kcal` : 'energy unknown'} · {summary.confirmed_group_count} groups · {summary.confirmed_item_count} foods · {summary.timezone}{summary.detail_compacted ? ' · Older item details compacted after 90 days' : ''}</p>}{groups.length === 0 && !summary && <EmptyState icon={CalendarDays} title="No food logged for this day" text="Confirmed groups will appear here." />}{groups.map(group => <article className="history-group" key={group.id}><div><h2>{group.label || group.meal_category.toLowerCase()}</h2><p>{group.item_count} foods · {group.tracking_day}</p><p>Energy: {group.aggregate_final_nutrition.ENERGY?.status === 'KNOWN' ? `${group.aggregate_final_nutrition.ENERGY.amount} kcal` : 'unknown'}</p></div><div className="history-actions"><button className="button button-outline button-small" type="button" onClick={() => group.id && expand(group.id)}>{group.id && expanded[group.id] ? 'Hide details' : 'Show details'}</button><button className="quiet-link" type="button" disabled={busy} onClick={() => group.id && remove(group.id)}>Remove group</button></div>{group.id && expanded[group.id] && <div className="history-details">{expanded[group.id].items.map(item => <div className="history-item" key={item.position}><p>{item.food_source.name} · {item.quantity.amount} {item.quantity.unit} · energy {item.final_nutrition.ENERGY?.status === 'KNOWN' ? `${item.final_nutrition.ENERGY.amount} kcal` : 'unknown'}</p><button className="quiet-link" type="button" disabled={busy} onClick={() => correct(item)}>Correct amount</button></div>)}</div>}</article>)}{cursor && <button className="button button-outline button-small" type="button" disabled={busy} onClick={more}>Load more</button>}{correction && <div className="group-review"><h2>Review correction</h2><p>This replaces the entire food group after confirmation. The old revision remains as an audit record.</p><p>New energy: {correction.preview.group.aggregate_final_nutrition.ENERGY?.status === 'KNOWN' ? `${correction.preview.group.aggregate_final_nutrition.ENERGY.amount} kcal` : 'unknown'}</p><button className="button button-primary" type="button" disabled={busy} onClick={confirmCorrection}>Confirm correction</button><button className="quiet-link" type="button" onClick={() => setCorrection(null)}>Cancel</button></div>}</section>
   </>
 }
 
@@ -654,7 +694,7 @@ function AnalysisPage() {
     finally { setBusy(false) }
   }
   return <><PageHead eyebrow="Your patterns" title="Analysis" description="Compare daily food totals and review recorded health actions. Unknown nutrient values stay unknown." />
-    <section className="panel section-panel"><form className="analysis-filter" onSubmit={event => { event.preventDefault(); void load() }}><label>From <input type="date" value={fromDay} onChange={event => setFromDay(event.target.value)} required /></label><label>Through <input type="date" value={toDay} onChange={event => setToDay(event.target.value)} required /></label><button className="button button-primary" type="submit" disabled={busy}>Show analysis</button></form>{error && <p className="form-message form-error" role="alert">{error}</p>}{analysis && <><h2>Nutrition within UTC calendar dates</h2><p className="muted">{analysis.confirmed_group_count} confirmed groups · {analysis.confirmed_item_count} foods{analysis.compacted_day_count > 0 ? ` · ${analysis.compacted_day_count} compacted days` : ''}. This total uses UTC midnight boundaries. The daily rows below use your stored Tracking Days, so boundary foods may differ.</p><div className="target-rows">{Object.entries(analysis.totals).map(([key, value]) => <div key={key}><span>{nutrientLabel(key)}</span><strong>{value.status === 'KNOWN' ? `${value.amount} ${value.unit}` : 'Unknown'}</strong></div>)}</div></>}
+    <section className="panel analysis-panel"><form className="analysis-filter" onSubmit={event => { event.preventDefault(); void load() }}><AppDatePicker label="From" value={fromDay} onChange={setFromDay} /><AppDatePicker label="Through" value={toDay} onChange={setToDay} /><button className="button button-primary" type="submit" disabled={busy}>Show analysis</button></form>{error && <p className="form-message form-error" role="alert">{error}</p>}{analysis && <><h2>Nutrition within UTC calendar dates</h2><p className="muted">{analysis.confirmed_group_count} confirmed groups · {analysis.confirmed_item_count} foods{analysis.compacted_day_count > 0 ? ` · ${analysis.compacted_day_count} compacted days` : ''}. This total uses UTC midnight boundaries. The daily rows below use your stored Tracking Days, so boundary foods may differ.</p><div className="target-rows">{Object.entries(analysis.totals).map(([key, value]) => <div key={key}><span>{nutrientLabel(key)}</span><strong>{value.status === 'KNOWN' ? `${value.amount} ${value.unit}` : 'Unknown'}</strong></div>)}</div></>}
     </section><div className="two-column"><section className="panel"><h2>Daily nutrition by Tracking Day</h2>{loaded && days.length === 0 && <p className="muted">No confirmed food for this range.</p>}{days.map(day => <article className="food-result" key={day.tracking_day}><div><h3>{day.tracking_day}</h3><p>{day.confirmed_item_count} foods · {day.totals.ENERGY?.status === 'KNOWN' ? `${day.totals.ENERGY.amount} kcal` : 'energy unknown'} · {day.timezone}</p>{day.detail_compacted && <p>Detailed food records were compacted after 90 days.</p>}</div><Link className="quiet-link" to={`/app/history?tracking_day=${day.tracking_day}`}>View day</Link></article>)}{dayCursor && <button className="button button-outline button-small" type="button" disabled={busy} onClick={() => void moreDays()}>Load more</button>}</section><section className="panel"><h2>Health action history</h2>{loaded && health.length === 0 && <p className="muted">No recorded actions for this range.</p>}{health.map(item => <article className="food-result" key={item.occurrence_id}><div><h3>{item.name}</h3><p>{item.status.toLowerCase()} · {item.scheduled_local.date} {item.scheduled_local.time} ({item.scheduled_local.timezone})</p></div></article>)}{healthCursor && <button className="button button-outline button-small" type="button" disabled={busy} onClick={() => void moreHealth()}>Load more</button>}</section></div>
   </>
 }
@@ -1071,7 +1111,7 @@ function NotFound() {
 }
 
 export default function App() {
-  return <ThemeProvider><Routes>
+  return <ThemeProvider><DatePickerProvider><Routes>
     <Route path="/" element={<RedirectIfAuthenticated><Landing /></RedirectIfAuthenticated>} />
     <Route path="/terms" element={<TermsPage />} />
     <Route path="/login" element={<RedirectIfAuthenticated><AuthPage mode="login" /></RedirectIfAuthenticated>} />
@@ -1090,5 +1130,5 @@ export default function App() {
     <Route path="/app/targets" element={<AppShell><TargetsPage /></AppShell>} />
     <Route path="/app/settings" element={<AppShell><Settings /></AppShell>} />
     <Route path="*" element={<NotFound />} />
-  </Routes></ThemeProvider>
+  </Routes></DatePickerProvider></ThemeProvider>
 }
