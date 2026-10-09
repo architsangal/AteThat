@@ -129,7 +129,7 @@ func (s *Server) CompleteGoogleSignIn(ctx context.Context, req *pb.CompleteGoogl
 	} else if state.Operation == "REQUEST_DELETION" && state.UserID != nil {
 		user, err = s.requestGoogleDeletion(ctx, *state.UserID, claims)
 		if err == nil {
-			return &pb.CompleteGoogleSignInResponse{ReturnTo: "/cancel-deletion"}, nil
+			return &pb.CompleteGoogleSignInResponse{ReturnTo: "/cancel-deletion", Operation: state.Operation}, nil
 		}
 	} else if state.Operation == "CANCEL_DELETION" {
 		user, err = s.cancelGoogleDeletion(ctx, claims)
@@ -145,7 +145,7 @@ func (s *Server) CompleteGoogleSignIn(ctx context.Context, req *pb.CompleteGoogl
 	if err != nil {
 		return nil, err
 	}
-	return &pb.CompleteGoogleSignInResponse{Session: session, ReturnTo: state.ReturnTo, NewUser: created}, nil
+	return &pb.CompleteGoogleSignInResponse{Session: session, ReturnTo: state.ReturnTo, NewUser: created, Operation: state.Operation}, nil
 }
 
 func (s *Server) requestGoogleDeletion(ctx context.Context, userID primitive.ObjectID, claims googleClaims) (userDoc, error) {
@@ -181,6 +181,10 @@ func (s *Server) linkGoogleUser(ctx context.Context, userID primitive.ObjectID, 
 	var user userDoc
 	if err := s.DB.Collection("users").FindOne(ctx, bson.M{"_id": userID, "status": "ACTIVE"}).Decode(&user); err != nil {
 		return user, status.Error(codes.PermissionDenied, "account unavailable")
+	}
+	googleEmail, ok := validEmail(claims.Email)
+	if !ok || googleEmail != user.EmailNormalized {
+		return userDoc{}, status.Error(codes.InvalidArgument, "Google email must match the email address on this AteThat account")
 	}
 	var existing identityDoc
 	err := s.DB.Collection("auth_identities").FindOne(ctx, bson.M{"provider": "GOOGLE", "subject": claims.Subject}).Decode(&existing)
@@ -353,7 +357,17 @@ func (s *Server) findOrCreateGoogleUser(ctx context.Context, claims googleClaims
 	}
 	var existing userDoc
 	if err := s.DB.Collection("users").FindOne(ctx, bson.M{"email_normalized": email}).Decode(&existing); err == nil {
-		return userDoc{}, false, status.Error(codes.AlreadyExists, "email already has an AteThat account; explicit linking is required")
+		if existing.Status != "ACTIVE" {
+			return userDoc{}, false, status.Error(codes.PermissionDenied, "email already has an unavailable AteThat account")
+		}
+		// The Google ID token proves control of this verified email address. This
+		// safely adds Google as another sign-in method for the existing active
+		// account instead of creating a duplicate account.
+		linked, linkErr := s.linkGoogleUser(ctx, existing.ID, claims)
+		if linkErr != nil {
+			return userDoc{}, false, linkErr
+		}
+		return linked, false, nil
 	} else if err != mongo.ErrNoDocuments {
 		return userDoc{}, false, internal()
 	}

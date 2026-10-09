@@ -9,8 +9,8 @@ services:
     environment:
       MONGODB_URI: mongodb://mongo:27017/atethat_dev?replicaSet=rs0&directConnection=true
       MONGODB_DATABASE: atethat_dev
-      SMTP_HOST: mailpit
-      SMTP_PORT: "1025"
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
     depends_on:
       mongo-init:
         condition: service_completed_successfully

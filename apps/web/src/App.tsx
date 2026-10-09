@@ -112,7 +112,20 @@ function Feature({ icon: IconComponent, title, text }: { icon: Icon; title: stri
   return <article className="feature-card"><span className="feature-icon"><IconComponent size={21} /></span><h3>{title}</h3><p>{text}</p></article>
 }
 
-type SessionResponse = { access_token: string }
+type SessionResponse = { access_token: string; user?: { email?: string } }
+
+type PasswordCredentialConstructor = new (data: { id: string; password: string }) => Credential
+
+async function offerBrowserPasswordSave(email: string, password: string) {
+  if (!email || !password || typeof window === 'undefined' || !navigator.credentials?.store) return
+  const PasswordCredential = (window as Window & { PasswordCredential?: PasswordCredentialConstructor }).PasswordCredential
+  if (!PasswordCredential) return
+  try {
+    await navigator.credentials.store(new PasswordCredential({ id: email, password }))
+  } catch {
+    // Password-manager availability and any save prompt are browser settings.
+  }
+}
 
 function AuthPage({ mode }: { mode: 'login' | 'signup' | 'forgot' | 'resend' }) {
   const navigate = useNavigate()
@@ -128,19 +141,25 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' | 'forgot' | 'resend' }) 
     event.preventDefault()
     setError('')
     setMessage('')
-    setBusy(true)
     const values = Object.fromEntries(new FormData(event.currentTarget))
+    if (isSignup && String(values.password || '').length < 12) {
+      setError('Use at least 12 characters for your password.')
+      return
+    }
+    setBusy(true)
     try {
       if (isLogin) {
         const session = await postJson<SessionResponse>('/auth/login', { email: values.email, password: values.password })
+        await offerBrowserPasswordSave(String(values.email || ''), String(values.password || ''))
         setAccessToken(session.access_token)
         navigate('/app')
       } else if (isSignup) {
         await postJson<{ message: string }>('/auth/register', { display_name: values.display_name, email: values.email, password: values.password, timezone: values.timezone })
+        await offerBrowserPasswordSave(String(values.email || ''), String(values.password || ''))
         setMessage('Check your email for a verification link before logging in.')
       } else if (mode === 'forgot') {
         await postJson<{ message: string }>('/auth/forgot-password', { email: values.email })
-        setMessage('If an eligible account exists, password reset instructions have been sent.')
+        setMessage('If an eligible account exists, a secure sign-in or reset link has been sent.')
       } else {
         await postJson<{ message: string }>('/auth/resend-verification', { email: values.email })
         setMessage('If verification is still needed, a new email has been sent.')
@@ -154,18 +173,18 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' | 'forgot' | 'resend' }) 
     <aside className="auth-intro"><span className="eyebrow"><span className="eyebrow-dot" /> Your space, your pace</span><h1>Make room for a clearer daily picture.</h1><p>AteThat brings the essentials together in a calm, readable experience. Your data remains yours.</p><div className="auth-benefits"><div><UtensilsCrossed size={19} /> Food and nutrition in one place</div><div><Clock3 size={19} /> Timezone-aware daily view</div><div><LockKeyhole size={19} /> Private account access</div></div></aside>
     <section className="auth-card" aria-labelledby="auth-heading"><div className="auth-card-top"><span className="auth-icon"><LockKeyhole size={22} /></span><Link className="quiet-link" to="/"><ArrowLeft size={15} /> Back to home</Link></div>
       <h2 id="auth-heading">{isLogin ? 'Welcome back' : isSignup ? 'Create your account' : mode === 'forgot' ? 'Reset your password' : 'Resend verification'}</h2>
-      <p className="muted">{isLogin ? 'Sign in to continue to your daily overview.' : isSignup ? 'Start with the basics. You can complete your profile later.' : mode === 'forgot' ? 'Enter your email and we’ll send reset instructions if your account is eligible.' : 'Enter the email you used to sign up.'}</p>
+      <p className="muted">{isLogin ? 'Sign in to continue to your daily overview.' : isSignup ? 'Start with the basics. You can complete your profile later.' : mode === 'forgot' ? 'Enter your email and we’ll send the right secure link for your account.' : 'Enter the email you used to sign up.'}</p>
       {(isLogin || isSignup) && <button className="button button-google" type="button" disabled={import.meta.env.VITE_GOOGLE_SIGNIN_ENABLED !== 'true'} title={import.meta.env.VITE_GOOGLE_SIGNIN_ENABLED === 'true' ? 'Continue with Google' : 'Configure Google OAuth to enable'} onClick={() => { window.location.assign(`${apiBaseUrl}/auth/google/start?return_to=%2Fapp`) }}><GoogleMark /> Continue with Google</button>}
       {(isLogin || isSignup) && <div className="divider"><span>or continue with email</span></div>}
       <form className="auth-form" onSubmit={submit}>
         {isSignup && <label>Display name<input name="display_name" autoComplete="name" required maxLength={80} placeholder="Your name" /></label>}
-        <label>Email address<input name="email" type="email" autoComplete="email" required placeholder="name@example.com" /></label>
-        {(isLogin || isSignup) && <label>Password<span className="password-field"><input name="password" type={showPassword ? 'text' : 'password'} autoComplete={isSignup ? 'new-password' : 'current-password'} required minLength={isSignup ? 12 : 1} placeholder="Enter your password" /><button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? 'Hide password' : 'Show password'}>{showPassword ? 'Hide' : 'Show'}</button></span></label>}
+        <label>Email address<input name="email" type="email" autoComplete={isLogin ? 'username' : 'email'} required placeholder="name@example.com" /></label>
+        {(isLogin || isSignup) && <label>Password<span className="password-field"><input name="password" type={showPassword ? 'text' : 'password'} autoComplete={isSignup ? 'new-password' : 'current-password'} required minLength={isSignup ? 12 : 1} placeholder="Enter your password" /><button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? 'Hide password' : 'Show password'}>{showPassword ? 'Hide' : 'Show'}</button></span>{isSignup && <small>Use 12 to 128 characters.</small>}</label>}
         {isSignup && <label>Default timezone<select name="timezone" defaultValue="Asia/Kolkata">{['Asia/Kolkata', 'UTC', ...Intl.supportedValuesOf('timeZone').filter(zone => zone !== 'Asia/Kolkata')].map(zone => <option key={zone} value={zone}>{zone}</option>)}</select><small>Change this manually in settings when you travel.</small></label>}
         {isLogin && <Link className="form-side-link" to="/forgot-password">Forgot password?</Link>}
         {error && <p className="form-message form-error" role="alert">{error}</p>}
         {message && <p className="form-message form-success" role="status">{message}</p>}
-        <button className="button button-primary auth-submit" type="submit" disabled={busy}>{busy ? 'Please wait…' : isLogin ? 'Log in' : isSignup ? 'Create account' : mode === 'forgot' ? 'Send reset instructions' : 'Resend email'} <ArrowRight size={17} /></button>
+        <button className="button button-primary auth-submit" type="submit" disabled={busy}>{busy ? 'Please wait…' : isLogin ? 'Log in' : isSignup ? 'Create account' : mode === 'forgot' ? 'Email me a secure link' : 'Resend email'} <ArrowRight size={17} /></button>
       </form>
       {isSignup && <p className="auth-terms">Read the <Link to="/terms">Terms and conditions</Link> before creating an account.</p>}
       <p className="auth-switch">{isLogin ? <>New to AteThat? <Link to="/signup">Create an account</Link> · <Link to="/resend-verification">Resend verification</Link></> : isSignup ? <>Already have an account? <Link to="/login">Log in</Link> · <Link to="/resend-verification">Resend verification</Link></> : <Link to="/login">Return to login</Link>}</p>
@@ -186,21 +205,87 @@ function TokenPage({ mode }: { mode: 'verify' | 'reset' }) {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!token) { setError('This link is missing its one-time token. Request a new email.'); return }
+    const values = Object.fromEntries(new FormData(event.currentTarget))
+    if (mode === 'reset' && String(values.new_password || '').length < 12) {
+      setError('Use at least 12 characters for your new password.')
+      return
+    }
     setBusy(true); setError(''); setMessage('')
     try {
       if (mode === 'verify') {
         await postJson<{ email_verified: boolean }>('/auth/verify-email', { token })
         setMessage('Your email is verified. You can now log in.')
       } else {
-        const values = Object.fromEntries(new FormData(event.currentTarget))
         await postJson<void>('/auth/reset-password', { token, new_password: values.new_password })
         clearAccessToken()
         setMessage('Your password has been changed. Please log in again.')
       }
-    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Please try again.') }
+    } catch (cause) {
+      const detail = cause instanceof Error ? cause.message : 'Please try again.'
+      if (mode === 'reset' && /reset token expired or already used/i.test(detail)) {
+        setError('This password-reset link can no longer be used. Request a new email, then open the newest link.')
+      } else if (mode === 'verify' && /verification token expired or already used/i.test(detail)) {
+        setError('This verification link can no longer be used. Request a new verification email, then open the newest link.')
+      } else {
+        setError(detail)
+      }
+    }
     finally { setBusy(false) }
   }
-  return <div className="auth-page"><PublicHeader /><main className="auth-main layout-width"><aside className="auth-intro"><span className="eyebrow">Your account</span><h1>{mode === 'verify' ? 'One step to get started.' : 'A fresh start, securely.'}</h1><p>{mode === 'verify' ? 'Verify the email address you used for AteThat.' : 'Choose a new password for your account.'}</p></aside><section className="auth-card"><h2>{mode === 'verify' ? 'Verify your email' : 'Reset your password'}</h2><form className="auth-form" onSubmit={submit}>{mode === 'reset' && <label>New password<input name="new_password" type="password" autoComplete="new-password" required minLength={12} maxLength={128} /></label>}{error && <p className="form-message form-error" role="alert">{error}</p>}{message && <p className="form-message form-success" role="status">{message}</p>}<button className="button button-primary auth-submit" type="submit" disabled={busy || !token}>{busy ? 'Please wait…' : mode === 'verify' ? 'Verify email' : 'Change password'}</button></form><p className="auth-switch"><Link to="/login">Return to login</Link></p></section></main></div>
+  return <div className="auth-page"><PublicHeader /><main className="auth-main layout-width"><aside className="auth-intro"><span className="eyebrow">Your account</span><h1>{mode === 'verify' ? 'One step to get started.' : 'A fresh start, securely.'}</h1><p>{mode === 'verify' ? 'Verify the email address you used for AteThat.' : 'Choose a new password for your account.'}</p></aside><section className="auth-card"><h2>{mode === 'verify' ? 'Verify your email' : 'Reset your password'}</h2><form className="auth-form" onSubmit={submit}>{mode === 'reset' && <label>New password<input name="new_password" type="password" autoComplete="new-password" required minLength={12} maxLength={128} /><small>Use 12 to 128 characters.</small></label>}{error && <p className="form-message form-error" role="alert">{error}</p>}{message && <p className="form-message form-success" role="status">{message}</p>}<button className="button button-primary auth-submit" type="submit" disabled={busy || !token}>{busy ? 'Please wait…' : mode === 'verify' ? 'Verify email' : 'Change password'}</button></form><p className="auth-switch"><Link to="/login">Return to login</Link></p></section></main></div>
+}
+
+function EmailLoginPage() {
+  const [params] = useSearchParams()
+  const navigate = useNavigate()
+  const token = params.get('token') || ''
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!token) { setError('This link is missing its one-time token. Request a new secure link.'); return }
+    const values = Object.fromEntries(new FormData(event.currentTarget))
+    if (String(values.new_password || '').length < 12) {
+      setError('Use at least 12 characters for your new password.')
+      return
+    }
+    setBusy(true)
+    setError('')
+    try {
+      const session = await postJson<SessionResponse>('/auth/email-login', { token, new_password: values.new_password })
+      await offerBrowserPasswordSave(session.user?.email || '', String(values.new_password || ''))
+      setAccessToken(session.access_token)
+      navigate('/app', { replace: true })
+    } catch (cause) {
+      const detail = cause instanceof Error ? cause.message : 'Please try again.'
+      setError(/email sign-in link expired or already used/i.test(detail)
+        ? 'This secure link can no longer be used. Request a new one and open the newest email.'
+        : detail)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return <div className="auth-page"><PublicHeader /><main className="auth-main layout-width"><aside className="auth-intro"><span className="eyebrow">Your account</span><h1>Add a password, securely.</h1><p>This one-time link lets you add email-and-password sign-in to your AteThat account.</p></aside><section className="auth-card"><h2>Set your password</h2><p className="muted">Use at least 12 characters. You can still sign in with Google afterwards.</p><form className="auth-form" onSubmit={submit}><label>New password<input name="new_password" type="password" autoComplete="new-password" required minLength={12} maxLength={128} /><small>This link works once and expires after 15 minutes.</small></label>{error && <p className="form-message form-error" role="alert">{error}</p>}<button className="button button-primary auth-submit" type="submit" disabled={busy || !token}>{busy ? 'Saving password…' : 'Set password and sign in'}</button></form><p className="auth-switch"><Link to="/login">Return to login</Link></p></section></main></div>
+}
+
+function AppFormValidation() {
+  useEffect(() => {
+    const disableNativeValidation = (node: Node) => {
+      if (node instanceof HTMLFormElement) node.noValidate = true
+      if (node instanceof Element || node instanceof Document || node instanceof DocumentFragment) {
+        node.querySelectorAll('form').forEach(form => { form.noValidate = true })
+      }
+    }
+
+    disableNativeValidation(document)
+    const observer = new MutationObserver(records => records.forEach(record => record.addedNodes.forEach(disableNativeValidation)))
+    observer.observe(document.body, { childList: true, subtree: true })
+    return () => observer.disconnect()
+  }, [])
+
+  return null
 }
 
 function AppShell({ children }: { children: ReactNode }) {
@@ -988,16 +1073,18 @@ function Settings() {
   const { theme, setTheme } = useTheme()
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  const [profile, setProfile] = useState<{ version: number; display_name: string; timezone: string; date_of_birth?: string } | null>(null)
+  const [profile, setProfile] = useState<{ version: number; display_name: string; timezone: string; date_of_birth?: string; has_google_identity: boolean } | null>(null)
   const [preferences, setPreferences] = useState<{ version: number; daily_reset_time: string; unit_system: string; dashboard_nutrients: string[] } | null>(null)
   const [trackingDay, setTrackingDay] = useState<{ tracking_day: string; timezone: string; daily_reset_time: string; as_of_utc: string } | null>(null)
-  const [saveMessage, setSaveMessage] = useState(params.get('linked') === 'google' ? 'Google sign-in is linked to your account.' : params.get('deletion_cancelled') ? 'Your account deletion request was cancelled and your account was restored.' : '')
-  const [saveError, setSaveError] = useState(params.get('error') === 'google_link' ? 'Google account linking could not be completed.' : params.get('error') === 'google_deletion' ? 'Google could not verify the deletion request.' : '')
+  const [saveMessage, setSaveMessage] = useState(params.get('deletion_cancelled') ? 'Your account deletion request was cancelled and your account was restored.' : '')
+  const [saveError, setSaveError] = useState(params.get('error') === 'google_deletion' ? 'Google could not verify the deletion request.' : '')
+  const [googleLinkMessage] = useState(params.get('linked') === 'google' ? 'Google sign-in is linked to your account.' : '')
+  const [googleLinkError, setGoogleLinkError] = useState(params.get('error') === 'google_link_email_mismatch' ? 'Use the same Google email address that is already on this AteThat account.' : params.get('error') === 'google_link' ? 'Google account linking could not be completed.' : '')
   const [saving, setSaving] = useState(false)
   useEffect(() => {
     let active = true
     Promise.all([
-      getAuthenticatedJson<{ version: number; display_name: string; timezone: string; date_of_birth?: string }>('/profile'),
+      getAuthenticatedJson<{ version: number; display_name: string; timezone: string; date_of_birth?: string; has_google_identity: boolean }>('/profile'),
       getAuthenticatedJson<{ version: number; daily_reset_time: string; unit_system: string; dashboard_nutrients: string[] }>('/preferences'),
       getAuthenticatedJson<{ tracking_day: string; timezone: string; daily_reset_time: string; as_of_utc: string }>('/tracking-day/current'),
     ]).then(([nextProfile, nextPreferences, nextTrackingDay]) => {
@@ -1016,7 +1103,9 @@ function Settings() {
     try {
       const values = Object.fromEntries(new FormData(event.currentTarget))
       const updated = await patchAuthenticatedJson<typeof profile>('/profile', { version: profile.version, display_name: values.display_name, timezone: values.timezone, date_of_birth: values.date_of_birth })
-      setProfile(updated)
+      // Keep identity state stable even if an older API instance responds
+      // without this derived field during a rolling deployment.
+      setProfile({ ...profile, ...updated, has_google_identity: updated.has_google_identity ?? profile.has_google_identity })
       await refreshTrackingDay()
       setSaveMessage('Profile saved. Existing logs keep their original timezone context.')
     } catch (cause) { setSaveError(cause instanceof Error ? cause.message : 'Could not save your profile.') }
@@ -1041,11 +1130,11 @@ function Settings() {
     try { await postJson<void>('/auth/logout', {}) } finally { clearAccessToken(); navigate('/login', { replace: true }) }
   }
   async function linkGoogle() {
-    setSaveError('')
+    setGoogleLinkError('')
     try {
       const result = await getAuthenticatedJson<{ authorization_url: string }>('/account/identities/google/link/start')
       window.location.assign(result.authorization_url)
-    } catch (cause) { setSaveError(cause instanceof Error ? cause.message : 'Could not start Google account linking.') }
+    } catch (cause) { setGoogleLinkError(cause instanceof Error ? cause.message : 'Could not start Google account linking.') }
   }
   async function requestDeletion(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -1071,9 +1160,9 @@ function Settings() {
     <PageHead eyebrow="Your account" title="Profile & settings" description="Choose how AteThat looks and set the timezone used for your account." action={<button className="button button-outline" type="button" onClick={logout}>Log out</button>} />
     <div className="settings-grid">
       <section className="panel"><div className="panel-top"><h2>Appearance</h2><Sun size={19} /></div><p className="muted">Choose a theme or follow your device setting.</p><div className="theme-options">{(['light', 'dark', 'system'] as const).map(option => <button key={option} type="button" className={`theme-option ${theme === option ? 'theme-option-selected' : ''}`} onClick={() => setTheme(option)}><span>{option === 'light' ? <Sun size={20} /> : option === 'dark' ? <Moon size={20} /> : <Settings2 size={20} />}{option[0].toUpperCase() + option.slice(1)}</span>{theme === option && <Check size={18} />}</button>)}</div></section>
-      <section className="panel"><div className="panel-top"><h2>Profile & timezone</h2><Clock3 size={19} /></div><p className="muted">Timestamps are stored in UTC and shown using your chosen timezone. Change it manually when you travel.</p>{profile ? <form key={profile.version} className="auth-form" onSubmit={saveProfile}><label>Display name<input name="display_name" required maxLength={80} defaultValue={profile.display_name} /></label><label>Date of birth<input name="date_of_birth" type="date" defaultValue={profile.date_of_birth || ''} /><small>Needed to confirm eligibility for adult nutrition benchmarks.</small></label><label>Default timezone<select name="timezone" defaultValue={profile.timezone}>{Array.from(new Set([profile.timezone, 'Asia/Kolkata', 'UTC', ...Intl.supportedValuesOf('timeZone')])).map(zone => <option key={zone} value={zone}>{zone}</option>)}</select></label><button className="button button-primary" type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save profile'}</button></form> : <p className="muted">Loading profile…</p>}{saveError && <p className="form-message form-error" role="alert">{saveError}</p>}{saveMessage && <p className="form-message form-success" role="status">{saveMessage}</p>}</section>
+      <section className="panel"><div className="panel-top"><h2>Profile & timezone</h2><Clock3 size={19} /></div><p className="muted">Timestamps are stored in UTC and shown using your chosen timezone. Change it manually when you travel.</p>{profile ? <form key={profile.version} className="auth-form" onSubmit={saveProfile}><label>Display name<input name="display_name" required maxLength={80} defaultValue={profile.display_name} /></label><div><AppDatePicker className="form-date-picker" label="Date of birth" name="date_of_birth" value={profile.date_of_birth || ''} onChange={date_of_birth => setProfile(current => current ? { ...current, date_of_birth } : current)} /><small>Needed to confirm eligibility for adult nutrition benchmarks.</small></div><label>Default timezone<select name="timezone" defaultValue={profile.timezone}>{Array.from(new Set([profile.timezone, 'Asia/Kolkata', 'UTC', ...Intl.supportedValuesOf('timeZone')])).map(zone => <option key={zone} value={zone}>{zone}</option>)}</select></label><button className="button button-primary" type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save profile'}</button></form> : <p className="muted">Loading profile…</p>}{saveError && <p className="form-message form-error" role="alert">{saveError}</p>}{saveMessage && <p className="form-message form-success" role="status">{saveMessage}</p>}</section>
       <section className="panel"><div className="panel-top"><h2>Daily preferences</h2><CalendarDays size={19} /></div><p className="muted">Your nutrition day starts at the local reset time below. Changing it affects future records only.</p>{preferences ? <form key={preferences.version} className="auth-form" onSubmit={savePreferences}><label>Daily reset time<input name="daily_reset_time" type="time" required defaultValue={preferences.daily_reset_time} /></label><label>Unit system<select name="unit_system" defaultValue={preferences.unit_system}><option value="METRIC">Metric</option><option value="IMPERIAL">Imperial</option></select></label><button className="button button-primary" type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save preferences'}</button></form> : <p className="muted">Loading preferences…</p>}{trackingDay && <p className="tracking-day-note">Current Tracking Day: <strong>{trackingDay.tracking_day}</strong> · {trackingDay.timezone} · resets at {trackingDay.daily_reset_time}</p>}</section>
-      {import.meta.env.VITE_GOOGLE_SIGNIN_ENABLED === 'true' && <section className="panel"><div className="panel-top"><h2>Sign-in methods</h2><LockKeyhole size={19} /></div><p className="muted">Link Google explicitly to this account. An email match alone will never merge accounts.</p><button className="button button-outline" type="button" onClick={linkGoogle}><GoogleMark /> Link Google account</button></section>}
+      {import.meta.env.VITE_GOOGLE_SIGNIN_ENABLED === 'true' && <section className="panel"><div className="panel-top"><h2>Sign-in methods</h2><LockKeyhole size={19} /></div><div className="sign-in-methods-content">{profile?.has_google_identity ? <><p className="muted">Your Google account is linked. You can use Google to sign in to this AteThat account.</p><p className="form-message form-success">Google account linked</p></> : <><p className="muted">Use the same Google email address as this AteThat account. A different Google email will be rejected.</p>{googleLinkError && <p className="form-message form-error" role="alert">{googleLinkError}</p>}{googleLinkMessage && <p className="form-message form-success" role="status">{googleLinkMessage}</p>}<button className="button button-outline" type="button" onClick={linkGoogle}><GoogleMark /> Link Google account</button></>}</div></section>}
       <section className="panel"><div className="panel-top"><h2>Delete account</h2><LockKeyhole size={19} /></div><p className="muted">Requesting deletion signs you out everywhere. Your records are permanently removed after 30 days unless you cancel with fresh verification.</p><form className="auth-form" onSubmit={requestDeletion}><label>Current password<input name="password" type="password" autoComplete="current-password" required /></label><button className="button button-outline" type="submit" disabled={saving}>Request deletion</button></form>{import.meta.env.VITE_GOOGLE_SIGNIN_ENABLED === 'true' && <button className="quiet-link" type="button" disabled={saving} onClick={() => void requestGoogleDeletion()}>Request deletion with Google verification</button>}</section>
     </div>
   </>
@@ -1111,7 +1200,7 @@ function NotFound() {
 }
 
 export default function App() {
-  return <ThemeProvider><DatePickerProvider><Routes>
+  return <ThemeProvider><DatePickerProvider><AppFormValidation /><Routes>
     <Route path="/" element={<RedirectIfAuthenticated><Landing /></RedirectIfAuthenticated>} />
     <Route path="/terms" element={<TermsPage />} />
     <Route path="/login" element={<RedirectIfAuthenticated><AuthPage mode="login" /></RedirectIfAuthenticated>} />
@@ -1120,6 +1209,7 @@ export default function App() {
     <Route path="/resend-verification" element={<AuthPage mode="resend" />} />
     <Route path="/verify-email" element={<TokenPage mode="verify" />} />
     <Route path="/reset-password" element={<TokenPage mode="reset" />} />
+    <Route path="/email-login" element={<EmailLoginPage />} />
     <Route path="/cancel-deletion" element={<CancelDeletionPage />} />
     <Route path="/app" element={<AppShell><Dashboard /></AppShell>} />
     <Route path="/app/log-food" element={<AppShell><LogFood /></AppShell>} />

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"container/heap"
 	"context"
 	"crypto/hmac"
 	"crypto/sha256"
@@ -29,6 +30,29 @@ type occurrenceCursor struct {
 	ID   string `json:"i"`
 	From string `json:"f"`
 	To   string `json:"e"`
+}
+
+func occurrenceBefore(left, right *pb.HealthOccurrence) bool {
+	if left.ScheduledAt == right.ScheduledAt {
+		return left.OccurrenceId < right.OccurrenceId
+	}
+	return left.ScheduledAt < right.ScheduledAt
+}
+
+// occurrencePageHeap is a max-heap. Its root is the latest candidate retained
+// for the requested page, keeping memory bounded to limit + 1 entries.
+type occurrencePageHeap []*pb.HealthOccurrence
+
+func (h occurrencePageHeap) Len() int                { return len(h) }
+func (h occurrencePageHeap) Less(i, j int) bool      { return occurrenceBefore(h[j], h[i]) }
+func (h occurrencePageHeap) Swap(i, j int)           { h[i], h[j] = h[j], h[i] }
+func (h *occurrencePageHeap) Push(value interface{}) { *h = append(*h, value.(*pb.HealthOccurrence)) }
+func (h *occurrencePageHeap) Pop() interface{} {
+	old := *h
+	last := len(old) - 1
+	value := old[last]
+	*h = old[:last]
+	return value
 }
 
 func (s *Server) occurrenceID(itemID primitive.ObjectID, version int64, at time.Time) string {
@@ -98,12 +122,34 @@ func (s *Server) ListOccurrences(ctx context.Context, req *pb.ListOccurrencesReq
 	if errA != nil || errB != nil || !from.Before(to) || to.Sub(from) > 32*24*time.Hour || req.Limit == 0 || req.Limit > 100 {
 		return nil, invalid("occurrence range must be at most 32 days and limit 1–100")
 	}
+	var cursor occurrenceCursor
+	if req.Cursor != "" {
+		decoded, decodeErr := base64.RawURLEncoding.DecodeString(req.Cursor)
+		if decodeErr != nil || len(decoded) > 512 || json.Unmarshal(decoded, &cursor) != nil || cursor.From != req.From || cursor.To != req.To {
+			return nil, invalid("invalid occurrence cursor")
+		}
+	}
+	pageSize := int(req.Limit)
+	selected := occurrencePageHeap{}
+	heap.Init(&selected)
+	addCandidate := func(candidate *pb.HealthOccurrence) {
+		if req.Cursor != "" && (candidate.ScheduledAt < cursor.At || (candidate.ScheduledAt == cursor.At && candidate.OccurrenceId <= cursor.ID)) {
+			return
+		}
+		if selected.Len() < pageSize+1 {
+			heap.Push(&selected, candidate)
+			return
+		}
+		if occurrenceBefore(candidate, selected[0]) {
+			heap.Pop(&selected)
+			heap.Push(&selected, candidate)
+		}
+	}
 	itemsCursor, err := s.DB.Collection("health_items").Find(ctx, bson.M{"user_id": userID})
 	if err != nil {
 		return nil, internal()
 	}
 	defer itemsCursor.Close(ctx)
-	result := []*pb.HealthOccurrence{}
 	for itemsCursor.Next(ctx) {
 		var item healthItemDoc
 		if itemsCursor.Decode(&item) != nil {
@@ -129,7 +175,7 @@ func (s *Server) ListOccurrences(ctx context.Context, req *pb.ListOccurrencesReq
 				if occurrence.LocalDate < item.StartDate || (item.EndDate != "" && occurrence.LocalDate > item.EndDate) {
 					continue
 				}
-				result = append(result, s.occurrenceFromSchedule(item, schedule, occurrence))
+				addCandidate(s.occurrenceFromSchedule(item, schedule, occurrence))
 			}
 		}
 		if schedules.Err() != nil {
@@ -141,55 +187,40 @@ func (s *Server) ListOccurrences(ctx context.Context, req *pb.ListOccurrencesReq
 	if itemsCursor.Err() != nil {
 		return nil, internal()
 	}
-	// Actions are only stored when the user explicitly records them.
-	events, err := s.DB.Collection("health_item_events").Find(ctx,
-		bson.M{"user_id": userID, "scheduled_at_utc": bson.M{"$gte": from, "$lt": to}})
-	if err != nil {
-		return nil, internal()
+	items := make([]*pb.HealthOccurrence, selected.Len())
+	copy(items, selected)
+	sort.Slice(items, func(i, j int) bool { return occurrenceBefore(items[i], items[j]) })
+	page := &pb.OccurrencePage{Items: items, HasMore: len(items) > pageSize}
+	if page.HasMore {
+		page.Items = page.Items[:pageSize]
 	}
-	defer events.Close(ctx)
-	byID := map[string]healthEventDoc{}
-	for events.Next(ctx) {
-		var event healthEventDoc
-		if events.Decode(&event) != nil {
+	if len(page.Items) > 0 {
+		ids := make([]string, 0, len(page.Items))
+		for _, item := range page.Items {
+			ids = append(ids, item.OccurrenceId)
+		}
+		events, findErr := s.DB.Collection("health_item_events").Find(ctx, bson.M{"user_id": userID, "occurrence_id": bson.M{"$in": ids}})
+		if findErr != nil {
 			return nil, internal()
 		}
-		byID[event.OccurrenceID] = event
-	}
-	if events.Err() != nil {
-		return nil, internal()
-	}
-	for _, item := range result {
-		if event, ok := byID[item.OccurrenceId]; ok {
-			eventOnOccurrence(item, event)
+		defer events.Close(ctx)
+		byID := map[string]healthEventDoc{}
+		for events.Next(ctx) {
+			var event healthEventDoc
+			if events.Decode(&event) != nil {
+				return nil, internal()
+			}
+			byID[event.OccurrenceID] = event
+		}
+		if events.Err() != nil {
+			return nil, internal()
+		}
+		for _, item := range page.Items {
+			if event, ok := byID[item.OccurrenceId]; ok {
+				eventOnOccurrence(item, event)
+			}
 		}
 	}
-	sort.Slice(result, func(i, j int) bool {
-		if result[i].ScheduledAt == result[j].ScheduledAt {
-			return result[i].OccurrenceId < result[j].OccurrenceId
-		}
-		return result[i].ScheduledAt < result[j].ScheduledAt
-	})
-	start := 0
-	if req.Cursor != "" {
-		decoded, err := base64.RawURLEncoding.DecodeString(req.Cursor)
-		if err != nil || len(decoded) > 512 {
-			return nil, invalid("invalid occurrence cursor")
-		}
-		var cursor occurrenceCursor
-		if json.Unmarshal(decoded, &cursor) != nil || cursor.From != req.From || cursor.To != req.To {
-			return nil, invalid("invalid occurrence cursor")
-		}
-		for start < len(result) && (result[start].ScheduledAt < cursor.At ||
-			(result[start].ScheduledAt == cursor.At && result[start].OccurrenceId <= cursor.ID)) {
-			start++
-		}
-	}
-	end := start + int(req.Limit)
-	if end > len(result) {
-		end = len(result)
-	}
-	page := &pb.OccurrencePage{Items: result[start:end], HasMore: end < len(result)}
 	if page.HasMore {
 		last := page.Items[len(page.Items)-1]
 		data, _ := json.Marshal(occurrenceCursor{At: last.ScheduledAt, ID: last.OccurrenceId, From: req.From, To: req.To})

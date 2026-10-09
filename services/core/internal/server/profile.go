@@ -32,6 +32,17 @@ func profileResponse(doc profileDoc) *pb.Profile {
 	return result
 }
 
+func (s *Server) profileWithIdentityState(ctx context.Context, userID primitive.ObjectID, doc profileDoc) (*pb.Profile, error) {
+	result := profileResponse(doc)
+	err := s.DB.Collection("auth_identities").FindOne(ctx, bson.M{"user_id": userID, "provider": "GOOGLE"}).Err()
+	if err == nil {
+		result.HasGoogleIdentity = true
+	} else if err != mongo.ErrNoDocuments {
+		return nil, internal()
+	}
+	return result, nil
+}
+
 func preferencesResponse(doc preferencesDoc) *pb.Preferences {
 	return &pb.Preferences{Id: doc.ID.Hex(), Version: uint64(doc.Version), DailyResetTime: doc.DailyResetTime,
 		UnitSystem: doc.UnitSystem, DashboardNutrients: doc.DashboardNutrients}
@@ -46,7 +57,7 @@ func (s *Server) GetProfile(ctx context.Context, _ *pb.Empty) (*pb.Profile, erro
 	if err := s.DB.Collection("user_profiles").FindOne(ctx, bson.M{"user_id": userID}).Decode(&doc); err != nil {
 		return nil, status.Error(codes.NotFound, "profile not found")
 	}
-	return profileResponse(doc), nil
+	return s.profileWithIdentityState(ctx, userID, doc)
 }
 
 func (s *Server) UpdateProfile(ctx context.Context, req *pb.UpdateProfileRequest) (*pb.Profile, error) {
@@ -113,7 +124,9 @@ func (s *Server) UpdateProfile(ctx context.Context, req *pb.UpdateProfileRequest
 	if err != nil {
 		return nil, internal()
 	}
-	return profileResponse(doc), nil
+	// Identity providers are account state, not profile fields. Preserve that
+	// state in the response to an unrelated profile save.
+	return s.profileWithIdentityState(ctx, userID, doc)
 }
 
 func parseQuantity(q *pb.DecimalQuantity) (*quantityDoc, error) {

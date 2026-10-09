@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	pb "github.com/architsangal/AteThat/services/api/internal/gen/atethat/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -76,5 +77,14 @@ func TestCompactedHistoryErrorIsNotTokenError(t *testing.T) {
 	s.rpcProblem(w, "test-request", status.Error(codes.FailedPrecondition, "partial compacted day cannot be analyzed"))
 	if w.Code != 409 || !strings.Contains(w.Body.String(), "HISTORY_COMPACTED") {
 		t.Fatalf("wrong compacted-history response: %d %s", w.Code, w.Body.String())
+	}
+}
+
+func TestGoogleCompletionDeletionDoesNotRequireSessionOrCookie(t *testing.T) {
+	path, setSession, clearSession, valid := googleCompletionRedirect(&pb.CompleteGoogleSignInResponse{
+		Operation: "REQUEST_DELETION", ReturnTo: "/cancel-deletion",
+	})
+	if !valid || path != "/cancel-deletion?requested=1" || setSession || !clearSession {
+		t.Fatalf("unexpected deletion completion plan: path=%q set=%t clear=%t valid=%t", path, setSession, clearSession, valid)
 	}
 }

@@ -14,6 +14,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/netip"
 	"strconv"
 	"strings"
 	"time"
@@ -26,11 +27,12 @@ import (
 )
 
 type Config struct {
-	CoreAddress    string
-	FrontendOrigin string
-	VerifyKey      ed25519.PublicKey
-	InternalSecret []byte
-	CookieSecure   bool
+	CoreAddress       string
+	FrontendOrigin    string
+	VerifyKey         ed25519.PublicKey
+	InternalSecret    []byte
+	CookieSecure      bool
+	TrustedProxyCIDRs []netip.Prefix
 }
 
 type Server struct {
@@ -115,6 +117,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		s.register(w, r, requestID, ctx)
 	case path == "/auth/verify-email" && r.Method == http.MethodPost:
 		s.verifyEmail(w, r, requestID, ctx)
+	case path == "/auth/email-login" && r.Method == http.MethodPost:
+		s.completeEmailSignIn(w, r, requestID, ctx)
 	case path == "/auth/resend-verification" && r.Method == http.MethodPost:
 		s.emailAction(w, r, requestID, ctx, "resend")
 	case path == "/auth/login" && r.Method == http.MethodPost:

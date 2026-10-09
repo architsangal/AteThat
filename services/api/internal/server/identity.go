@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	pb "github.com/architsangal/AteThat/services/api/internal/gen/atethat/v1"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type registerBody struct {
@@ -44,6 +46,24 @@ func (s *Server) verifyEmail(w http.ResponseWriter, r *http.Request, requestID s
 		return
 	}
 	s.json(w, 200, map[string]bool{"email_verified": result.EmailVerified})
+}
+
+func (s *Server) completeEmailSignIn(w http.ResponseWriter, r *http.Request, requestID string, ctx context.Context) {
+	var body struct {
+		Token       string `json:"token"`
+		NewPassword string `json:"new_password"`
+	}
+	if err := decodeJSON(w, r, &body); err != nil {
+		s.problem(w, requestID, http.StatusBadRequest, "INVALID_REQUEST", "Invalid JSON request")
+		return
+	}
+	result, err := s.Identity.CompleteEmailSignIn(s.rpcContext(ctx, pb.IdentityService_CompleteEmailSignIn_FullMethodName, ""), &pb.EmailTokenRequest{Token: body.Token, NewPassword: body.NewPassword})
+	if err != nil {
+		s.rpcProblem(w, requestID, err)
+		return
+	}
+	s.setRefreshCookie(w, result.RefreshToken)
+	s.sessionJSON(w, result)
 }
 
 func (s *Server) emailAction(w http.ResponseWriter, r *http.Request, requestID string, ctx context.Context, action string) {
@@ -168,29 +188,49 @@ func (s *Server) completeGoogle(w http.ResponseWriter, r *http.Request, requestI
 	result, err := s.Identity.CompleteGoogleSignIn(s.rpcContext(ctx, pb.IdentityService_CompleteGoogleSignIn_FullMethodName, ""),
 		&pb.CompleteGoogleSignInRequest{Code: r.URL.Query().Get("code"), State: r.URL.Query().Get("state")})
 	if err != nil {
+		if isLink && status.Code(err) == codes.InvalidArgument {
+			failurePath = "/app/settings?error=google_link_email_mismatch"
+		}
 		http.Redirect(w, r, s.Config.FrontendOrigin+failurePath, http.StatusFound)
 		return
 	}
-	if !isDeletionRequest {
-		s.setRefreshCookie(w, result.Session.RefreshToken)
-	}
-	returnTo := result.ReturnTo
-	if result.NewUser {
-		returnTo = "/app/settings"
-	}
-	if returnTo != "/app" && returnTo != "/app/settings" && !(isDeletionRequest && returnTo == "/cancel-deletion") {
+	returnTo, setSession, clearSession, valid := googleCompletionRedirect(result)
+	if !valid {
 		s.problem(w, requestID, 503, "CORE_UNAVAILABLE", "Invalid OAuth return path")
 		return
 	}
-	if isLink {
-		returnTo = "/app/settings?linked=google"
-	} else if isDeletionCancellation {
-		returnTo = "/app/settings?deletion_cancelled=google"
-	} else if isDeletionRequest {
+	if setSession {
+		s.setRefreshCookie(w, result.Session.RefreshToken)
+	}
+	if clearSession {
 		s.clearRefreshCookie(w)
-		returnTo = "/cancel-deletion?requested=1"
 	}
 	http.Redirect(w, r, s.Config.FrontendOrigin+returnTo, http.StatusFound)
+}
+
+// googleCompletionRedirect trusts only the operation emitted by Core after it
+// consumes the one-time OAuth state. Browser cookies may help select an error
+// page before state completion, but must never control a successful operation.
+func googleCompletionRedirect(result *pb.CompleteGoogleSignInResponse) (returnTo string, setSession, clearSession, valid bool) {
+	if result == nil {
+		return "", false, false, false
+	}
+	switch result.Operation {
+	case "REQUEST_DELETION":
+		return "/cancel-deletion?requested=1", false, true, result.Session == nil && result.ReturnTo == "/cancel-deletion"
+	case "LINK":
+		return "/app/settings?linked=google", true, false, result.Session != nil && result.ReturnTo == "/app/settings"
+	case "CANCEL_DELETION":
+		return "/app/settings?deletion_cancelled=google", true, false, result.Session != nil && result.ReturnTo == "/app/settings"
+	case "SIGN_IN":
+		returnTo = result.ReturnTo
+		if result.NewUser {
+			returnTo = "/app/settings"
+		}
+		return returnTo, true, false, result.Session != nil && (returnTo == "/app" || returnTo == "/app/settings")
+	default:
+		return "", false, false, false
+	}
 }
 
 func (s *Server) requestAccountDeletion(w http.ResponseWriter, r *http.Request, requestID string, ctx context.Context) {

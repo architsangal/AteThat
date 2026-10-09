@@ -32,6 +32,7 @@ const (
 	IdentityService_Logout_FullMethodName                          = "/atethat.v1.IdentityService/Logout"
 	IdentityService_RequestPasswordReset_FullMethodName            = "/atethat.v1.IdentityService/RequestPasswordReset"
 	IdentityService_ResetPassword_FullMethodName                   = "/atethat.v1.IdentityService/ResetPassword"
+	IdentityService_CompleteEmailSignIn_FullMethodName             = "/atethat.v1.IdentityService/CompleteEmailSignIn"
 	IdentityService_RequestAccountDeletion_FullMethodName          = "/atethat.v1.IdentityService/RequestAccountDeletion"
 	IdentityService_CancelAccountDeletion_FullMethodName           = "/atethat.v1.IdentityService/CancelAccountDeletion"
 )
@@ -53,6 +54,7 @@ type IdentityServiceClient interface {
 	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*Empty, error)
 	RequestPasswordReset(ctx context.Context, in *EmailRequest, opts ...grpc.CallOption) (*GenericMessage, error)
 	ResetPassword(ctx context.Context, in *ResetPasswordRequest, opts ...grpc.CallOption) (*Empty, error)
+	CompleteEmailSignIn(ctx context.Context, in *EmailTokenRequest, opts ...grpc.CallOption) (*SessionResult, error)
 	RequestAccountDeletion(ctx context.Context, in *RequestAccountDeletionRequest, opts ...grpc.CallOption) (*AccountDeletionStatus, error)
 	CancelAccountDeletion(ctx context.Context, in *CancelAccountDeletionRequest, opts ...grpc.CallOption) (*SessionResult, error)
 }
@@ -182,6 +184,15 @@ func (c *identityServiceClient) ResetPassword(ctx context.Context, in *ResetPass
 	return out, nil
 }
 
+func (c *identityServiceClient) CompleteEmailSignIn(ctx context.Context, in *EmailTokenRequest, opts ...grpc.CallOption) (*SessionResult, error) {
+	out := new(SessionResult)
+	err := c.cc.Invoke(ctx, IdentityService_CompleteEmailSignIn_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *identityServiceClient) RequestAccountDeletion(ctx context.Context, in *RequestAccountDeletionRequest, opts ...grpc.CallOption) (*AccountDeletionStatus, error) {
 	out := new(AccountDeletionStatus)
 	err := c.cc.Invoke(ctx, IdentityService_RequestAccountDeletion_FullMethodName, in, out, opts...)
@@ -217,6 +228,7 @@ type IdentityServiceServer interface {
 	Logout(context.Context, *LogoutRequest) (*Empty, error)
 	RequestPasswordReset(context.Context, *EmailRequest) (*GenericMessage, error)
 	ResetPassword(context.Context, *ResetPasswordRequest) (*Empty, error)
+	CompleteEmailSignIn(context.Context, *EmailTokenRequest) (*SessionResult, error)
 	RequestAccountDeletion(context.Context, *RequestAccountDeletionRequest) (*AccountDeletionStatus, error)
 	CancelAccountDeletion(context.Context, *CancelAccountDeletionRequest) (*SessionResult, error)
 	mustEmbedUnimplementedIdentityServiceServer()
@@ -264,6 +276,9 @@ func (UnimplementedIdentityServiceServer) RequestPasswordReset(context.Context, 
 }
 func (UnimplementedIdentityServiceServer) ResetPassword(context.Context, *ResetPasswordRequest) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ResetPassword not implemented")
+}
+func (UnimplementedIdentityServiceServer) CompleteEmailSignIn(context.Context, *EmailTokenRequest) (*SessionResult, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CompleteEmailSignIn not implemented")
 }
 func (UnimplementedIdentityServiceServer) RequestAccountDeletion(context.Context, *RequestAccountDeletionRequest) (*AccountDeletionStatus, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RequestAccountDeletion not implemented")
@@ -518,6 +533,24 @@ func _IdentityService_ResetPassword_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _IdentityService_CompleteEmailSignIn_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EmailTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IdentityServiceServer).CompleteEmailSignIn(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: IdentityService_CompleteEmailSignIn_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IdentityServiceServer).CompleteEmailSignIn(ctx, req.(*EmailTokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _IdentityService_RequestAccountDeletion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RequestAccountDeletionRequest)
 	if err := dec(in); err != nil {
@@ -612,6 +645,10 @@ var IdentityService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ResetPassword",
 			Handler:    _IdentityService_ResetPassword_Handler,
+		},
+		{
+			MethodName: "CompleteEmailSignIn",
+			Handler:    _IdentityService_CompleteEmailSignIn_Handler,
 		},
 		{
 			MethodName: "RequestAccountDeletion",

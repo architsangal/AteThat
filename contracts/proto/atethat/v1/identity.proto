@@ -18,6 +18,7 @@ service IdentityService {
   rpc Logout(LogoutRequest) returns (Empty);
   rpc RequestPasswordReset(EmailRequest) returns (GenericMessage);
   rpc ResetPassword(ResetPasswordRequest) returns (Empty);
+  rpc CompleteEmailSignIn(EmailTokenRequest) returns (SessionResult);
   rpc RequestAccountDeletion(RequestAccountDeletionRequest) returns (AccountDeletionStatus);
   rpc CancelAccountDeletion(CancelAccountDeletionRequest) returns (SessionResult);
 }
@@ -41,6 +42,10 @@ message RegisterRequest {
 }
 message VerifyEmailRequest { string token = 1; }
 message VerifyEmailResponse { bool email_verified = 1; }
+message EmailTokenRequest {
+  string token = 1;
+  string new_password = 2;
+}
 message LoginRequest {
   string email = 1;
   string password = 2;
@@ -55,6 +60,8 @@ message CompleteGoogleSignInResponse {
   SessionResult session = 1;
   string return_to = 2;
   bool new_user = 3;
+  // The server-validated OAuth operation from the consumed state record.
+  string operation = 4;
 }
 message RefreshSessionRequest { string refresh_token = 1; }
 message LogoutRequest { string refresh_token = 1; }
@@ -101,6 +108,7 @@ message Profile {
   string goal = 9;
   string timezone = 10;
   string updated_at = 11;
+  bool has_google_identity = 12;
 }
 message UpdateProfileRequest {
   uint64 version = 1;

@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"errors"
+	"log"
 	"strings"
 	"time"
 
@@ -135,18 +136,28 @@ func (s *Server) RunAccountDeletionPurge(ctx context.Context) error {
 }
 
 func (s *Server) RunAccountDeletionPurgeLoop(ctx context.Context) {
-	if err := s.RunAccountDeletionPurge(ctx); err != nil {
-		return
-	}
-	ticker := time.NewTicker(time.Hour)
-	defer ticker.Stop()
 	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-ticker.C:
-			_ = s.RunAccountDeletionPurge(ctx)
+		if err := s.RunAccountDeletionPurge(ctx); err != nil {
+			log.Printf("account deletion purge failed; retrying in one minute: %v", err)
+			if !waitForPurge(ctx, time.Minute) {
+				return
+			}
+			continue
 		}
+		if !waitForPurge(ctx, time.Hour) {
+			return
+		}
+	}
+}
+
+func waitForPurge(ctx context.Context, delay time.Duration) bool {
+	timer := time.NewTimer(delay)
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		return false
+	case <-timer.C:
+		return true
 	}
 }
 

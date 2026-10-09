@@ -24,3 +24,13 @@ func TestAlternateDay(t *testing.T) {
 		t.Fatalf("occurrences: %+v %v", items, err)
 	}
 }
+
+func TestEffectiveEndDateBoundsOccurrences(t *testing.T) {
+	s := Schedule{Timezone: "UTC", Frequency: "DAILY", Interval: 1, LocalTimes: []string{"08:00"}, EffectiveFromDate: "2026-10-08", EffectiveToDate: "2026-10-09"}
+	from, _ := time.Parse(time.RFC3339, "2026-10-08T00:00:00Z")
+	to, _ := time.Parse(time.RFC3339, "2026-10-12T00:00:00Z")
+	items, err := Expand(s, from, to)
+	if err != nil || len(items) != 2 || items[1].LocalDate != "2026-10-09" {
+		t.Fatalf("effective end date was not enforced: %+v %v", items, err)
+	}
+}

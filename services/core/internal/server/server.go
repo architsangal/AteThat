@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"log"
 	"net"
 	"net/mail"
 	"net/smtp"
@@ -241,6 +242,15 @@ func (s *Server) sendEmail(ctx context.Context, to, subject, path, token string)
 		return err
 	}
 	return client.Quit()
+}
+
+// sendEmailBestEffort preserves the account-enumeration-safe public responses
+// while making delivery failures observable to operators without logging a
+// recipient address or one-time token.
+func (s *Server) sendEmailBestEffort(ctx context.Context, to, subject, path, token string) {
+	if err := s.sendEmail(ctx, to, subject, path, token); err != nil {
+		log.Printf("email delivery failed: subject=%q error=%v", subject, err)
+	}
 }
 
 func invalid(message string) error { return status.Error(codes.InvalidArgument, message) }

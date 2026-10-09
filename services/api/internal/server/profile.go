@@ -75,7 +75,7 @@ func (s *Server) updateProfile(w http.ResponseWriter, r *http.Request, requestID
 func profileJSON(value *pb.Profile) map[string]interface{} {
 	result := map[string]interface{}{
 		"id": value.Id, "version": value.Version, "display_name": value.DisplayName,
-		"timezone": value.Timezone, "updated_at": value.UpdatedAt,
+		"timezone": value.Timezone, "updated_at": value.UpdatedAt, "has_google_identity": value.HasGoogleIdentity,
 	}
 	if value.DateOfBirth != "" {
 		result["date_of_birth"] = value.DateOfBirth
