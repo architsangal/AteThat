@@ -1,0 +1,804 @@
+openapi: 3.0.3
+info:
+  title: AteThat API
+  version: 0.1.0
+  description: |
+    Executable contract for identity, profile, preferences, Tracking Day, and nutrition targets.
+    The complete Phase 1 route inventory remains in docs/5. API_DESIGN.md until formalized here.
+    All persisted instants are UTC. Browser access tokens stay in memory; refresh tokens
+    are carried only in a Secure, HttpOnly, SameSite=Lax cookie outside local development.
+servers:
+  - url: http://localhost:18080/api/v1
+    description: Local API service (when implemented)
+tags:
+  - name: Identity
+  - name: Profile
+  - name: Preferences
+  - name: TrackingDay
+  - name: NutritionTargets
+  - name: Foods
+security:
+  - bearerAuth: []
+paths:
+  /auth/register:
+    post:
+      tags: [Identity]
+      operationId: register
+      summary: Register an email-and-password account
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterRequest' }
+      responses:
+        '202':
+          description: Generic, enumeration-resistant acknowledgment
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GenericMessage' }
+        default: { $ref: '#/components/responses/Problem' }
+  /auth/verify-email:
+    post:
+      tags: [Identity]
+      operationId: verifyEmail
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TokenRequest' }
+      responses:
+        '200':
+          description: Email verified
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VerifyEmailResponse' }
+        default: { $ref: '#/components/responses/Problem' }
+  /auth/resend-verification:
+    post:
+      tags: [Identity]
+      operationId: resendVerification
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EmailRequest' }
+      responses:
+        '202':
+          description: Generic, enumeration-resistant acknowledgment
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GenericMessage' }
+        default: { $ref: '#/components/responses/Problem' }
+  /auth/login:
+    post:
+      tags: [Identity]
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200':
+          description: Session created; refresh token is set in HttpOnly cookie
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+            Set-Cookie:
+              description: Rotated refresh cookie; never contains the access token
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SessionResponse' }
+        default: { $ref: '#/components/responses/Problem' }
+  /auth/google/start:
+    get:
+      tags: [Identity]
+      operationId: startGoogleSignIn
+      summary: Start backend-managed Google OAuth with PKCE and one-time state
+      security: []
+      parameters:
+        - name: return_to
+          in: query
+          required: true
+          schema: { type: string, enum: [/app, /app/settings] }
+      responses:
+        '302':
+          description: Redirect to Google authorization endpoint
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+            Location: { schema: { type: string, format: uri } }
+        default: { $ref: '#/components/responses/Problem' }
+  /auth/google/callback:
+    get:
+      tags: [Identity]
+      operationId: completeGoogleSignIn
+      summary: Consume one-time state, validate Google ID token, create AteThat session
+      security: []
+      parameters:
+        - name: code
+          in: query
+          schema: { type: string }
+        - name: state
+          in: query
+          schema: { type: string }
+        - name: error
+          in: query
+          schema: { type: string }
+      responses:
+        '302':
+          description: Redirect to an allowed frontend path, with refresh cookie on success
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+            Location: { schema: { type: string, format: uri } }
+            Set-Cookie: { schema: { type: string } }
+        default: { $ref: '#/components/responses/Problem' }
+  /account/identities/google/link/start:
+    get:
+      tags: [Identity]
+      operationId: startGoogleLink
+      summary: Start explicit Google identity linking for an authenticated account
+      responses:
+        '200':
+          description: One-time Google authorization URL
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [authorization_url]
+                properties:
+                  authorization_url: { type: string, format: uri }
+        default: { $ref: '#/components/responses/Problem' }
+  /auth/refresh:
+    post:
+      tags: [Identity]
+      operationId: refreshSession
+      summary: Rotate refresh cookie and return a new short-lived access token
+      description: The implementation must validate the configured frontend origin and enforce CSRF protection appropriate to its cookie deployment.
+      security: []
+      responses:
+        '200':
+          description: Session refreshed
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+            Set-Cookie:
+              description: Rotated HttpOnly refresh cookie
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SessionResponse' }
+        default: { $ref: '#/components/responses/Problem' }
+  /auth/logout:
+    post:
+      tags: [Identity]
+      operationId: logout
+      description: Accepts a valid bearer token or refresh cookie and clears the current session family.
+      security:
+        - bearerAuth: []
+        - {}
+      responses:
+        '204':
+          description: Session revoked or already absent; refresh cookie cleared
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+        default: { $ref: '#/components/responses/Problem' }
+  /auth/forgot-password:
+    post:
+      tags: [Identity]
+      operationId: requestPasswordReset
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EmailRequest' }
+      responses:
+        '202':
+          description: Generic, enumeration-resistant acknowledgment
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GenericMessage' }
+        default: { $ref: '#/components/responses/Problem' }
+  /auth/reset-password:
+    post:
+      tags: [Identity]
+      operationId: resetPassword
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ResetPasswordRequest' }
+      responses:
+        '204':
+          description: Password changed; all existing sessions revoked
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+        default: { $ref: '#/components/responses/Problem' }
+  /profile:
+    get:
+      tags: [Profile]
+      operationId: getProfile
+      responses:
+        '200':
+          description: Current owned profile
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Profile' }
+        default: { $ref: '#/components/responses/Problem' }
+    patch:
+      tags: [Profile]
+      operationId: updateProfile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateProfileRequest' }
+      responses:
+        '200':
+          description: Updated profile
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Profile' }
+        default: { $ref: '#/components/responses/Problem' }
+  /preferences:
+    get:
+      tags: [Preferences]
+      operationId: getPreferences
+      responses:
+        '200':
+          description: Current owned preferences
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Preferences' }
+        default: { $ref: '#/components/responses/Problem' }
+    patch:
+      tags: [Preferences]
+      operationId: updatePreferences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdatePreferencesRequest' }
+      responses:
+        '200':
+          description: Updated preferences
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Preferences' }
+        default: { $ref: '#/components/responses/Problem' }
+  /tracking-day/current:
+    get:
+      tags: [TrackingDay]
+      operationId: getCurrentTrackingDay
+      summary: Derive the caller's current nutrition day from Core-owned timezone and reset preferences
+      responses:
+        '200':
+          description: Current Tracking Day and the UTC instant used to calculate it
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TrackingDayContext' }
+        default: { $ref: '#/components/responses/Problem' }
+  /nutrition/targets/calculate:
+    post:
+      tags: [NutritionTargets]
+      operationId: calculateNutritionTargets
+      summary: Propose an FDA general benchmark for an adult account
+      description: Values are general food-label references, not personalized recommendations.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CalculateTargetRequest' }
+      responses:
+        '201':
+          description: Versioned proposal awaiting review
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TargetVersion' }
+        default: { $ref: '#/components/responses/Problem' }
+  /nutrition/targets:
+    get:
+      tags: [NutritionTargets]
+      operationId: getNutritionTargets
+      responses:
+        '200':
+          description: Current active and proposed versions
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TargetSelection' }
+        default: { $ref: '#/components/responses/Problem' }
+  /nutrition/targets/history:
+    get:
+      tags: [NutritionTargets]
+      operationId: listNutritionTargetHistory
+      parameters:
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 50 } }
+        - { name: cursor, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: Cursor-paginated version history
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TargetHistoryPage' }
+        default: { $ref: '#/components/responses/Problem' }
+  /nutrition/targets/{id}/accept:
+    post:
+      tags: [NutritionTargets]
+      operationId: acceptNutritionTargets
+      parameters:
+        - { name: id, in: path, required: true, schema: { $ref: '#/components/schemas/ObjectId' } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AcceptTargetRequest' }
+      responses:
+        '200':
+          description: Activated version
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TargetVersion' }
+        default: { $ref: '#/components/responses/Problem' }
+  /nutrition/targets/{id}/reject:
+    post:
+      tags: [NutritionTargets]
+      operationId: rejectNutritionTargets
+      parameters:
+        - { name: id, in: path, required: true, schema: { $ref: '#/components/schemas/ObjectId' } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: false }
+      responses:
+        '204': { description: Proposal rejected }
+        default: { $ref: '#/components/responses/Problem' }
+  /foods/search:
+    get:
+      tags: [Foods]
+      operationId: searchUSDAFoods
+      summary: Search USDA FoodData Central, including only known provider values
+      parameters:
+        - { name: q, in: query, required: true, schema: { type: string, minLength: 2, maxLength: 100 } }
+        - { name: food_state, in: query, schema: { type: string, enum: [RAW, COOKED, PREPARED, UNKNOWN] } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 50 } }
+        - { name: cursor, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: Paginated USDA results; provider failures yield 503
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FoodSearchPage' }
+        default: { $ref: '#/components/responses/Problem' }
+  /foods/provider/{provider_food_id}:
+    get:
+      tags: [Foods]
+      operationId: getUSDAFood
+      parameters:
+        - { name: provider_food_id, in: path, required: true, schema: { type: string, pattern: '^[0-9]+$' } }
+      responses:
+        '200':
+          description: Normalized USDA detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FoodResult' }
+        default: { $ref: '#/components/responses/Problem' }
+  /account/deletion-request:
+    post:
+      tags: [Identity]
+      operationId: requestAccountDeletion
+      summary: Verify a current local password, revoke sessions, and begin the 30-day deletion window
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AccountDeletionRequest' }
+      responses:
+        '202':
+          description: Account is deletion-pending; the refresh cookie is cleared
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AccountDeletionStatus' }
+        default: { $ref: '#/components/responses/Problem' }
+  /account/deletion-request/google/start:
+    get:
+      tags: [Identity]
+      operationId: startGoogleAccountDeletion
+      summary: Start fresh Google re-authentication for an authenticated linked account
+      responses:
+        '200':
+          description: One-time Google authorization URL
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [authorization_url]
+                properties:
+                  authorization_url: { type: string, format: uri }
+        default: { $ref: '#/components/responses/Problem' }
+  /auth/cancel-deletion:
+    post:
+      tags: [Identity]
+      operationId: cancelAccountDeletion
+      security: []
+      summary: Cancel a pending deletion using fresh local-password verification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CancelAccountDeletionRequest' }
+      responses:
+        '200':
+          description: Account restored and a new session created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SessionResponse' }
+        default: { $ref: '#/components/responses/Problem' }
+  /auth/google/cancel-deletion/start:
+    get:
+      tags: [Identity]
+      operationId: startGoogleDeletionCancellation
+      security: []
+      summary: Start fresh Google re-authentication to restore the matching pending account
+      responses:
+        '200':
+          description: One-time Google authorization URL
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [authorization_url]
+                properties:
+                  authorization_url: { type: string, format: uri }
+        default: { $ref: '#/components/responses/Problem' }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  headers:
+    RequestId:
+      description: Safe request correlation identifier; never carries personal data
+      schema: { type: string }
+  responses:
+    Problem:
+      description: API problem; status and code depend on the failure
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/RequestId' }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+  schemas:
+    AccountDeletionRequest:
+      type: object
+      additionalProperties: false
+      required: [password]
+      properties:
+        password: { type: string, format: password }
+    CancelAccountDeletionRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, format: password }
+    AccountDeletionStatus:
+      type: object
+      required: [status, requested_at, purge_after]
+      properties:
+        status: { type: string, enum: [PENDING] }
+        requested_at: { $ref: '#/components/schemas/UtcInstant' }
+        purge_after: { $ref: '#/components/schemas/UtcInstant' }
+    FoodNutrient:
+      type: object
+      required: [status, unit]
+      properties:
+        status: { type: string, enum: [KNOWN, UNKNOWN] }
+        amount: { $ref: '#/components/schemas/Decimal' }
+        unit: { type: string }
+    FoodResult:
+      type: object
+      required: [food_reference, name, food_state, base_quantity, nutrients, data_type, source_url]
+      properties:
+        food_reference:
+          type: object
+          required: [type, provider_food_id, custom_food_id]
+          properties:
+            type: { type: string, enum: [USDA] }
+            provider_food_id: { type: string }
+            custom_food_id: { type: string, nullable: true }
+        name: { type: string }
+        food_state: { type: string, enum: [RAW, COOKED, PREPARED, UNKNOWN] }
+        base_quantity: { $ref: '#/components/schemas/Quantity' }
+        nutrients:
+          type: object
+          additionalProperties: { $ref: '#/components/schemas/FoodNutrient' }
+        data_type: { type: string }
+        source_url: { type: string, format: uri }
+    FoodSearchPage:
+      type: object
+      required: [items, page]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/FoodResult' }
+        page:
+          type: object
+          required: [next_cursor, has_more]
+          properties:
+            next_cursor: { type: string, nullable: true }
+            has_more: { type: boolean }
+    CalculateTargetRequest:
+      type: object
+      additionalProperties: false
+      required: [profile_version, effective_from_tracking_day]
+      properties:
+        profile_version: { type: integer, minimum: 1 }
+        effective_from_tracking_day: { type: string, format: date }
+    TargetValue:
+      type: object
+      additionalProperties: false
+      required: [reference_value, active_value, unit, is_manual_override, override_reason]
+      properties:
+        reference_value: { $ref: '#/components/schemas/Decimal' }
+        active_value: { $ref: '#/components/schemas/Decimal' }
+        unit: { type: string }
+        is_manual_override: { type: boolean }
+        override_reason: { type: string }
+    TargetVersion:
+      type: object
+      required: [id, revision, status, profile_version, reference_set, source_attribution, calculation_version, effective_from_tracking_day, target_basis, targets, created_at]
+      properties:
+        id: { $ref: '#/components/schemas/ObjectId' }
+        revision: { type: integer, minimum: 1 }
+        status: { type: string, enum: [PROPOSED, ACTIVE, REJECTED, SUPERSEDED] }
+        profile_version: { type: integer, minimum: 1 }
+        reference_set:
+          type: object
+          required: [key, version]
+          properties:
+            key: { type: string }
+            version: { type: string }
+        source_attribution:
+          type: object
+          required: [name, publisher, version, information_url]
+          properties:
+            name: { type: string }
+            publisher: { type: string }
+            version: { type: string }
+            information_url: { type: string, format: uri }
+        calculation_version: { type: string }
+        effective_from_tracking_day: { type: string, format: date }
+        target_basis: { type: string, enum: [GENERAL_BENCHMARK] }
+        targets:
+          type: object
+          additionalProperties: { $ref: '#/components/schemas/TargetValue' }
+        created_at: { $ref: '#/components/schemas/UtcInstant' }
+        reviewed_at: { $ref: '#/components/schemas/UtcInstant' }
+    TargetSelection:
+      type: object
+      required: [active, proposed]
+      properties:
+        active: { allOf: [{ $ref: '#/components/schemas/TargetVersion' }], nullable: true }
+        proposed: { allOf: [{ $ref: '#/components/schemas/TargetVersion' }], nullable: true }
+    AcceptTargetRequest:
+      type: object
+      additionalProperties: false
+      required: [effective_from_tracking_day, overrides]
+      properties:
+        effective_from_tracking_day: { type: string, format: date }
+        overrides:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties: false
+            required: [active_value, override_reason]
+            properties:
+              active_value: { $ref: '#/components/schemas/Decimal' }
+              override_reason: { type: string, minLength: 1 }
+    TargetHistoryPage:
+      type: object
+      required: [items, page]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/TargetVersion' }
+        page:
+          type: object
+          required: [next_cursor, has_more]
+          properties:
+            next_cursor: { type: string, nullable: true }
+            has_more: { type: boolean }
+    ObjectId:
+      type: string
+      pattern: '^[0-9a-f]{24}$'
+    UtcInstant:
+      type: string
+      format: date-time
+      description: RFC 3339 instant serialized in UTC
+      example: '2026-09-28T02:30:00Z'
+    Decimal:
+      type: string
+      pattern: '^-?[0-9]+(\.[0-9]+)?$'
+      description: Decimal string, never a JSON floating-point number
+    Quantity:
+      type: object
+      additionalProperties: false
+      required: [amount, unit]
+      properties:
+        amount: { $ref: '#/components/schemas/Decimal' }
+        unit: { type: string, minLength: 1 }
+    GenericMessage:
+      type: object
+      additionalProperties: false
+      required: [message]
+      properties:
+        message: { type: string }
+    RegisterRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password, display_name, timezone]
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+        password: { type: string, minLength: 1, writeOnly: true, description: Server-side policy is configured with the identity service }
+        display_name: { type: string, minLength: 1, maxLength: 80 }
+        timezone: { type: string, minLength: 1, example: Asia/Kolkata, description: IANA timezone name }
+    EmailRequest:
+      type: object
+      additionalProperties: false
+      required: [email]
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+    TokenRequest:
+      type: object
+      additionalProperties: false
+      required: [token]
+      properties:
+        token: { type: string, minLength: 1, writeOnly: true }
+    VerifyEmailResponse:
+      type: object
+      additionalProperties: false
+      required: [email_verified]
+      properties:
+        email_verified: { type: boolean, enum: [true] }
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password]
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+        password: { type: string, minLength: 1, writeOnly: true }
+    ResetPasswordRequest:
+      type: object
+      additionalProperties: false
+      required: [token, new_password]
+      properties:
+        token: { type: string, minLength: 1, writeOnly: true }
+        new_password: { type: string, minLength: 1, writeOnly: true, description: Server-side policy is configured with the identity service }
+    User:
+      type: object
+      additionalProperties: false
+      required: [id, email, email_verified, status]
+      properties:
+        id: { $ref: '#/components/schemas/ObjectId' }
+        email: { type: string, format: email }
+        email_verified: { type: boolean }
+        status: { type: string, enum: [ACTIVE, PENDING_EMAIL_VERIFICATION, DELETION_PENDING] }
+    SessionResponse:
+      type: object
+      additionalProperties: false
+      required: [access_token, token_type, expires_in_seconds, user]
+      properties:
+        access_token: { type: string, minLength: 1 }
+        token_type: { type: string, enum: [Bearer] }
+        expires_in_seconds: { type: integer, minimum: 1, example: 900 }
+        user: { $ref: '#/components/schemas/User' }
+    Profile:
+      type: object
+      additionalProperties: false
+      required: [id, version, display_name, timezone, updated_at]
+      properties:
+        id: { $ref: '#/components/schemas/ObjectId' }
+        version: { type: integer, minimum: 1 }
+        display_name: { type: string, minLength: 1, maxLength: 80 }
+        date_of_birth: { type: string, format: date, nullable: true }
+        sex: { type: string, nullable: true }
+        height: { $ref: '#/components/schemas/Quantity' }
+        weight: { $ref: '#/components/schemas/Quantity' }
+        activity_level: { type: string, nullable: true }
+        goal: { type: string, nullable: true }
+        timezone: { type: string, minLength: 1, example: Asia/Kolkata }
+        updated_at: { $ref: '#/components/schemas/UtcInstant' }
+    UpdateProfileRequest:
+      type: object
+      additionalProperties: false
+      required: [version]
+      properties:
+        version: { type: integer, minimum: 1 }
+        display_name: { type: string, minLength: 1, maxLength: 80 }
+        date_of_birth: { type: string, format: date, nullable: true }
+        sex: { type: string, nullable: true }
+        height: { $ref: '#/components/schemas/Quantity' }
+        weight: { $ref: '#/components/schemas/Quantity' }
+        activity_level: { type: string }
+        goal: { type: string }
+        timezone: { type: string, minLength: 1, example: Asia/Kolkata }
+    Preferences:
+      type: object
+      additionalProperties: false
+      required: [id, version, daily_reset_time, unit_system, dashboard_nutrients]
+      properties:
+        id: { $ref: '#/components/schemas/ObjectId' }
+        version: { type: integer, minimum: 1 }
+        daily_reset_time: { type: string, pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$', example: '04:00' }
+        unit_system: { type: string, enum: [METRIC, IMPERIAL] }
+        dashboard_nutrients:
+          type: array
+          items: { type: string, pattern: '^[A-Z][A-Z_]*$' }
+    TrackingDayContext:
+      type: object
+      additionalProperties: false
+      required: [tracking_day, timezone, daily_reset_time, rule_version, as_of_utc]
+      properties:
+        tracking_day: { type: string, format: date }
+        timezone: { type: string, example: Asia/Kolkata }
+        daily_reset_time: { type: string, pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$' }
+        rule_version: { type: integer, minimum: 1 }
+        as_of_utc: { $ref: '#/components/schemas/UtcInstant' }
+    UpdatePreferencesRequest:
+      type: object
+      additionalProperties: false
+      required: [version]
+      properties:
+        version: { type: integer, minimum: 1 }
+        daily_reset_time: { type: string, pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$' }
+        unit_system: { type: string, enum: [METRIC, IMPERIAL] }
+        dashboard_nutrients:
+          type: array
+          items: { type: string, pattern: '^[A-Z][A-Z_]*$' }
+    FieldError:
+      type: object
+      required: [field, code, message]
+      properties:
+        field: { type: string }
+        code: { type: string }
+        message: { type: string }
+    Problem:
+      type: object
+      required: [type, title, status, code, detail, request_id]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer, minimum: 400 }
+        code: { type: string, pattern: '^[A-Z][A-Z_]*$' }
+        detail: { type: string }
+        request_id: { type: string }
+        field_errors:
+          type: array
+          items: { $ref: '#/components/schemas/FieldError' }

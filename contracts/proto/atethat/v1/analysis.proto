@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package atethat.v1;
+
+import "atethat/v1/foods.proto";
+import "atethat/v1/health.proto";
+
+service AnalysisService {
+  rpc NutritionHistory(NutritionHistoryRequest) returns (NutritionHistoryPage);
+  rpc FullAnalysis(FullAnalysisRequest) returns (FullAnalysisResponse);
+  rpc HealthActionHistory(HealthHistoryRequest) returns (HealthHistoryPage);
+}
+
+message NutritionDaySummary {
+  string tracking_day = 1;
+  string timezone = 2;
+  string daily_reset_time = 3;
+  map<string, FoodNutrient> totals = 4;
+  uint32 confirmed_group_count = 5;
+  uint32 confirmed_item_count = 6;
+  bool detail_compacted = 7;
+}
+message NutritionHistoryRequest { string from_tracking_day = 1; string to_tracking_day = 2; uint32 limit = 3; string cursor = 4; }
+message NutritionHistoryPage { repeated NutritionDaySummary items = 1; string next_cursor = 2; bool has_more = 3; }
+message FullAnalysisRequest { string from = 1; string to = 2; }
+message FullAnalysisResponse { string from = 1; string to = 2; map<string, FoodNutrient> totals = 3; uint32 confirmed_group_count = 4; uint32 confirmed_item_count = 5; uint32 compacted_day_count = 6; }
+message HealthHistoryRequest { string from = 1; string to = 2; uint32 limit = 3; string cursor = 4; }
+message HealthHistoryPage { repeated HealthOccurrence items = 1; string next_cursor = 2; bool has_more = 3; }

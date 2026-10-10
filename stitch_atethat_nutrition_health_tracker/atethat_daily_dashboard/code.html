@@ -1,0 +1,615 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_dashboard" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-tertiary-container": "#ef8946", "secondary": "#236960", "on-tertiary-fixed": "#321200", "secondary-container": "#a9ede1", "error-container": "#ffdad6", "secondary-fixed-dim": "#90d3c8", "inverse-on-surface": "#eaf1ff", "on-error": "#ffffff", "on-surface-variant": "#43474e", "on-secondary-fixed": "#00201c", "surface-container-low": "#eff4ff", "on-secondary": "#ffffff", "error": "#ba1a1a", "primary-fixed-dim": "#adc8f5", "inverse-surface": "#213145", "on-secondary-fixed-variant": "#005049", "on-primary-container": "#8aa4cf", "on-primary": "#ffffff", "tertiary-container": "#602900", "surface-tint": "#455f87", "on-surface": "#0b1c30", "background": "#f8f9ff", "on-primary-fixed-variant": "#2d486d", "primary-container": "#1e3a5f", "surface-container": "#e5eeff", "on-background": "#0b1c30", "tertiary": "#3f1900", "tertiary-fixed": "#ffdbc9", "surface-container-highest": "#d3e4fe", "on-tertiary": "#ffffff", "primary": "#022448", "on-secondary-container": "#286d64", "on-tertiary-fixed-variant": "#753400", "surface-container-high": "#dce9ff", "surface-bright": "#f8f9ff", "outline": "#74777f", "tertiary-fixed-dim": "#ffb68c", "primary-fixed": "#d5e3ff", "surface": "#f8f9ff", "surface-variant": "#d3e4fe", "surface-container-lowest": "#ffffff", "on-primary-fixed": "#001c3b", "outline-variant": "#c4c6cf", "secondary-fixed": "#acefe4", "inverse-primary": "#adc8f5", "on-error-container": "#93000a", "surface-dim": "#cbdbf5" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-xl": "2rem", "space-sm": "0.5rem", "space-xs": "0.25rem", "margin-mobile": "1rem", "margin": "2rem", "space-2xl": "3rem", "space-md": "1rem", "gutter": "1.5rem", "gutter-mobile": "1rem", "space-lg": "1.5rem" }, "fontFamily": { "label-sm": [ "Inter" ], "headline-sm": [ "Plus Jakarta Sans" ], "headline-xl-mobile": [ "Plus Jakarta Sans" ], "headline-md": [ "Plus Jakarta Sans" ], "data-metric": [ "Inter" ], "body-md": [ "Inter" ], "label-md": [ "Inter" ], "label-lg": [ "Inter" ], "body-lg": [ "Inter" ], "headline-xl": [ "Plus Jakarta Sans" ], "headline-lg": [ "Plus Jakarta Sans" ], "body-sm": [ "Inter" ] }, "fontSize": { "label-sm": [ "0.6875rem", { "lineHeight": "0.875rem", "letterSpacing": "0.04em", "fontWeight": "600" } ], "headline-sm": [ "1.125rem", { "lineHeight": "1.5rem", "letterSpacing": "-0.01em", "fontWeight": "600" } ], "headline-xl-mobile": [ "1.75rem", { "lineHeight": "2.25rem", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "headline-md": [ "1.25rem", { "lineHeight": "1.75rem", "letterSpacing": "-0.015em", "fontWeight": "600" } ], "data-metric": [ "1.375rem", { "lineHeight": "1.625rem", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "body-md": [ "1rem", { "lineHeight": "1.5rem", "fontWeight": "400" } ], "label-md": [ "0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.02em", "fontWeight": "500" } ], "label-lg": [ "0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "0.01em", "fontWeight": "500" } ], "body-lg": [ "1.125rem", { "lineHeight": "1.75rem", "fontWeight": "400" } ], "headline-xl": [ "2.25rem", { "lineHeight": "2.75rem", "letterSpacing": "-0.025em", "fontWeight": "600" } ], "headline-lg": [ "1.5rem", { "lineHeight": "2rem", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "body-sm": [ "0.875rem", { "lineHeight": "1.25rem", "fontWeight": "400" } ] } } } }</script></head><body class="bg-background font-body-md text-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-low/80 backdrop-blur-xl z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col pt-6"><div class="px-6 pb-6 flex items-center justify-between"><div class="flex items-center gap-3"><img alt="AteThat Wordmark Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UBnqyvHv4zwe867pCIMwGRQxdxwpwa1OQ64bVHJMBRU9LAmzlrwgkZuoDzI1d7g-F9sZvSrjWYHfg2XMde1wWUh3t2sV5paUdGwCqq_gNA-WSF_KR-fX9xYdVa80N6bfRxprM-ISuz2JnJ7cxDUs8IRvUmjq2QvT-t-VszfvhOyOaYj0tTQK0Hd-obrbVwHMt0KXSVNBuoxxhE7iAMHesBUrQAIi9LZv9hM6MbnD53f2-hmkPjBboFTJc"><span class="font-headline-sm text-headline-sm text-primary tracking-tight">AteThat</span></div></div><div class="px-6 pb-4"><p class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant/70">Know what nourishes you</p></div><nav class="flex flex-col px-3 gap-1" data-active-classes="bg-primary-container text-on-primary font-label-lg rounded-lg shadow-sm"><a aria-current="page" class="flex items-center gap-3 px-3 py-2.5 transition-colors bg-primary-container text-on-primary font-label-lg rounded-lg shadow-sm" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[20px]">grid_view</span><span>Dashboard</span></a><a class="flex items-center justify-between px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="log-food" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-[20px]">add_circle</span><span>Log Food</span></div><span class="font-label-sm text-label-sm bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full">+ Multi-Tray</span></a><a class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="history" href="#"><span class="material-symbols-outlined text-[20px]">calendar_today</span><span>History</span></a><a class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="meals" href="#"><span class="material-symbols-outlined text-[20px]">restaurant_menu</span><span>Meals</span></a><a class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="health-items" href="#"><span class="material-symbols-outlined text-[20px]">medication</span><span>Health Items</span></a><a class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="nutrition-targets" href="#"><span class="material-symbols-outlined text-[20px]">tune</span><span>Nutrition Targets</span></a><a class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="profile-settings" href="#"><span class="material-symbols-outlined text-[20px]">settings</span><span>Profile &amp; Settings</span></a></nav></div><div class="p-4 mx-3 mb-4 rounded-xl bg-surface-container"><div class="flex items-center gap-2 mb-1"><span class="material-symbols-outlined text-secondary text-[18px]">spa</span><span class="font-label-sm text-label-sm text-secondary font-semibold uppercase tracking-wider">Mindful Pace</span></div><p class="font-body-sm text-body-sm text-on-surface-variant">Sustenance tracked without anxiety.</p></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-gutter"><div class="flex items-center gap-4"><div class="flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded-full"><span class="material-symbols-outlined text-[18px] text-secondary">event</span><span class="font-label-md text-label-md text-on-surface font-medium">Today, Oct 24</span><span class="text-on-surface-variant/40">•</span><span class="font-label-sm text-label-sm text-on-surface-variant font-mono">IST (UTC+05:30)</span><span class="material-symbols-outlined text-[16px] text-on-surface-variant cursor-pointer hover:text-on-surface transition-colors">arrow_drop_down</span></div><div class="flex items-center gap-2 bg-surface-container-lowest px-3 py-2 rounded-lg w-80 shadow-[0_1px_4px_rgba(0,0,0,0.03)]"><span class="material-symbols-outlined text-[18px] text-on-surface-variant">search</span><input class="w-full bg-transparent border-0 p-0 font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none" placeholder="Search foods or health items..." type="text"><kbd class="font-label-sm text-label-sm bg-surface-container px-1.5 py-0.5 rounded text-on-surface-variant">⌘K</kbd></div></div><div class="flex items-center gap-3"><a class="inline-flex items-center gap-1.5 bg-primary text-on-primary font-label-lg text-label-lg px-4 py-2 rounded-lg hover:bg-primary-container transition-colors shadow-sm" data-path="log-food" href="#"><span class="material-symbols-outlined text-[18px]">add</span><span>Log Food</span></a><div class="flex items-center bg-surface-container-low p-1 rounded-full gap-1"><button class="flex items-center justify-center w-7 h-7 rounded-full bg-surface-container-lowest text-on-surface shadow-xs" type="button"><span class="material-symbols-outlined text-[16px]">light_mode</span></button><button class="flex items-center justify-center w-7 h-7 rounded-full text-on-surface-variant hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[16px]">dark_mode</span></button></div><div class="flex items-center gap-2 pl-2 cursor-pointer"><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-2 ring-surface-container-highest" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYSM7uYh5StprhJl460C-akoNfTMZHCkbfSdIt-uSNt5A6IYwPafFnM-3fHfR7gacd2q2l4d-_HN-GAwFcxfieR3VKAQ8QKMLLEQWORWSDauOAVJZuUplnLwSfIXaQWfIOZYB6tJS6b61vAjbYOqqhYz5dUWtmTO3tA9fNn1bqi548URJVtC2IKpXtnEK0MWwh5HG9XVygyj05L9OwA_C9ziEDa0BYoe2KQSQoDrYfWZJu16w4DhIl"><span class="material-symbols-outlined text-[18px] text-on-surface-variant hover:text-on-surface transition-colors">expand_more</span></div></div></header><main class="w-full pt-16 bg-background min-h-screen"><div class="flex flex-col w-full">
+<div class="px-6 lg:px-8 py-8 max-w-[1360px] mx-auto w-full space-y-8">
+<!-- Top Summary & Date Bar -->
+<header class="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2">
+<div class="space-y-1.5">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>Tracking Day: Thursday, 24 Oct 2024</span>
+<span class="text-on-surface-variant/40">•</span>
+<span class="font-mono">07:45 PM IST (UTC+05:30)</span>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-primary tracking-tight">
+          Good evening, Ananya.
+        </h1>
+<p class="font-body-md text-body-md text-on-surface-variant">
+          You're gently on track today. Sustenance logged with intention and ease.
+        </p>
+</div>
+<!-- Date Navigator & Daily Cycle Popover Container -->
+<div class="flex items-center gap-2 self-start md:self-auto bg-surface-container-lowest p-1.5 rounded-xl shadow-sm relative group">
+<button class="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-surface-container font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" title="View Yesterday" type="button">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+<span>Yesterday</span>
+</button>
+<div class="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-container text-primary font-label-lg text-label-lg font-medium shadow-xs">
+<span class="material-symbols-outlined text-secondary text-[18px]">calendar_today</span>
+<span>Today, 24 Oct</span>
+</div>
+<button class="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-surface-container font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors opacity-60 hover:opacity-100" title="View Tomorrow" type="button">
+<span>Tomorrow</span>
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+<!-- Tooltip button & Flyout -->
+<div class="relative ml-1">
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" id="resetInfoBtn" type="button">
+<span class="material-symbols-outlined text-[18px]">info</span>
+</button>
+<div class="hidden absolute right-0 top-11 w-72 p-4 rounded-xl bg-surface-container-lowest shadow-xl z-30 transition-all" id="resetPopover">
+<div class="flex items-start gap-2.5">
+<span class="material-symbols-outlined text-secondary text-[20px] mt-0.5">schedule</span>
+<div class="space-y-1">
+<p class="font-label-md text-label-md text-primary font-semibold">4:00 AM IST Daily Reset</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                  Your circadian tracking day ends at 04:00 AM IST. Late-night hydration or midnight meals gracefully group into today's ledger.
+                </p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Core Energy & Calorie Banner (Hero Data Ledger) -->
+<section class="rounded-2xl bg-surface-container-lowest p-6 lg:p-8 shadow-sm relative overflow-hidden">
+<!-- Soft ambient backdrop blur gradient -->
+<div class="absolute -right-20 -top-20 w-96 h-96 rounded-full bg-secondary-container/30 blur-3xl pointer-events-none"></div>
+<div class="absolute right-1/3 -bottom-20 w-80 h-80 rounded-full bg-surface-container-high/40 blur-2xl pointer-events-none"></div>
+<div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+<!-- Calorie Status & Ring -->
+<div class="lg:col-span-5 flex flex-col sm:flex-row items-center gap-6">
+<!-- Circular Ring Visual (SVG) -->
+<div class="relative w-36 h-36 flex-shrink-0 flex items-center justify-center">
+<svg class="w-full h-full -rotate-90" viewBox="0 0 120 120">
+<circle class="stroke-surface-container" cx="60" cy="60" fill="none" r="50" stroke-width="10"></circle>
+<circle class="stroke-primary" cx="60" cy="60" fill="none" r="50" stroke-dasharray="314.159" stroke-dashoffset="74.5" stroke-linecap="round" stroke-width="10"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Pace</span>
+<span class="font-headline-md text-headline-md text-primary font-bold">76%</span>
+<span class="font-label-sm text-label-sm text-secondary">Balanced</span>
+</div>
+</div>
+<div class="space-y-2 text-center sm:text-left">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant/80 font-semibold">Daily Sustenance Allowance</span>
+<div class="flex items-baseline gap-2 justify-center sm:justify-start">
+<span class="font-headline-xl text-headline-xl text-primary font-bold tracking-tight">1,640</span>
+<span class="font-body-md text-body-md text-on-surface-variant">/ 2,150 kcal</span>
+</div>
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-container/50 text-secondary font-label-md text-label-md font-medium">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+<span>510 kcal remaining for dinner</span>
+</div>
+</div>
+</div>
+<!-- Macro Strip Indicators (4 Cards Side by Side) -->
+<div class="lg:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+<!-- Protein -->
+<div class="p-4 rounded-xl bg-surface-container-low flex flex-col justify-between space-y-3">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant font-semibold tracking-wider">Protein</span>
+<span class="w-2.5 h-2.5 rounded-full bg-primary-container"></span>
+</div>
+<div>
+<div class="flex items-baseline gap-1">
+<span class="font-data-metric text-data-metric text-primary font-bold">84</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">/ 110g</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant/80 mt-0.5">26g left</p>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width: 76%;"></div>
+</div>
+</div>
+<!-- Carbs -->
+<div class="p-4 rounded-xl bg-surface-container-low flex flex-col justify-between space-y-3">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant font-semibold tracking-wider">Carbs</span>
+<span class="w-2.5 h-2.5 rounded-full bg-on-tertiary-container"></span>
+</div>
+<div>
+<div class="flex items-baseline gap-1">
+<span class="font-data-metric text-data-metric text-primary font-bold">185</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">/ 240g</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant/80 mt-0.5">55g left</p>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+<div class="bg-on-tertiary-container h-full rounded-full" style="width: 77%;"></div>
+</div>
+</div>
+<!-- Fat -->
+<div class="p-4 rounded-xl bg-surface-container-low flex flex-col justify-between space-y-3">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant font-semibold tracking-wider">Fats</span>
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary-fixed-dim"></span>
+</div>
+<div>
+<div class="flex items-baseline gap-1">
+<span class="font-data-metric text-data-metric text-primary font-bold">48</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">/ 65g</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant/80 mt-0.5">17g left</p>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+<div class="bg-tertiary-container h-full rounded-full" style="width: 73%;"></div>
+</div>
+</div>
+<!-- Fibre -->
+<div class="p-4 rounded-xl bg-surface-container-low flex flex-col justify-between space-y-3">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant font-semibold tracking-wider">Fibre</span>
+<span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+</div>
+<div>
+<div class="flex items-baseline gap-1">
+<span class="font-data-metric text-data-metric text-primary font-bold">28</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">/ 32g</span>
+</div>
+<p class="font-label-sm text-label-sm text-secondary font-medium mt-0.5">4g left</p>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 87%;"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Main Content Grid: Meals Flow (8 cols) & Routine Timeline (4 cols) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+<!-- Left Column: Grouped Meals Ledger -->
+<section class="lg:col-span-7 xl:col-span-8 space-y-5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary text-[22px]">restaurant_menu</span>
+<h2 class="font-headline-md text-headline-md text-primary">Today's Meals</h2>
+<span class="font-label-sm text-label-sm bg-surface-container-high px-2.5 py-0.5 rounded-full text-on-surface-variant font-medium">3 of 4 Recorded</span>
+</div>
+<button class="inline-flex items-center gap-1 font-label-md text-label-md text-secondary hover:text-primary transition-colors font-medium" type="button">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+<span>Meal Timeline</span>
+</button>
+</div>
+<div class="space-y-4">
+<!-- Meal 1: Breakfast -->
+<article class="rounded-xl bg-surface-container-lowest p-5 shadow-sm transition-all hover:bg-surface-container-low/60 group">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 gap-2">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary group-hover:bg-primary-container group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">sunny</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-primary">Breakfast</h3>
+<div class="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
+<span class="font-mono">08:30 AM IST</span>
+<span>•</span>
+<span>2 items</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 self-end sm:self-auto">
+<div class="text-right">
+<span class="font-data-metric text-data-metric text-primary font-bold">420</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant"> kcal</span>
+</div>
+<button class="meal-toggle w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors" data-target="breakfast-details" type="button">
+<span class="material-symbols-outlined text-[20px] transition-transform duration-200">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Expandable Dish Detail -->
+<div class="pt-3 space-y-2.5" id="breakfast-details">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg bg-surface-container-low gap-2">
+<div class="flex items-center gap-3">
+<img class="w-12 h-12 rounded-lg object-cover flex-shrink-0" data-alt="A warm artisan ceramic bowl with creamy steel cut oats topped with fresh blueberries, chopped almonds, and a splash of almond milk, soft morning lighting in a tranquil kitchen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbIqd1kN0WC1EfXLx9qCZR86rahCPQUpm-pRcDG7LREeUQ5xs9Nub0qW7gm0e2xic1wLvjNk-3k2W_pc0S1V6qcZeNJFngK2jBKms9Y2Fmj3UmJvjyOYCH4E6tG3LPg3US_eNwM7QAPLfXaJ0Pfu7TxmtRuZRnMiFppReKobbPKiejlkMDIVP5rblvEhY_yYbxP_NgqR4gQXh9SibeO8sNq_iMyDoPZATUClarUEgATlUyz25XY73_">
+<div>
+<p class="font-label-lg text-label-lg text-on-surface font-medium">Steel Cut Oats with Almond Milk &amp; Blueberries</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">1 medium serving (320g)</p>
+</div>
+</div>
+<div class="text-right flex-shrink-0 font-label-md text-label-md text-on-surface font-mono">
+                  280 kcal
+                </div>
+</div>
+<div class="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg bg-surface-container-low gap-2">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant flex-shrink-0">
+<span class="material-symbols-outlined text-[22px]">egg</span>
+</div>
+<div>
+<p class="font-label-lg text-label-lg text-on-surface font-medium">Free-range Hard Boiled Eggs</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">2 whole large eggs</p>
+</div>
+</div>
+<div class="text-right flex-shrink-0 font-label-md text-label-md text-on-surface font-mono">
+                  140 kcal
+                </div>
+</div>
+<!-- Macros Sub-strip -->
+<div class="flex items-center gap-4 pt-1 px-1 font-label-sm text-label-sm text-on-surface-variant">
+<span>P: <strong class="text-on-surface">24g</strong></span>
+<span>C: <strong class="text-on-surface">48g</strong></span>
+<span>F: <strong class="text-on-surface">14g</strong></span>
+<span class="ml-auto text-secondary font-medium">Nutrient dense</span>
+</div>
+</div>
+</article>
+<!-- Meal 2: Lunch -->
+<article class="rounded-xl bg-surface-container-lowest p-5 shadow-sm transition-all hover:bg-surface-container-low/60 group">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 gap-2">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary group-hover:bg-primary-container group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">wb_sunny</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-primary">Lunch (Indian Nourish Plate)</h3>
+<div class="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
+<span class="font-mono">01:15 PM IST</span>
+<span>•</span>
+<span>4 items</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 self-end sm:self-auto">
+<div class="text-right">
+<span class="font-data-metric text-data-metric text-primary font-bold">680</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant"> kcal</span>
+</div>
+<button class="meal-toggle w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors" data-target="lunch-details" type="button">
+<span class="material-symbols-outlined text-[20px] transition-transform duration-200">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Lunch Expandable Details -->
+<div class="pt-3 space-y-2.5" id="lunch-details">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+<div class="p-3 rounded-lg bg-surface-container-low flex justify-between items-center">
+<div>
+<p class="font-label-md text-label-md text-on-surface font-medium">Whole Wheat Roti (x2)</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Dry roasted, no ghee</p>
+</div>
+<span class="font-mono text-label-md font-medium text-on-surface">210 kcal</span>
+</div>
+<div class="p-3 rounded-lg bg-surface-container-low flex justify-between items-center">
+<div>
+<p class="font-label-md text-label-md text-on-surface font-medium">Paneer Bhurji (Cottage Cheese)</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Fresh herbs &amp; cumin</p>
+</div>
+<span class="font-mono text-label-md font-medium text-on-surface">260 kcal</span>
+</div>
+<div class="p-3 rounded-lg bg-surface-container-low flex justify-between items-center">
+<div>
+<p class="font-label-md text-label-md text-on-surface font-medium">Yellow Moong Dal Tadka</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">1 small katori (150ml)</p>
+</div>
+<span class="font-mono text-label-md font-medium text-on-surface">140 kcal</span>
+</div>
+<div class="p-3 rounded-lg bg-surface-container-low flex justify-between items-center">
+<div>
+<p class="font-label-md text-label-md text-on-surface font-medium">Mixed Cucumber Salad</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Lemon dressing, mint</p>
+</div>
+<span class="font-mono text-label-md font-medium text-on-surface">70 kcal</span>
+</div>
+</div>
+<!-- Macros Sub-strip -->
+<div class="flex items-center gap-4 pt-1 px-1 font-label-sm text-label-sm text-on-surface-variant">
+<span>P: <strong class="text-on-surface">38g</strong></span>
+<span>C: <strong class="text-on-surface">72g</strong></span>
+<span>F: <strong class="text-on-surface">22g</strong></span>
+<span class="ml-auto text-secondary font-medium">High Fibre &amp; Protein</span>
+</div>
+</div>
+</article>
+<!-- Meal 3: Snack -->
+<article class="rounded-xl bg-surface-container-lowest p-5 shadow-sm transition-all hover:bg-surface-container-low/60 group">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 gap-2">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary group-hover:bg-primary-container group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">local_cafe</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-primary">Afternoon Chai &amp; Snack</h3>
+<div class="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
+<span class="font-mono">04:45 PM IST</span>
+<span>•</span>
+<span>1 item</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 self-end sm:self-auto">
+<div class="text-right">
+<span class="font-data-metric text-data-metric text-primary font-bold">190</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant"> kcal</span>
+</div>
+<button class="meal-toggle w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors" data-target="snack-details" type="button">
+<span class="material-symbols-outlined text-[20px] transition-transform duration-200">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Snack Expandable Details -->
+<div class="pt-3 space-y-2.5" id="snack-details">
+<div class="flex items-center justify-between p-3 rounded-lg bg-surface-container-low">
+<div class="flex items-center gap-3">
+<img class="w-12 h-12 rounded-lg object-cover flex-shrink-0" data-alt="Crispy roasted foxnuts makhana in a minimal brass bowl alongside steaming herbal green tea in a clear glass cup, neutral soft studio light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVjmgr5IJJjeFTe8ZsLXABySMLKxHXQZ7sFCFwNrVpzjpb6RgD5YRHFVXFIEE4emdnjS1uTUWKdMOHtZ8KRwM7y9CLpHM-yTXK4V0-2uGk1EBd34fev6cDfLo7K-cqDwdqcuLixuAiUS1Zmg0stl26fP_mSCGFY0SdvAbc6UTnbQmK_OVzPVP6ILgvitrDwC1XJ027eFaKOtD5Ob1iqsvLl1UTwCHKNiNLz4FLqgs-PZ3JuuwDBkjG">
+<div>
+<p class="font-label-lg text-label-lg text-on-surface font-medium">Roasted Masala Foxnuts (Makhana) &amp; Green Tea</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Light pink salt &amp; turmeric roast (35g)</p>
+</div>
+</div>
+<span class="font-mono text-label-md font-medium text-on-surface">190 kcal</span>
+</div>
+<div class="flex items-center gap-4 pt-1 px-1 font-label-sm text-label-sm text-on-surface-variant">
+<span>P: <strong class="text-on-surface">4g</strong></span>
+<span>C: <strong class="text-on-surface">32g</strong></span>
+<span>F: <strong class="text-on-surface">5g</strong></span>
+</div>
+</div>
+</article>
+<!-- Meal 4: Dinner (Placeholder / Pending Action State) -->
+<article class="rounded-xl bg-surface-container-low/70 p-6 flex flex-col sm:flex-row items-center justify-between gap-4 transition-colors hover:bg-surface-container-high/60">
+<div class="flex items-center gap-4 text-center sm:text-left">
+<div class="w-12 h-12 rounded-xl bg-surface-container-lowest flex items-center justify-center text-on-surface-variant shadow-xs">
+<span class="material-symbols-outlined text-[24px]">bedtime</span>
+</div>
+<div class="space-y-0.5">
+<div class="flex items-center gap-2 justify-center sm:justify-start">
+<h3 class="font-headline-sm text-headline-sm text-primary">Dinner</h3>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-mono">Scheduled 08:30 PM IST</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                  Not logged yet — tap to quickly add dinner or pick from your saved meal templates.
+                </p>
+</div>
+</div>
+<div class="flex items-center gap-2 flex-shrink-0">
+<button class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg hover:bg-primary-container shadow-xs transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span>Log Dinner</span>
+</button>
+<button class="p-2.5 rounded-lg bg-surface-container-lowest text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Pick Saved Meal" type="button">
+<span class="material-symbols-outlined text-[20px]">bookmark</span>
+</button>
+</div>
+</article>
+</div>
+<!-- Detailed Micronutrient Progressive Disclosure Trigger -->
+<div class="pt-3">
+<button class="w-full p-4 rounded-xl bg-surface-container-lowest shadow-sm hover:bg-surface-container-low transition-colors flex items-center justify-between text-left" id="micronutrientToggle" type="button">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary text-[22px]">science</span>
+<div>
+<p class="font-label-lg text-label-lg text-primary font-semibold">View Detailed Micronutrients &amp; Mineral Breakdown</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Daily targets for Sodium, Potassium, Magnesium, and Vitamins</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant transition-transform duration-200" id="microArrow">expand_more</span>
+</button>
+<!-- Drawer Body -->
+<div class="hidden mt-3 p-5 rounded-xl bg-surface-container-lowest shadow-sm space-y-4" id="micronutrientDrawer">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<div class="p-3 rounded-lg bg-surface-container-low">
+<p class="font-label-sm text-label-sm text-on-surface-variant">Sodium</p>
+<p class="font-headline-sm text-headline-sm text-primary font-bold">1,420 <span class="font-body-sm text-body-sm font-normal text-on-surface-variant">/ 2,000 mg</span></p>
+<div class="w-full bg-surface-container h-1 rounded-full mt-2 overflow-hidden">
+<div class="bg-secondary h-full" style="width: 71%"></div>
+</div>
+</div>
+<div class="p-3 rounded-lg bg-surface-container-low">
+<p class="font-label-sm text-label-sm text-on-surface-variant">Potassium</p>
+<p class="font-headline-sm text-headline-sm text-primary font-bold">2,680 <span class="font-body-sm text-body-sm font-normal text-on-surface-variant">/ 3,500 mg</span></p>
+<div class="w-full bg-surface-container h-1 rounded-full mt-2 overflow-hidden">
+<div class="bg-secondary h-full" style="width: 76%"></div>
+</div>
+</div>
+<div class="p-3 rounded-lg bg-surface-container-low">
+<p class="font-label-sm text-label-sm text-on-surface-variant">Calcium</p>
+<p class="font-headline-sm text-headline-sm text-primary font-bold">890 <span class="font-body-sm text-body-sm font-normal text-on-surface-variant">/ 1,000 mg</span></p>
+<div class="w-full bg-surface-container h-1 rounded-full mt-2 overflow-hidden">
+<div class="bg-primary-container h-full" style="width: 89%"></div>
+</div>
+</div>
+<div class="p-3 rounded-lg bg-surface-container-low">
+<p class="font-label-sm text-label-sm text-on-surface-variant">Magnesium</p>
+<p class="font-headline-sm text-headline-sm text-primary font-bold">310 <span class="font-body-sm text-body-sm font-normal text-on-surface-variant">/ 380 mg</span></p>
+<div class="w-full bg-surface-container h-1 rounded-full mt-2 overflow-hidden">
+<div class="bg-primary h-full" style="width: 81%"></div>
+</div>
+</div>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant text-right">Updated automatically across all Indian nutritional tables.</p>
+</div>
+</div>
+</section>
+<!-- Right Column: Health & Medication Routine Schedule -->
+<section class="lg:col-span-5 xl:col-span-4 space-y-4">
+<div class="p-6 rounded-2xl bg-surface-container-lowest shadow-sm space-y-5">
+<div class="flex items-start justify-between">
+<div class="space-y-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[22px]">medication</span>
+<h2 class="font-headline-sm text-headline-sm text-primary">Health &amp; Routine</h2>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant font-mono">
+                All times displayed in IST (UTC+05:30)
+              </p>
+</div>
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Routine Settings" type="button">
+<span class="material-symbols-outlined text-[20px]">more_horiz</span>
+</button>
+</div>
+<!-- Routine Timeline -->
+<div class="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-surface-container-highest">
+<!-- Item 1: Morning Vitamins (Completed) -->
+<div class="relative space-y-2">
+<span class="absolute -left-6 top-1 w-5 h-5 rounded-full bg-secondary text-on-secondary flex items-center justify-center ring-4 ring-surface-container-lowest">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</span>
+<div class="flex items-baseline justify-between">
+<span class="font-label-sm text-label-sm font-mono text-on-surface-variant">08:00 AM IST</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-medium">
+                  Taken at 08:15 AM
+                </span>
+</div>
+<div>
+<p class="font-label-lg text-label-lg text-primary font-semibold">Vitamin D3 (1000 IU) &amp; Omega-3</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">With breakfast • 2 softgels</p>
+</div>
+</div>
+<!-- Item 2: Midday Metformin (Completed) -->
+<div class="relative space-y-2">
+<span class="absolute -left-6 top-1 w-5 h-5 rounded-full bg-secondary text-on-secondary flex items-center justify-center ring-4 ring-surface-container-lowest">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</span>
+<div class="flex items-baseline justify-between">
+<span class="font-label-sm text-label-sm font-mono text-on-surface-variant">01:30 PM IST</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-medium">
+                  Taken at 01:40 PM
+                </span>
+</div>
+<div>
+<p class="font-label-lg text-label-lg text-primary font-semibold">Metformin (500mg)</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Post lunch maintenance • 1 tablet</p>
+</div>
+</div>
+<!-- Item 3: Evening Magnesium (Upcoming/Pending) -->
+<div class="relative space-y-3 pt-1">
+<span class="absolute -left-6 top-2 w-5 h-5 rounded-full bg-surface-container-highest text-primary flex items-center justify-center ring-4 ring-surface-container-lowest">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+</span>
+<div class="flex items-baseline justify-between">
+<span class="font-label-sm text-label-sm font-mono text-primary font-semibold">09:30 PM IST</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-medium">
+                  Upcoming in 1h 45m
+                </span>
+</div>
+<div>
+<p class="font-label-lg text-label-lg text-primary font-semibold">Magnesium Glycinate (200mg)</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Bedtime relaxation &amp; muscle recovery</p>
+</div>
+<!-- Interactive Actions for Pending Item -->
+<div class="flex items-center gap-2 pt-1">
+<button class="take-action-btn flex-1 py-1.5 px-3 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors shadow-xs" type="button">
+                  Mark Taken
+                </button>
+<button class="py-1.5 px-3 rounded-lg bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors" type="button">
+                  Skip
+                </button>
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Reschedule Dose" type="button">
+<span class="material-symbols-outlined text-[18px]">update</span>
+</button>
+</div>
+</div>
+<!-- Item 4: Sleep Drops (Upcoming) -->
+<div class="relative space-y-3 pt-1">
+<span class="absolute -left-6 top-2 w-5 h-5 rounded-full bg-surface-container-highest text-primary flex items-center justify-center ring-4 ring-surface-container-lowest">
+<span class="w-2 h-2 rounded-full bg-on-surface-variant"></span>
+</span>
+<div class="flex items-baseline justify-between">
+<span class="font-label-sm text-label-sm font-mono text-on-surface-variant">10:00 PM IST</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-medium">
+                  Upcoming
+                </span>
+</div>
+<div>
+<p class="font-label-lg text-label-lg text-primary font-semibold">Evening Herbal Sleep Drops</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Ashwagandha &amp; Chamomile blend (10 drops in warm water)</p>
+</div>
+<!-- Interactive Actions -->
+<div class="flex items-center gap-2 pt-1">
+<button class="take-action-btn flex-1 py-1.5 px-3 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors shadow-xs" type="button">
+                  Mark Taken
+                </button>
+<button class="py-1.5 px-3 rounded-lg bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors" type="button">
+                  Skip
+                </button>
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Reschedule Dose" type="button">
+<span class="material-symbols-outlined text-[18px]">update</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Add Supplement / Health Entry quick button -->
+<button class="w-full py-2.5 rounded-xl bg-surface-container-low text-primary hover:bg-surface-container font-label-md text-label-md font-semibold flex items-center justify-center gap-2 transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span>Add Medication or Supplement</span>
+</button>
+</div>
+<!-- Quiet Mindful Hydration Companion Card -->
+<div class="p-5 rounded-2xl bg-surface-container-low shadow-sm flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-surface-container-lowest flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[20px]">water_drop</span>
+</div>
+<div>
+<p class="font-label-lg text-label-lg text-primary font-medium">Hydration Check</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">2.1L / 2.8L Daily Goal</p>
+</div>
+</div>
+<button class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container-lowest text-secondary hover:bg-surface-container-highest font-label-md text-label-md font-semibold transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">add</span>
+<span>250ml</span>
+</button>
+</div>
+</section>
+</div>
+</div>
+</div>
+<script>
+  // Meal detail expand/collapse interaction
+  document.querySelectorAll('.meal-toggle').forEach(button => {
+    button.addEventListener('click', () => {
+      const targetId = button.getAttribute('data-target');
+      const target = document.getElementById(targetId);
+      const icon = button.querySelector('.material-symbols-outlined');
+      
+      if (target) {
+        const isHidden = target.classList.toggle('hidden');
+        if (icon) {
+          icon.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
+        }
+      }
+    });
+  });
+
+  // Daily cycle popover toggle
+  const resetBtn = document.getElementById('resetInfoBtn');
+  const resetPopover = document.getElementById('resetPopover');
+  if (resetBtn && resetPopover) {
+    resetBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      resetPopover.classList.toggle('hidden');
+    });
+    document.addEventListener('click', (e) => {
+      if (!resetPopover.contains(e.target) && e.target !== resetBtn) {
+        resetPopover.classList.add('hidden');
+      }
+    });
+  }
+
+  // Micronutrient progressive disclosure toggle
+  const microBtn = document.getElementById('micronutrientToggle');
+  const microDrawer = document.getElementById('micronutrientDrawer');
+  const microArrow = document.getElementById('microArrow');
+  if (microBtn && microDrawer && microArrow) {
+    microBtn.addEventListener('click', () => {
+      const isHidden = microDrawer.classList.toggle('hidden');
+      microArrow.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
+    });
+  }
+
+  // Health Routine quick "Mark Taken" micro-interaction
+  document.querySelectorAll('.take-action-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const parentContainer = this.closest('.relative.space-y-3');
+      if (parentContainer) {
+        this.parentElement.innerHTML = `
+          <div class="flex items-center gap-1.5 text-secondary font-label-md text-label-md font-semibold py-1">
+            <span class="material-symbols-outlined text-[18px]">done_all</span>
+            <span>Recorded just now (IST)</span>
+          </div>
+        `;
+      }
+    });
+  });
+</script></main></div></body></html>

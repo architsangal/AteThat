@@ -1,0 +1,587 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_dashboard" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-tertiary-container": "#ef8946", "secondary": "#236960", "on-tertiary-fixed": "#321200", "secondary-container": "#a9ede1", "error-container": "#ffdad6", "secondary-fixed-dim": "#90d3c8", "inverse-on-surface": "#eaf1ff", "on-error": "#ffffff", "on-surface-variant": "#43474e", "on-secondary-fixed": "#00201c", "surface-container-low": "#eff4ff", "on-secondary": "#ffffff", "error": "#ba1a1a", "primary-fixed-dim": "#adc8f5", "inverse-surface": "#213145", "on-secondary-fixed-variant": "#005049", "on-primary-container": "#8aa4cf", "on-primary": "#ffffff", "tertiary-container": "#602900", "surface-tint": "#455f87", "on-surface": "#0b1c30", "background": "#f8f9ff", "on-primary-fixed-variant": "#2d486d", "primary-container": "#1e3a5f", "surface-container": "#e5eeff", "on-background": "#0b1c30", "tertiary": "#3f1900", "tertiary-fixed": "#ffdbc9", "surface-container-highest": "#d3e4fe", "on-tertiary": "#ffffff", "primary": "#022448", "on-secondary-container": "#286d64", "on-tertiary-fixed-variant": "#753400", "surface-container-high": "#dce9ff", "surface-bright": "#f8f9ff", "outline": "#74777f", "tertiary-fixed-dim": "#ffb68c", "primary-fixed": "#d5e3ff", "surface": "#f8f9ff", "surface-variant": "#d3e4fe", "surface-container-lowest": "#ffffff", "on-primary-fixed": "#001c3b", "outline-variant": "#c4c6cf", "secondary-fixed": "#acefe4", "inverse-primary": "#adc8f5", "on-error-container": "#93000a", "surface-dim": "#cbdbf5" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-xl": "2rem", "space-sm": "0.5rem", "space-xs": "0.25rem", "margin-mobile": "1rem", "margin": "2rem", "space-2xl": "3rem", "space-md": "1rem", "gutter": "1.5rem", "gutter-mobile": "1rem", "space-lg": "1.5rem" }, "fontFamily": { "label-sm": [ "Inter" ], "headline-sm": [ "Plus Jakarta Sans" ], "headline-xl-mobile": [ "Plus Jakarta Sans" ], "headline-md": [ "Plus Jakarta Sans" ], "data-metric": [ "Inter" ], "body-md": [ "Inter" ], "label-md": [ "Inter" ], "label-lg": [ "Inter" ], "body-lg": [ "Inter" ], "headline-xl": [ "Plus Jakarta Sans" ], "headline-lg": [ "Plus Jakarta Sans" ], "body-sm": [ "Inter" ] }, "fontSize": { "label-sm": [ "0.6875rem", { "lineHeight": "0.875rem", "letterSpacing": "0.04em", "fontWeight": "600" } ], "headline-sm": [ "1.125rem", { "lineHeight": "1.5rem", "letterSpacing": "-0.01em", "fontWeight": "600" } ], "headline-xl-mobile": [ "1.75rem", { "lineHeight": "2.25rem", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "headline-md": [ "1.25rem", { "lineHeight": "1.75rem", "letterSpacing": "-0.015em", "fontWeight": "600" } ], "data-metric": [ "1.375rem", { "lineHeight": "1.625rem", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "body-md": [ "1rem", { "lineHeight": "1.5rem", "fontWeight": "400" } ], "label-md": [ "0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.02em", "fontWeight": "500" } ], "label-lg": [ "0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "0.01em", "fontWeight": "500" } ], "body-lg": [ "1.125rem", { "lineHeight": "1.75rem", "fontWeight": "400" } ], "headline-xl": [ "2.25rem", { "lineHeight": "2.75rem", "letterSpacing": "-0.025em", "fontWeight": "600" } ], "headline-lg": [ "1.5rem", { "lineHeight": "2rem", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "body-sm": [ "0.875rem", { "lineHeight": "1.25rem", "fontWeight": "400" } ] } } } }</script></head><body class="bg-background font-body-md text-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-low/80 backdrop-blur-xl z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col pt-6"><div class="px-6 pb-6 flex items-center justify-between"><a class="flex items-center gap-3" data-path="dashboard" href="#"><img alt="AteThat Wordmark Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UBnqyvHv4zwe867pCIMwGRQxdxwpwa1OQ64bVHJMBRU9LAmzlrwgkZuoDzI1d7g-F9sZvSrjWYHfg2XMde1wWUh3t2sV5paUdGwCqq_gNA-WSF_KR-fX9xYdVa80N6bfRxprM-ISuz2JnJ7cxDUs8IRvUmjq2QvT-t-VszfvhOyOaYj0tTQK0Hd-obrbVwHMt0KXSVNBuoxxhE7iAMHesBUrQAIi9LZv9hM6MbnD53f2-hmkPjBboFTJc"><span class="font-headline-sm text-headline-sm text-primary tracking-tight">AteThat</span></a></div><div class="px-6 pb-4"><p class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant/70">Know what nourishes you</p></div><nav class="flex flex-col px-3 gap-1" data-active-classes="bg-primary-container text-on-primary font-label-lg rounded-lg shadow-sm"><a class="flex items-center px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="dashboard" href="#">Dashboard</a><a class="flex items-center px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="log-food" href="#">Log Food</a><a class="flex items-center px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="history" href="#">History</a><a class="flex items-center px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="meals" href="#">Meals</a><a class="flex items-center px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="health-items" href="#">Health Items</a><a class="flex items-center px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="nutrition-targets" href="#">Nutrition Targets</a><a class="flex items-center px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="profile-settings" href="#">Profile &amp; Settings</a></nav></div><div class="p-4 mx-3 mb-4 rounded-xl bg-surface-container"><div class="flex items-center gap-2 mb-1"><span class="material-symbols-outlined text-secondary text-[18px]">spa</span><span class="font-label-sm text-label-sm text-secondary font-semibold uppercase tracking-wider">Mindful Pace</span></div><p class="font-body-sm text-body-sm text-on-surface-variant">Sustenance tracked without anxiety.</p></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-gutter"><div class="flex items-center gap-4"><div class="flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded-full"><span class="material-symbols-outlined text-[18px] text-secondary">event</span><span class="font-label-md text-label-md text-on-surface font-medium">Today, Oct 24</span><span class="text-on-surface-variant/40">•</span><span class="font-label-sm text-label-sm text-on-surface-variant font-mono">IST (UTC+05:30)</span><span class="material-symbols-outlined text-[16px] text-on-surface-variant cursor-pointer hover:text-on-surface transition-colors">arrow_drop_down</span></div><div class="flex items-center gap-2 bg-surface-container-lowest px-3 py-2 rounded-lg w-80 shadow-[0_1px_4px_rgba(0,0,0,0.03)]"><span class="material-symbols-outlined text-[18px] text-on-surface-variant">search</span><input class="w-full bg-transparent border-0 p-0 font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none" placeholder="Search foods, meals, settings..." type="text"><kbd class="font-label-sm text-label-sm bg-surface-container px-1.5 py-0.5 rounded text-on-surface-variant">⌘K</kbd></div></div><div class="flex items-center gap-3"><a class="inline-flex items-center gap-1.5 bg-primary text-on-primary font-label-lg text-label-lg px-4 py-2 rounded-lg hover:bg-primary-container transition-colors shadow-sm" data-path="log-food" href="#"><span class="material-symbols-outlined text-[18px]">add</span><span>Log Food</span></a><div class="flex items-center bg-surface-container-low p-1 rounded-full gap-1"><button class="flex items-center justify-center w-7 h-7 rounded-full bg-surface-container-lowest text-on-surface shadow-xs" type="button"><span class="material-symbols-outlined text-[16px]">light_mode</span></button><button class="flex items-center justify-center w-7 h-7 rounded-full text-on-surface-variant hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[16px]">dark_mode</span></button></div><a class="flex items-center gap-2 pl-2 cursor-pointer" data-path="profile-settings" href="#"><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-2 ring-surface-container-highest" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYSM7uYh5StprhJl460C-akoNfTMZHCkbfSdIt-uSNt5A6IYwPafFnM-3fHfR7gacd2q2l4d-_HN-GAwFcxfieR3VKAQ8QKMLLEQWORWSDauOAVJZuUplnLwSfIXaQWfIOZYB6tJS6b61vAjbYOqqhYz5dUWtmTO3tA9fNn1bqi548URJVtC2IKpXtnEK0MWwh5HG9XVygyj05L9OwA_C9ziEDa0BYoe2KQSQoDrYfWZJu16w4DhIl"><span class="material-symbols-outlined text-[18px] text-on-surface-variant hover:text-on-surface transition-colors">expand_more</span></a></div></header><main class="w-full pt-16 bg-background min-h-screen"><div class="flex flex-col w-full">
+<div class="px-margin py-space-xl max-w-7xl mx-auto w-full space-y-space-xl">
+<!-- Header Area -->
+<header class="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
+<div class="space-y-space-xs">
+<div class="inline-flex items-center gap-2 bg-surface-container px-3 py-1 rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-semibold">Account &amp; System Preferences</span>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-primary tracking-tight">Profile &amp; Settings</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">
+          Manage personal biometric calibrations, chronobiology intervals, dashboard nutrient visibility, and reassuring security protocols.
+        </p>
+</div>
+<div class="flex items-center gap-space-sm self-start md:self-auto">
+<button class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-surface-container-low text-primary font-label-lg text-label-lg hover:bg-surface-container transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]">history</span>
+<span>Audit Log</span>
+</button>
+<button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg hover:bg-primary-container transition-all shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+<span>Save Calibrations</span>
+</button>
+</div>
+</header>
+<!-- Segmented Navigation Ribbon -->
+<div class="w-full overflow-x-auto pb-1">
+<nav class="inline-flex items-center p-1.5 bg-surface-container-low rounded-xl gap-1 text-on-surface-variant min-w-max shadow-sm">
+<button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-container-lowest text-primary font-label-lg text-label-lg shadow-xs transition-all" type="button">
+<span class="material-symbols-outlined text-[18px] text-secondary">tune</span>
+<span>Personal &amp; Biometrics</span>
+</button>
+<button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors font-label-lg text-label-lg" type="button">
+<span class="material-symbols-outlined text-[18px]">palette</span>
+<span>Appearance &amp; Theme</span>
+</button>
+<button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors font-label-lg text-label-lg" type="button">
+<span class="material-symbols-outlined text-[18px]">nutrition</span>
+<span>Dashboard Nutrients</span>
+</button>
+<button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors font-label-lg text-label-lg" type="button">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+<span>Security &amp; Auth</span>
+</button>
+<button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors font-label-lg text-label-lg" type="button">
+<span class="material-symbols-outlined text-[18px]">lock</span>
+<span>Data Sovereignty</span>
+</button>
+</nav>
+</div>
+<!-- Section 1: Profile & Biometric Calibrations -->
+<section class="space-y-space-md">
+<div class="flex items-center justify-between">
+<div>
+<h2 class="font-headline-md text-headline-md text-primary">Identity &amp; Biometric Calibration</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Core metabolic baseline used to compute respectful daily nourishment targets.</p>
+</div>
+<div class="inline-flex items-center bg-surface-container-low p-1 rounded-lg">
+<button class="px-3 py-1 rounded bg-surface-container-lowest font-label-md text-label-md text-primary shadow-xs" type="button">Metric (kg, cm, ml)</button>
+<button class="px-3 py-1 rounded text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-colors" type="button">Imperial (lb, in, fl oz)</button>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+<!-- Identity Summary Card -->
+<div class="lg:col-span-5 bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between space-y-space-lg">
+<div class="flex items-start gap-4">
+<div class="relative">
+<img alt="Ananya Sharma portrait" class="w-20 h-20 rounded-2xl object-cover shadow-sm ring-4 ring-surface-container-low" src="https://lh3.googleusercontent.com/aida/AEtjO1UMb3OUg5Vp_mdo4vu1GCjLYcO5YNLP-JwIbhy7ikyzHRjJWo0zfs3oEqUIGAFgEchel6pF_ApIZPyQBDq9Rfv5kjym9um7oVjCYXOnAF__o8vKJjkNO1BiZtUcllbUjHtmLgKSzCAL5jcmjlbnHOSIykWCtjguPxG4ric5FcF709GsDjHSifNvDqwgOd_huGjXm758m5yQU3e6brMPmyl4JMtHeoEPuZq_uVuUlKWSLwBeV9Ijt-71mnw">
+<button aria-label="Change Avatar" class="absolute -bottom-1 -right-1 p-1.5 bg-primary text-on-primary rounded-full hover:bg-primary-container transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[14px]">photo_camera</span>
+</button>
+</div>
+<div class="space-y-1 min-w-0">
+<div class="flex items-center gap-2">
+<h3 class="font-headline-sm text-headline-sm text-primary truncate">Ananya Sharma</h3>
+<span class="inline-flex items-center gap-1 bg-secondary-container/60 text-on-secondary-container px-2 py-0.5 rounded-full font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Verified
+                </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">ananya.sharma@domain.co</p>
+<div class="inline-flex items-center gap-1 text-on-surface-variant/80 font-label-sm text-label-sm pt-1">
+<span class="material-symbols-outlined text-[16px] text-secondary">schedule</span>
+<span>Asia/Kolkata (IST • UTC+05:30)</span>
+</div>
+</div>
+</div>
+<!-- Chronobiology Reset Time Panel -->
+<div class="bg-surface-container-low p-4 rounded-lg space-y-2">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-primary font-medium flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-secondary">bedtime</span>
+                Daily Intake Reset Time
+              </span>
+<span class="font-label-lg text-label-lg font-semibold text-primary bg-surface-container-lowest px-2.5 py-1 rounded">04:00 AM IST</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+              Ensures late-night hydration or chamomile teas attribute gracefully to the preceding evening rather than segmenting into tomorrow's cycle.
+            </p>
+</div>
+<div class="pt-2 flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span>Calibrated via Oxford Clinical Formula</span>
+<span class="font-mono text-secondary">v2.4 active</span>
+</div>
+</div>
+<!-- Metrics Grid Form -->
+<div class="lg:col-span-7 bg-surface-container-lowest p-space-lg rounded-xl shadow-sm space-y-space-md">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
+<!-- Field 1 -->
+<div class="space-y-1.5">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Date of Birth</label>
+<div class="flex items-center justify-between px-3 py-2.5 bg-surface-container-low rounded-lg">
+<span class="font-body-md text-body-md text-on-surface">14 May 1994</span>
+<span class="font-label-sm text-label-sm bg-surface-container px-2 py-0.5 rounded text-on-surface-variant">30 yrs</span>
+</div>
+</div>
+<!-- Field 2 -->
+<div class="space-y-1.5">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Biological Sex</label>
+<div class="flex items-center justify-between px-3 py-2.5 bg-surface-container-low rounded-lg">
+<span class="font-body-md text-body-md text-on-surface">Female</span>
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">female</span>
+</div>
+</div>
+<!-- Field 3 -->
+<div class="space-y-1.5">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Stature / Height</label>
+<div class="flex items-center justify-between px-3 py-2.5 bg-surface-container-low rounded-lg">
+<span class="font-body-md text-body-md text-on-surface">168 cm</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">5' 6"</span>
+</div>
+</div>
+<!-- Field 4 -->
+<div class="space-y-1.5">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Current Weight</label>
+<div class="flex items-center justify-between px-3 py-2.5 bg-surface-container-low rounded-lg">
+<span class="font-body-md text-body-md text-on-surface">64.5 kg</span>
+<span class="font-label-sm text-label-sm text-secondary font-medium">Stable (±0.3)</span>
+</div>
+</div>
+</div>
+<!-- Extended Goal & Coefficient -->
+<div class="space-y-1.5 pt-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Primary Nourishment Philosophy</label>
+<div class="p-3 bg-surface-container-low rounded-lg flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[20px] text-secondary">spa</span>
+<div>
+<div class="font-body-md text-body-md text-primary font-medium">Mindful Maintenance &amp; Glycemic Harmony</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Prioritizing satiety, stable insulin curve, and gentle digestive cadence</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant cursor-pointer hover:text-primary transition-colors">unfold_more</span>
+</div>
+</div>
+<div class="space-y-1.5">
+<div class="flex justify-between items-center">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Activity Coefficient</label>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">1.55x (Moderately Active)</span>
+</div>
+<div class="w-full bg-surface-container-low h-2.5 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 62%;"></div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant/80">3-4 sessions weekly of moderate resistance, yoga, and 8,000 steps daily average.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Visual Atmosphere & Theme Controls -->
+<section class="space-y-space-md">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-1">
+<div>
+<h2 class="font-headline-md text-headline-md text-primary">Visual Atmosphere &amp; Theme</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Attune AteThat to your physical environment and optical comfort level.</p>
+</div>
+<span class="font-label-sm text-label-sm text-secondary font-medium">Auto-calibrated with system display</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+<!-- Theme 1: Serene Light (Selected) -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm relative flex flex-col justify-between space-y-4">
+<div class="space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-primary">light_mode</span>
+<span class="font-headline-sm text-headline-sm text-primary">Serene Light</span>
+</div>
+<span class="material-symbols-outlined text-[20px] text-secondary">check_circle</span>
+</div>
+<!-- Visual Mini Preview -->
+<div class="h-24 w-full rounded-lg bg-[#f8f9ff] p-2.5 flex flex-col justify-between shadow-inner">
+<div class="flex items-center justify-between">
+<div class="w-16 h-2 rounded bg-[#022448]/20"></div>
+<div class="w-4 h-4 rounded-full bg-[#236960]/30"></div>
+</div>
+<div class="grid grid-cols-3 gap-1.5">
+<div class="h-8 rounded bg-[#eff4ff]"></div>
+<div class="h-8 rounded bg-[#eff4ff]"></div>
+<div class="h-8 rounded bg-[#dce9ff]"></div>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Crisp chalk white and pale slate-blue surfaces designed for daylight clarity.</p>
+</div>
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-secondary font-semibold uppercase tracking-wider">
+<span class="w-2 h-2 rounded-full bg-secondary"></span> Currently Active
+          </span>
+</div>
+<!-- Theme 2: Midnight Slate -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:bg-surface-container-low transition-colors relative flex flex-col justify-between space-y-4 cursor-pointer">
+<div class="space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant">dark_mode</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">Midnight Slate</span>
+</div>
+<span class="material-symbols-outlined text-[20px] text-outline-variant">radio_button_unchecked</span>
+</div>
+<!-- Visual Mini Preview -->
+<div class="h-24 w-full rounded-lg bg-[#0b1017] p-2.5 flex flex-col justify-between shadow-inner">
+<div class="flex items-center justify-between">
+<div class="w-16 h-2 rounded bg-[#ffffff]/30"></div>
+<div class="w-4 h-4 rounded-full bg-[#3a7d74]/50"></div>
+</div>
+<div class="grid grid-cols-3 gap-1.5">
+<div class="h-8 rounded bg-[#17212f]"></div>
+<div class="h-8 rounded bg-[#17212f]"></div>
+<div class="h-8 rounded bg-[#223043]"></div>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Deep indigo-slate and graphite tones crafted to reduce nocturnal eye strain without muddy blacks.</p>
+</div>
+<button class="text-left font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" type="button">Select Midnight Slate</button>
+</div>
+<!-- Theme 3: System Sync -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:bg-surface-container-low transition-colors relative flex flex-col justify-between space-y-4 cursor-pointer">
+<div class="space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant">routine</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">System Sync</span>
+</div>
+<span class="material-symbols-outlined text-[20px] text-outline-variant">radio_button_unchecked</span>
+</div>
+<!-- Visual Mini Preview Split -->
+<div class="h-24 w-full rounded-lg overflow-hidden flex shadow-inner">
+<div class="w-1/2 h-full bg-[#f8f9ff] p-2 flex flex-col justify-between">
+<div class="w-10 h-2 rounded bg-[#022448]/20"></div>
+<div class="h-6 rounded bg-[#eff4ff]"></div>
+</div>
+<div class="w-1/2 h-full bg-[#0b1017] p-2 flex flex-col justify-between">
+<div class="w-10 h-2 rounded bg-white/20"></div>
+<div class="h-6 rounded bg-[#17212f]"></div>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Harmonizes automatically with your OS circadian schedule and twilight shift.</p>
+</div>
+<button class="text-left font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" type="button">Enable Circadian Auto-Switch</button>
+</div>
+</div>
+<!-- Contrast & Sensory Toggles -->
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="flex items-center justify-between p-2">
+<div class="space-y-0.5">
+<div class="font-label-lg text-label-lg text-primary">Reduced Motion</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Eliminates micro-spring transitions across nutrient rings and feed cards.</div>
+</div>
+<button aria-label="Toggle Reduced Motion" class="w-11 h-6 bg-surface-container rounded-full relative p-0.5 transition-colors focus:outline-none" type="button">
+<span class="block w-5 h-5 bg-surface-container-lowest rounded-full shadow-xs transform transition-transform translate-x-0"></span>
+</button>
+</div>
+<div class="flex items-center justify-between p-2">
+<div class="space-y-0.5">
+<div class="font-label-lg text-label-lg text-primary">High Contrast Nutrient Meters</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Applies enhanced tonal delineation for clinical data inspection.</div>
+</div>
+<button aria-label="Toggle High Contrast" class="w-11 h-6 bg-secondary rounded-full relative p-0.5 transition-colors focus:outline-none" type="button">
+<span class="block w-5 h-5 bg-surface-container-lowest rounded-full shadow-xs transform transition-transform translate-x-5"></span>
+</button>
+</div>
+</div>
+</section>
+<!-- Section 3: Visible Dashboard Nutrients Configurator -->
+<section class="space-y-space-md">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-1">
+<div>
+<h2 class="font-headline-md text-headline-md text-primary">Dashboard Nutrient Prioritization</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Tailor which nourishment markers appear on your primary daily feed without shame or anxiety.</p>
+</div>
+<button class="font-label-sm text-label-sm text-secondary hover:underline" type="button">Reset to Clinical Defaults</button>
+</div>
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm space-y-space-lg">
+<!-- Principle Note Banner -->
+<div class="bg-surface-container-low p-4 rounded-xl flex items-start gap-3">
+<span class="material-symbols-outlined text-secondary text-[22px] mt-0.5">sentiment_satisfied</span>
+<div class="space-y-0.5">
+<div class="font-label-lg text-label-lg text-primary font-medium">Gentle Observation Protocol</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              AteThat defaults to non-judgmental macro balances; micromanaging secondary minerals is optional. Turning off granular micronutrients prevents cognitive overload and eating fatigue.
+            </p>
+</div>
+</div>
+<!-- Primary Core Nutrients (Always Active) -->
+<div class="space-y-3">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Primary Core Markers (Fixed on Dashboard)</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant/70">5/5 Visible</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+<div class="bg-surface-container-low p-3.5 rounded-lg flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-primary font-medium">Energy</span>
+<span class="material-symbols-outlined text-[16px] text-secondary">lock</span>
+</div>
+<div class="mt-2">
+<span class="font-data-metric text-data-metric text-primary">2,150</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant ml-0.5">kcal</span>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full mt-2 overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width: 78%;"></div>
+</div>
+</div>
+<div class="bg-surface-container-low p-3.5 rounded-lg flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-primary font-medium">Protein</span>
+<span class="material-symbols-outlined text-[16px] text-secondary">lock</span>
+</div>
+<div class="mt-2">
+<span class="font-data-metric text-data-metric text-primary">110</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant ml-0.5">g</span>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full mt-2 overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 82%;"></div>
+</div>
+</div>
+<div class="bg-surface-container-low p-3.5 rounded-lg flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-primary font-medium">Carbohydrates</span>
+<span class="material-symbols-outlined text-[16px] text-secondary">lock</span>
+</div>
+<div class="mt-2">
+<span class="font-data-metric text-data-metric text-primary">240</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant ml-0.5">g</span>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full mt-2 overflow-hidden">
+<div class="bg-surface-tint h-full rounded-full" style="width: 65%;"></div>
+</div>
+</div>
+<div class="bg-surface-container-low p-3.5 rounded-lg flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-primary font-medium">Total Fat</span>
+<span class="material-symbols-outlined text-[16px] text-secondary">lock</span>
+</div>
+<div class="mt-2">
+<span class="font-data-metric text-data-metric text-primary">65</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant ml-0.5">g</span>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full mt-2 overflow-hidden">
+<div class="bg-on-tertiary-container h-full rounded-full" style="width: 60%;"></div>
+</div>
+</div>
+<div class="bg-surface-container-low p-3.5 rounded-lg flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-primary font-medium">Dietary Fibre</span>
+<span class="material-symbols-outlined text-[16px] text-secondary">lock</span>
+</div>
+<div class="mt-2">
+<span class="font-data-metric text-data-metric text-primary">32</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant ml-0.5">g</span>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full mt-2 overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 90%;"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Optional Secondary Toggles -->
+<div class="space-y-3 pt-2">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Optional Micronutrient &amp; Mineral Toggles</span>
+<span class="font-label-sm text-label-sm text-secondary font-medium">2 Active • 4 Calmed</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+<!-- Item 1: Active -->
+<div class="p-3 bg-surface-container-low rounded-lg flex items-center justify-between">
+<div>
+<div class="font-label-lg text-label-lg text-primary">Magnesium</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Recommended: 320 mg/day</div>
+</div>
+<button aria-label="Toggle Magnesium" class="w-10 h-6 bg-secondary rounded-full relative p-0.5 transition-colors focus:outline-none" type="button">
+<span class="block w-5 h-5 bg-surface-container-lowest rounded-full shadow-xs transform transition-transform translate-x-4"></span>
+</button>
+</div>
+<!-- Item 2: Active -->
+<div class="p-3 bg-surface-container-low rounded-lg flex items-center justify-between">
+<div>
+<div class="font-label-lg text-label-lg text-primary">Vitamin D3</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Recommended: 1,000 IU/day</div>
+</div>
+<button aria-label="Toggle Vitamin D3" class="w-10 h-6 bg-secondary rounded-full relative p-0.5 transition-colors focus:outline-none" type="button">
+<span class="block w-5 h-5 bg-surface-container-lowest rounded-full shadow-xs transform transition-transform translate-x-4"></span>
+</button>
+</div>
+<!-- Item 3: Disabled by default -->
+<div class="p-3 bg-surface-container-low/70 rounded-lg flex items-center justify-between opacity-80">
+<div>
+<div class="font-label-lg text-label-lg text-on-surface-variant">Sodium</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant/80">Sensory limit: &lt;2,300 mg</div>
+</div>
+<button aria-label="Toggle Sodium" class="w-10 h-6 bg-surface-container rounded-full relative p-0.5 transition-colors focus:outline-none" type="button">
+<span class="block w-5 h-5 bg-surface-container-lowest rounded-full shadow-xs transform transition-transform translate-x-0"></span>
+</button>
+</div>
+<!-- Item 4: Disabled by default -->
+<div class="p-3 bg-surface-container-low/70 rounded-lg flex items-center justify-between opacity-80">
+<div>
+<div class="font-label-lg text-label-lg text-on-surface-variant">Potassium</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant/80">Recommended: 2,600 mg/day</div>
+</div>
+<button aria-label="Toggle Potassium" class="w-10 h-6 bg-surface-container rounded-full relative p-0.5 transition-colors focus:outline-none" type="button">
+<span class="block w-5 h-5 bg-surface-container-lowest rounded-full shadow-xs transform transition-transform translate-x-0"></span>
+</button>
+</div>
+<!-- Item 5: Disabled by default -->
+<div class="p-3 bg-surface-container-low/70 rounded-lg flex items-center justify-between opacity-80">
+<div>
+<div class="font-label-lg text-label-lg text-on-surface-variant">Saturated Fat</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant/80">Target threshold: &lt;20 g</div>
+</div>
+<button aria-label="Toggle Saturated Fat" class="w-10 h-6 bg-surface-container rounded-full relative p-0.5 transition-colors focus:outline-none" type="button">
+<span class="block w-5 h-5 bg-surface-container-lowest rounded-full shadow-xs transform transition-transform translate-x-0"></span>
+</button>
+</div>
+<!-- Item 6: Disabled by default -->
+<div class="p-3 bg-surface-container-low/70 rounded-lg flex items-center justify-between opacity-80">
+<div>
+<div class="font-label-lg text-label-lg text-on-surface-variant">Added Sugar</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant/80">Disabled to prevent anxiety</div>
+</div>
+<button aria-label="Toggle Added Sugar" class="w-10 h-6 bg-surface-container rounded-full relative p-0.5 transition-colors focus:outline-none" type="button">
+<span class="block w-5 h-5 bg-surface-container-lowest rounded-full shadow-xs transform transition-transform translate-x-0"></span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Split Two-Column: Section 4 (Security) & Section 5 (Privacy & Governance) -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-space-lg">
+<!-- Section 4: Authentication, Connected Accounts & Security -->
+<section class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm space-y-space-md flex flex-col justify-between">
+<div class="space-y-space-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[22px]">lock_reset</span>
+<h2 class="font-headline-md text-headline-md text-primary">Authentication &amp; Security</h2>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Ensure peaceful access to your journals across validated physical hardware.</p>
+<!-- Linked Google Account -->
+<div class="bg-surface-container-low p-4 rounded-lg flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-lg bg-surface-container-lowest flex items-center justify-center shadow-xs">
+<svg class="w-5 h-5" viewBox="0 0 24 24">
+<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"></path>
+<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"></path>
+</svg>
+</div>
+<div>
+<div class="font-label-lg text-label-lg text-primary">Google SSO Linked</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant truncate">ananya.sharma@gmail.com</div>
+</div>
+</div>
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-secondary bg-secondary-container/50 px-2.5 py-1 rounded-full">
+<span class="material-symbols-outlined text-[14px]">shield</span> OAuth 2.0
+            </span>
+</div>
+<!-- Password Row -->
+<div class="p-4 bg-surface-container-low rounded-lg flex items-center justify-between">
+<div>
+<div class="font-label-lg text-label-lg text-primary">Master Passphrase</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Last updated 3 months ago</div>
+</div>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-lowest font-label-md text-label-md text-primary hover:bg-surface-container transition-colors shadow-xs" type="button">
+              Update Password
+            </button>
+</div>
+<!-- 2FA -->
+<div class="p-4 bg-surface-container-low rounded-lg flex items-center justify-between">
+<div class="space-y-0.5">
+<div class="flex items-center gap-2">
+<span class="font-label-lg text-label-lg text-primary">Two-Factor Auth (2FA)</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-secondary-container/60 text-on-secondary-container font-label-sm text-label-sm">
+                  Active
+                </span>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Authenticator App (TOTP Hardware Key)</div>
+</div>
+<button class="text-on-surface-variant hover:text-primary font-label-md text-label-md transition-colors" type="button">
+              Manage Keys
+            </button>
+</div>
+<!-- Active Session -->
+<div class="p-3 bg-surface-container-low/50 rounded-lg flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span>1 active session: MacBook Pro • Mumbai, India</span>
+</div>
+<span class="font-mono">103.21.244.18</span>
+</div>
+</div>
+<div class="pt-2">
+<button class="w-full py-2.5 rounded-lg bg-surface-container-low text-primary font-label-md text-label-md hover:bg-surface-container transition-colors text-center" type="button">
+            Review Authorized Companion Devices (iOS &amp; Apple Health)
+          </button>
+</div>
+</section>
+<!-- Section 5: Data Sovereignty, Privacy & Account Action -->
+<section class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm space-y-space-md flex flex-col justify-between">
+<div class="space-y-space-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[22px]">policy</span>
+<h2 class="font-headline-md text-headline-md text-primary">Data Sovereignty &amp; Audit</h2>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Your health history is strictly personal. No external trackers, brokers, or data scraping.</p>
+<!-- Encrypted Note -->
+<div class="bg-surface-container-low p-4 rounded-xl space-y-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-secondary">encrypted</span>
+<span class="font-label-lg text-label-lg text-primary font-medium">Private Zero-Knowledge Ledger</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+              Your sustenance entries, glucose markers, and supplement timestamps are cryptographically signed. AteThat engineers cannot view your meal logs.
+            </p>
+</div>
+<!-- Quick Actions Export -->
+<div class="space-y-2 pt-1">
+<div class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Portability &amp; Clinical Records</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+<button class="flex items-center justify-center gap-2 p-3 bg-surface-container-low rounded-lg font-label-md text-label-md text-primary hover:bg-surface-container transition-colors shadow-xs" type="button">
+<span class="material-symbols-outlined text-[18px]">download</span>
+<span>Export Ledger (JSON/CSV)</span>
+</button>
+<button class="flex items-center justify-center gap-2 p-3 bg-surface-container-low rounded-lg font-label-md text-label-md text-primary hover:bg-surface-container transition-colors shadow-xs" type="button">
+<span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+<span>Clinical Health Audit PDF</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Danger Zone (Calm & Restrained) -->
+<div class="pt-4 space-y-2">
+<div class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Account Governance</div>
+<div class="p-3 bg-error-container/30 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-3">
+<div class="space-y-0.5 text-center sm:text-left">
+<div class="font-label-md text-label-md text-on-surface font-medium">Sign Out from All Devices</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Invalidates all remote mobile &amp; tablet session tokens immediately.</div>
+</div>
+<button class="px-3.5 py-1.5 rounded-lg bg-surface-container-lowest font-label-md text-label-md text-on-surface hover:bg-surface-container-high transition-colors shadow-xs whitespace-nowrap" type="button">
+              Log Out All
+            </button>
+</div>
+<div class="flex items-center justify-between pt-1 px-1">
+<span class="font-body-sm text-body-sm text-on-surface-variant">GDPR / India DPDP Act compliance</span>
+<button class="font-label-sm text-label-sm text-error hover:underline transition-all" type="button">
+              Request Permanent Data Purge
+            </button>
+</div>
+</div>
+</section>
+</div>
+<!-- Footer System Status Signature -->
+<footer class="pt-space-md pb-space-lg flex flex-col sm:flex-row items-center justify-between gap-4 font-label-sm text-label-sm text-on-surface-variant/70">
+<div class="flex items-center gap-3">
+<span class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>Encrypted Node: Mumbai-West-1 (ap-south-1)</span>
+</span>
+<span>•</span>
+<span>Build 3.4.12-mindful</span>
+</div>
+<div class="flex items-center gap-4">
+<a class="hover:text-primary transition-colors" href="#">Privacy Charter</a>
+<a class="hover:text-primary transition-colors" href="#">Clinical Calibration Methodology</a>
+<a class="hover:text-primary transition-colors" href="#">System Diagnostics</a>
+</div>
+</footer>
+</div>
+</div></main></div></body></html>

@@ -1,0 +1,190 @@
+syntax = "proto3";
+
+package atethat.v1;
+
+service FoodService {
+  rpc SearchUSDA(SearchUSDARequest) returns (FoodSearchPage);
+  rpc GetUSDAFood(GetUSDAFoodRequest) returns (FoodResult);
+  rpc CreateCustomFood(UpsertCustomFoodRequest) returns (CustomFood);
+  rpc UpdateCustomFood(UpsertCustomFoodRequest) returns (CustomFood);
+  rpc GetCustomFood(CustomFoodRequest) returns (CustomFood);
+  rpc ListCustomFoods(ListCustomFoodsRequest) returns (CustomFoodPage);
+  rpc DeleteCustomFood(CustomFoodRequest) returns (FoodEmpty);
+  rpc CreateMeal(UpsertMealRequest) returns (Meal);
+  rpc UpdateMeal(UpsertMealRequest) returns (Meal);
+  rpc GetMeal(MealRequest) returns (Meal);
+  rpc ListMeals(ListMealsRequest) returns (MealPage);
+  rpc DeleteMeal(MealRequest) returns (FoodEmpty);
+  rpc AddFavourite(FavouriteRequest) returns (FoodFavourite);
+  rpc DeleteFavourite(FavouriteRequest) returns (FoodEmpty);
+  rpc ListFavourites(ListFavouritesRequest) returns (FavouritePage);
+  rpc ListUsedFoods(ListUsedFoodsRequest) returns (UsedFoodPage);
+  rpc CreateServing(UpsertServingRequest) returns (ServingDefinition);
+  rpc UpdateServing(UpsertServingRequest) returns (ServingDefinition);
+  rpc GetServing(ServingRequest) returns (ServingDefinition);
+  rpc ListServings(ListServingsRequest) returns (ServingPage);
+  rpc DeleteServing(ServingRequest) returns (FoodEmpty);
+}
+
+message FoodEmpty {}
+
+message FoodQuantity {
+  string amount = 1;
+  string unit = 2;
+}
+
+message ServingDefinition {
+  string id = 1;
+  uint64 version = 2;
+  string label = 3;
+  string food_type = 4;
+  string provider_food_id = 5;
+  string custom_food_id = 6;
+  FoodQuantity quantity = 7;
+  string food_state = 8;
+  string created_at = 9;
+  string updated_at = 10;
+}
+message UpsertServingRequest {
+  string id = 1;
+  uint64 version = 2;
+  string label = 3;
+  string food_type = 4;
+  string provider_food_id = 5;
+  string custom_food_id = 6;
+  FoodQuantity quantity = 7;
+  string food_state = 8;
+}
+message ServingRequest { string id = 1; }
+message ListServingsRequest { uint32 limit = 1; string cursor = 2; }
+message ServingPage { repeated ServingDefinition items = 1; string next_cursor = 2; bool has_more = 3; }
+
+message CustomFood {
+  string id = 1;
+  uint64 version = 2;
+  string name = 3;
+  string description = 4;
+  string food_state = 5;
+  FoodQuantity base_quantity = 6;
+  map<string, FoodNutrient> nutrients = 7;
+  string created_at = 8;
+  string updated_at = 9;
+}
+
+message UpsertCustomFoodRequest {
+  string id = 1;
+  uint64 version = 2;
+  string name = 3;
+  string description = 4;
+  string food_state = 5;
+  FoodQuantity base_quantity = 6;
+  map<string, FoodNutrient> nutrients = 7;
+}
+
+message CustomFoodRequest { string id = 1; }
+
+message ListCustomFoodsRequest {
+  uint32 limit = 1;
+  string cursor = 2;
+}
+
+message CustomFoodPage {
+  repeated CustomFood items = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}
+
+message MealComponent {
+  uint32 position = 1;
+  string food_type = 2;
+  string provider_food_id = 3;
+  string custom_food_id = 4;
+  FoodQuantity quantity = 5;
+  string food_state = 6;
+}
+
+message Meal {
+  string id = 1;
+  uint64 version = 2;
+  string name = 3;
+  repeated MealComponent components = 4;
+  string created_at = 5;
+  string updated_at = 6;
+}
+
+message UpsertMealRequest {
+  string id = 1;
+  uint64 version = 2;
+  string name = 3;
+  repeated MealComponent components = 4;
+}
+message MealRequest { string id = 1; }
+message ListMealsRequest { uint32 limit = 1; string cursor = 2; }
+message MealPage { repeated Meal items = 1; string next_cursor = 2; bool has_more = 3; }
+
+message FavouriteRequest {
+  string food_type = 1;
+  string provider_food_id = 2;
+  string custom_food_id = 3;
+  string food_key = 4;
+}
+message FoodFavourite {
+  string food_key = 1;
+  string food_type = 2;
+  string provider_food_id = 3;
+  string custom_food_id = 4;
+  string name = 5;
+  string created_at = 6;
+}
+message ListFavouritesRequest { uint32 limit = 1; string cursor = 2; }
+message FavouritePage { repeated FoodFavourite items = 1; string next_cursor = 2; bool has_more = 3; }
+
+message ListUsedFoodsRequest {
+  string sort = 1;
+  string from = 2;
+  string to = 3;
+  uint32 limit = 4;
+  string cursor = 5;
+}
+message UsedFood {
+  string food_key = 1;
+  string food_type = 2;
+  string provider_food_id = 3;
+  string custom_food_id = 4;
+  string name = 5;
+  uint64 confirmed_log_count = 6;
+  string last_logged_at = 7;
+}
+message UsedFoodPage { repeated UsedFood items = 1; string next_cursor = 2; bool has_more = 3; }
+
+message SearchUSDARequest {
+  string query = 1;
+  string food_state = 2;
+  uint32 limit = 3;
+  string cursor = 4;
+}
+
+message GetUSDAFoodRequest { string provider_food_id = 1; }
+
+message FoodNutrient {
+  string status = 1;
+  string amount = 2;
+  string unit = 3;
+}
+
+message FoodResult {
+  string provider_food_id = 1;
+  string name = 2;
+  string food_state = 3;
+  string base_amount = 4;
+  string base_unit = 5;
+  map<string, FoodNutrient> nutrients = 6;
+  string data_type = 7;
+  string source_url = 8;
+}
+
+message FoodSearchPage {
+  repeated FoodResult items = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}

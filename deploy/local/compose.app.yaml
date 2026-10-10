@@ -1,0 +1,38 @@
+services:
+  core:
+    build:
+      context: ../..
+      dockerfile: services/core/Dockerfile
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/atethat_dev?replicaSet=rs0&directConnection=true
+      MONGODB_DATABASE: atethat_dev
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+    depends_on:
+      mongo-init:
+        condition: service_completed_successfully
+      mailpit:
+        condition: service_started
+    networks: [private]
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ../..
+      dockerfile: services/api/Dockerfile
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      CORE_GRPC_ADDR: core:9090
+      COOKIE_SECURE: "false"
+    ports:
+      - "127.0.0.1:18080:8080"
+    depends_on:
+      core:
+        condition: service_started
+    networks: [private]
+    restart: unless-stopped

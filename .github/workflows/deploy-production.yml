@@ -1,0 +1,38 @@
+name: Deploy production
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-deployment
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Trigger restricted VPS deployment
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Configure deployment SSH key
+        env:
+          DEPLOY_HOST: ${{ secrets.VPS_DEPLOY_HOST }}
+          DEPLOY_KEY: ${{ secrets.VPS_DEPLOY_SSH_PRIVATE_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.VPS_DEPLOY_KNOWN_HOSTS }}
+          DEPLOY_USER: ${{ secrets.VPS_DEPLOY_USER }}
+        run: |
+          test -n "$DEPLOY_HOST"
+          test -n "$DEPLOY_USER"
+          test -n "$DEPLOY_KEY"
+          test -n "$DEPLOY_KNOWN_HOSTS"
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: Trigger fixed deployment command
+        env:
+          DEPLOY_HOST: ${{ secrets.VPS_DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.VPS_DEPLOY_USER }}
+        run: ssh -T -o BatchMode=yes "$DEPLOY_USER@$DEPLOY_HOST"

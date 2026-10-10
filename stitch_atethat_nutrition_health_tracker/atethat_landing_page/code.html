@@ -1,0 +1,462 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_blank" name="shell-type"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-tertiary-container": "#ef8946", "secondary": "#236960", "on-tertiary-fixed": "#321200", "secondary-container": "#a9ede1", "error-container": "#ffdad6", "secondary-fixed-dim": "#90d3c8", "inverse-on-surface": "#eaf1ff", "on-error": "#ffffff", "on-surface-variant": "#43474e", "on-secondary-fixed": "#00201c", "surface-container-low": "#eff4ff", "on-secondary": "#ffffff", "error": "#ba1a1a", "primary-fixed-dim": "#adc8f5", "inverse-surface": "#213145", "on-secondary-fixed-variant": "#005049", "on-primary-container": "#8aa4cf", "on-primary": "#ffffff", "tertiary-container": "#602900", "surface-tint": "#455f87", "on-surface": "#0b1c30", "background": "#f8f9ff", "on-primary-fixed-variant": "#2d486d", "primary-container": "#1e3a5f", "surface-container": "#e5eeff", "on-background": "#0b1c30", "tertiary": "#3f1900", "tertiary-fixed": "#ffdbc9", "surface-container-highest": "#d3e4fe", "on-tertiary": "#ffffff", "primary": "#022448", "on-secondary-container": "#286d64", "on-tertiary-fixed-variant": "#753400", "surface-container-high": "#dce9ff", "surface-bright": "#f8f9ff", "outline": "#74777f", "tertiary-fixed-dim": "#ffb68c", "primary-fixed": "#d5e3ff", "surface": "#f8f9ff", "surface-variant": "#d3e4fe", "surface-container-lowest": "#ffffff", "on-primary-fixed": "#001c3b", "outline-variant": "#c4c6cf", "secondary-fixed": "#acefe4", "inverse-primary": "#adc8f5", "on-error-container": "#93000a", "surface-dim": "#cbdbf5" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-xl": "2rem", "space-sm": "0.5rem", "space-xs": "0.25rem", "margin-mobile": "1rem", "margin": "2rem", "space-2xl": "3rem", "space-md": "1rem", "gutter": "1.5rem", "gutter-mobile": "1rem", "space-lg": "1.5rem" }, "fontFamily": { "label-sm": [ "Inter" ], "headline-sm": [ "Plus Jakarta Sans" ], "headline-xl-mobile": [ "Plus Jakarta Sans" ], "headline-md": [ "Plus Jakarta Sans" ], "data-metric": [ "Inter" ], "body-md": [ "Inter" ], "label-md": [ "Inter" ], "label-lg": [ "Inter" ], "body-lg": [ "Inter" ], "headline-xl": [ "Plus Jakarta Sans" ], "headline-lg": [ "Plus Jakarta Sans" ], "body-sm": [ "Inter" ] }, "fontSize": { "label-sm": [ "0.6875rem", { "lineHeight": "0.875rem", "letterSpacing": "0.04em", "fontWeight": "600" } ], "headline-sm": [ "1.125rem", { "lineHeight": "1.5rem", "letterSpacing": "-0.01em", "fontWeight": "600" } ], "headline-xl-mobile": [ "1.75rem", { "lineHeight": "2.25rem", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "headline-md": [ "1.25rem", { "lineHeight": "1.75rem", "letterSpacing": "-0.015em", "fontWeight": "600" } ], "data-metric": [ "1.375rem", { "lineHeight": "1.625rem", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "body-md": [ "1rem", { "lineHeight": "1.5rem", "fontWeight": "400" } ], "label-md": [ "0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.02em", "fontWeight": "500" } ], "label-lg": [ "0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "0.01em", "fontWeight": "500" } ], "body-lg": [ "1.125rem", { "lineHeight": "1.75rem", "fontWeight": "400" } ], "headline-xl": [ "2.25rem", { "lineHeight": "2.75rem", "letterSpacing": "-0.025em", "fontWeight": "600" } ], "headline-lg": [ "1.5rem", { "lineHeight": "2rem", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "body-sm": [ "0.875rem", { "lineHeight": "1.25rem", "fontWeight": "400" } ] } } } }</script></head><body class="bg-background font-body-md text-body-md text-on-surface"><main class="w-full min-h-screen flex items-center justify-center bg-background"><div class="flex flex-col w-full">
+<!-- Subtle ambient glow background decoration -->
+<div class="relative w-full overflow-hidden">
+<div class="absolute -top-32 left-1/2 -translate-x-1/2 w-[720px] h-[340px] bg-gradient-to-b from-primary-fixed-dim/35 to-transparent rounded-full blur-3xl pointer-events-none -z-10"></div>
+<div class="absolute top-96 right-10 w-96 h-96 bg-secondary-container/20 rounded-full blur-3xl pointer-events-none -z-10"></div>
+<!-- Top Navigation / Micro-Bar inside canvas container -->
+<header class="w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-on-primary shadow-sm">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">spa</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-primary tracking-tight">AteThat</span>
+<span class="font-label-sm text-label-sm text-secondary -mt-1 tracking-wider uppercase">Nourishment Ledger</span>
+</div>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="font-label-lg text-label-lg text-on-surface-variant hover:text-primary transition-colors" href="#philosophy">Philosophy</a>
+<a class="font-label-lg text-label-lg text-on-surface-variant hover:text-primary transition-colors" href="#features">Features</a>
+<a class="font-label-lg text-label-lg text-on-surface-variant hover:text-primary transition-colors" href="#preview">Experience</a>
+<a class="font-label-lg text-label-lg text-on-surface-variant hover:text-primary transition-colors" href="#security">Privacy</a>
+</nav>
+<div class="flex items-center gap-3">
+<a class="font-label-lg text-label-lg text-primary px-4 py-2 rounded-lg hover:bg-surface-container transition-colors" href="#login">Log In</a>
+<a class="font-label-lg text-label-lg bg-primary text-on-primary px-5 py-2.5 rounded-lg shadow-sm hover:bg-primary-container transition-all" href="#signup">Get Started</a>
+</div>
+</header>
+<!-- Hero Section -->
+<section class="w-full max-w-5xl mx-auto px-6 pt-12 pb-16 text-center flex flex-col items-center">
+<!-- Quiet Ethos Badge -->
+<div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant mb-6 shadow-sm">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-label-sm text-label-sm tracking-wide uppercase">Dignity over restriction • No calorie scolding</span>
+</div>
+<h1 class="font-headline-xl text-headline-xl md:text-[3.25rem] md:leading-[3.75rem] text-primary max-w-4xl tracking-tight mb-6">
+        AteThat — Know what nourishes you.
+      </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mb-10 leading-relaxed">
+        A calm, intelligent companion for food, nutrition, medication, and supplement tracking. Built for clarity, balance, and lifelong well-being without calorie-shaming or noise.
+      </p>
+<div class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto mb-8">
+<a class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 font-label-lg text-label-lg bg-primary text-on-primary px-7 py-3.5 rounded-lg shadow-md hover:bg-primary-container transition-all" href="#signup">
+<span>Get Started Free</span>
+<span class="material-symbols-outlined text-base">arrow_forward</span>
+</a>
+<a class="w-full sm:w-auto inline-flex items-center justify-center gap-2 font-label-lg text-label-lg bg-surface-container-lowest text-primary px-6 py-3.5 rounded-lg shadow-sm hover:bg-surface-container transition-colors" href="#preview">
+<span class="material-symbols-outlined text-base text-secondary">play_circle</span>
+<span>Explore Live Demo</span>
+</a>
+</div>
+<!-- Quick Trust Indicators -->
+<div class="flex flex-wrap justify-center items-center gap-y-2 gap-x-6 text-on-surface-variant">
+<div class="flex items-center gap-1.5 font-label-md text-label-md">
+<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span>USDA Verified Data</span>
+</div>
+<div class="flex items-center gap-1.5 font-label-md text-label-md">
+<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">shield</span>
+<span>Zero Ad-Tech or Data Brokering</span>
+</div>
+<div class="flex items-center gap-1.5 font-label-md text-label-md">
+<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">schedule</span>
+<span>Universal Chronobiology Timelines</span>
+</div>
+</div>
+</section>
+<!-- Bespoke Interactive Product Ledger Preview -->
+<section class="w-full max-w-6xl mx-auto px-6 pb-20" id="preview">
+<div class="w-full bg-surface-container-lowest rounded-2xl shadow-xl overflow-hidden">
+<!-- Interactive Preview Top Bar -->
+<div class="bg-surface-container-low px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<span class="w-3 h-3 rounded-full bg-secondary-fixed-dim"></span>
+<span class="w-3 h-3 rounded-full bg-surface-container-highest"></span>
+<span class="w-3 h-3 rounded-full bg-surface-container-highest"></span>
+<span class="font-label-md text-label-md text-on-surface-variant ml-2">Today • Wednesday, Oct 24 • UTC+05:30</span>
+</div>
+<!-- Switch Mode Micro-Tab (Simulated serene states) -->
+<div class="inline-flex p-1 bg-surface-container rounded-lg">
+<button class="px-3 py-1 font-label-sm text-label-sm rounded-md bg-surface-container-lowest text-primary shadow-sm transition-all" id="view-morning">Morning Stage</button>
+<button class="px-3 py-1 font-label-sm text-label-sm rounded-md text-on-surface-variant hover:text-primary transition-all" id="view-evening">Complete Day</button>
+</div>
+</div>
+<!-- Ledger View Workspace -->
+<div class="p-6 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Left: Feed & Entry Logs (7 Cols) -->
+<div class="lg:col-span-7 flex flex-col gap-4">
+<div class="flex items-center justify-between pb-1">
+<div>
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider">Chronological Ledger</span>
+<h3 class="font-headline-sm text-headline-sm text-primary">Sustenance &amp; Regimen</h3>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant bg-surface-container px-2.5 py-1 rounded-full">4 items recorded</span>
+</div>
+<!-- Log Item 1: Breakfast / Tray Composite -->
+<div class="p-4 rounded-xl bg-surface-container-low transition-all hover:bg-surface-container">
+<div class="flex items-start justify-between mb-2">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm bg-surface-container-highest text-primary px-2 py-0.5 rounded-full font-mono">08:15 IST</span>
+<span class="font-label-sm text-label-sm text-secondary uppercase font-semibold">Meal Tray • Breakfast</span>
+</div>
+<span class="font-data-metric text-data-metric text-primary">440 <span class="font-body-sm text-body-sm text-on-surface-variant">kcal</span></span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface mb-1">Steel-cut Oats, Blueberries &amp; Crushed Walnuts</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-3">Cooked with unsweetened almond milk, light cinnamon sprinkle.</p>
+<div class="flex flex-wrap gap-2">
+<span class="px-2.5 py-1 rounded-md bg-surface-container text-primary font-label-sm text-label-sm">Protein 14g</span>
+<span class="px-2.5 py-1 rounded-md bg-surface-container text-primary font-label-sm text-label-sm">Carbs 58g</span>
+<span class="px-2.5 py-1 rounded-md bg-surface-container text-primary font-label-sm text-label-sm">Healthy Fats 16g</span>
+<span class="px-2.5 py-1 rounded-md bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">Fiber 9.2g</span>
+</div>
+</div>
+<!-- Log Item 2: Morning Supplement -->
+<div class="p-4 rounded-xl bg-surface-container-low transition-all hover:bg-surface-container">
+<div class="flex items-start justify-between mb-1.5">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm bg-surface-container-highest text-primary px-2 py-0.5 rounded-full font-mono">08:30 IST</span>
+<span class="font-label-sm text-label-sm text-secondary uppercase font-semibold">Regimen • Scheduled</span>
+</div>
+<div class="flex items-center gap-1.5 text-secondary font-label-md text-label-md">
+<span class="material-symbols-outlined text-base" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span>Taken</span>
+</div>
+</div>
+<div class="flex items-baseline justify-between">
+<div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Vitamin D3 + K2 (Liposomal)</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">2,000 IU / 100mcg • With morning fats for absorption</p>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container px-2 py-1 rounded">Daily Routine</span>
+</div>
+</div>
+<!-- Log Item 3: Hydration & Electrolyte -->
+<div class="p-4 rounded-xl bg-surface-container-low transition-all hover:bg-surface-container">
+<div class="flex items-start justify-between mb-1.5">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm bg-surface-container-highest text-primary px-2 py-0.5 rounded-full font-mono">11:00 IST</span>
+<span class="font-label-sm text-label-sm text-secondary uppercase font-semibold">Hydration</span>
+</div>
+<span class="font-data-metric text-data-metric text-primary">500 <span class="font-body-sm text-body-sm text-on-surface-variant">ml</span></span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Filtered Spring Water + Magnesium Glycinate</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Elemental Magnesium 200mg • Cellular rehydration</p>
+</div>
+<!-- Staged Tray / Multi-Food Composite Builder -->
+<div class="p-4 rounded-xl bg-primary-fixed/30">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">inventory_2</span>
+<span class="font-label-sm text-label-sm text-primary uppercase font-semibold tracking-wider">Active Meal Tray • Lunch Staging</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary bg-primary-fixed px-2 py-0.5 rounded font-mono">3 ingredients staged</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-3">Building: Quinoa Bowl with Steamed Tempeh &amp; Avocado</p>
+<div class="flex items-center justify-between pt-1">
+<div class="flex items-center gap-3">
+<span class="font-data-metric text-data-metric text-primary">520 <span class="font-body-sm text-body-sm text-on-surface-variant">est. kcal</span></span>
+<span class="font-label-sm text-label-sm text-secondary font-medium">32g Protein • 14g Fiber</span>
+</div>
+<button class="px-3.5 py-1.5 rounded-lg bg-primary text-on-primary font-label-sm text-label-sm shadow-sm hover:bg-primary-container transition-all">Commit to Log</button>
+</div>
+</div>
+</div>
+<!-- Right: Visual Balance & Chrono Overview (5 Cols) -->
+<div class="lg:col-span-5 flex flex-col gap-5">
+<div class="p-5 rounded-xl bg-surface-container-low flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<div>
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider">Daily Balance</span>
+<h4 class="font-headline-sm text-headline-sm text-primary">Nourishment Arc</h4>
+</div>
+<span class="material-symbols-outlined text-secondary">donut_large</span>
+</div>
+<!-- SVG Nutrient Arc Chart -->
+<div class="flex items-center justify-center py-2">
+<div class="relative w-44 h-44 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+<circle cx="50" cy="50" fill="transparent" r="40" stroke="#dce9ff" stroke-width="10"></circle>
+<!-- Fiber track -->
+<circle cx="50" cy="50" fill="transparent" r="40" stroke="#236960" stroke-dasharray="251.2" stroke-dashoffset="180" stroke-linecap="round" stroke-width="10"></circle>
+<!-- Protein track -->
+<circle cx="50" cy="50" fill="transparent" r="28" stroke="#dce9ff" stroke-width="8"></circle>
+<circle cx="50" cy="50" fill="transparent" r="28" stroke="#022448" stroke-dasharray="175.9" stroke-dashoffset="85" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<div class="absolute flex flex-col items-center text-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Sustained</span>
+<span class="font-data-metric text-data-metric text-primary">960</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">of 2,100 kcal</span>
+</div>
+</div>
+</div>
+<!-- Tabular Micronutrient Matrix -->
+<div class="flex flex-col gap-2 pt-2">
+<div class="flex items-center justify-between font-label-md text-label-md">
+<span class="text-on-surface-variant">Dietary Fiber</span>
+<span class="text-primary font-medium font-mono">23.2g / 30g (77%)</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary rounded-full" style="width: 77%"></div>
+</div>
+<div class="flex items-center justify-between font-label-md text-label-md pt-1">
+<span class="text-on-surface-variant">Bioavailable Protein</span>
+<span class="text-primary font-medium font-mono">46g / 85g (54%)</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 54%"></div>
+</div>
+<div class="flex items-center justify-between font-label-md text-label-md pt-1">
+<span class="text-on-surface-variant">Hydration Target</span>
+<span class="text-primary font-medium font-mono">1,850ml / 2,500ml</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-surface-tint rounded-full" style="width: 74%"></div>
+</div>
+</div>
+</div>
+<!-- Regimen Harmony Mini Card -->
+<div class="p-5 rounded-xl bg-surface-container-low flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm text-primary">Prescription &amp; Timing</span>
+<span class="font-label-sm text-label-sm text-secondary bg-secondary-container px-2 py-0.5 rounded-full font-medium">On Schedule</span>
+</div>
+<div class="flex items-center justify-between py-1">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-base">medication</span>
+</div>
+<div>
+<p class="font-label-lg text-label-lg text-primary">Omega-3 DHA/EPA</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Evening with dinner • 1,000mg</p>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-mono">19:30</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Value Proposition Bento Grid -->
+<section class="w-full max-w-6xl mx-auto px-6 py-16" id="features">
+<div class="text-center max-w-2xl mx-auto mb-14">
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider">Thoughtful Infrastructure</span>
+<h2 class="font-headline-xl text-headline-xl text-primary mt-1 mb-3">Designed for balance, not obsession.</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Traditional counters foster guilt and anxiety. AteThat treats sustenance with respect, clinical precision, and calm clarity.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Card 1 -->
+<div class="p-8 rounded-2xl bg-surface-container-low flex flex-col justify-between hover:bg-surface-container transition-all">
+<div>
+<div class="w-12 h-12 rounded-xl bg-surface-container-lowest text-primary flex items-center justify-center mb-6 shadow-sm">
+<span class="material-symbols-outlined text-2xl">nutrition</span>
+</div>
+<h3 class="font-headline-lg text-headline-lg text-primary mb-3">Mindful Food &amp; Nutrient Tracking</h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed mb-6">
+              USDA-verified nutritional intelligence with progressive disclosure. Calories, macros, and critical micro-nutrients presented without red alarms, flashing warnings, or clinical clutter.
+            </p>
+</div>
+<div class="p-4 rounded-xl bg-surface-container-lowest flex items-center justify-between">
+<span class="font-label-md text-label-md text-primary font-medium">Progressive Nutrient Disclosure</span>
+<span class="font-label-sm text-label-sm text-secondary bg-secondary-container px-2 py-0.5 rounded font-mono">USDA SR Legacy • FDC</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="p-8 rounded-2xl bg-surface-container-low flex flex-col justify-between hover:bg-surface-container transition-all">
+<div>
+<div class="w-12 h-12 rounded-xl bg-surface-container-lowest text-secondary flex items-center justify-center mb-6 shadow-sm">
+<span class="material-symbols-outlined text-2xl">event_repeat</span>
+</div>
+<h3 class="font-headline-lg text-headline-lg text-primary mb-3">Medication &amp; Supplement Harmony</h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed mb-6">
+              Integrated daily schedules, recurring reminders, timezone adjustment for international travel, and seamless taken/skipped logging aligned alongside meals.
+            </p>
+</div>
+<div class="p-4 rounded-xl bg-surface-container-lowest flex items-center justify-between">
+<span class="font-label-md text-label-md text-primary font-medium">Automatic Timezone Translation</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container px-2 py-0.5 rounded font-mono">IST ↔ UTC ↔ PST</span>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="p-8 rounded-2xl bg-surface-container-low flex flex-col justify-between hover:bg-surface-container transition-all">
+<div>
+<div class="w-12 h-12 rounded-xl bg-surface-container-lowest text-primary flex items-center justify-center mb-6 shadow-sm">
+<span class="material-symbols-outlined text-2xl">layers</span>
+</div>
+<h3 class="font-headline-lg text-headline-lg text-primary mb-3">Multi-Food Log Trays</h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed mb-6">
+              Build composite meals naturally. Stage breakfast bowls, home cooked curries, or complex artisan sandwiches together in a fluid workspace before committing to your history.
+            </p>
+</div>
+<div class="p-4 rounded-xl bg-surface-container-lowest flex items-center justify-between">
+<span class="font-label-md text-label-md text-primary font-medium">Staged Ingredient Canvas</span>
+<span class="font-label-sm text-label-sm text-primary bg-surface-container-high px-2 py-0.5 rounded">Composite Recipes</span>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="p-8 rounded-2xl bg-surface-container-low flex flex-col justify-between hover:bg-surface-container transition-all">
+<div>
+<div class="w-12 h-12 rounded-xl bg-surface-container-lowest text-secondary flex items-center justify-center mb-6 shadow-sm">
+<span class="material-symbols-outlined text-2xl">verified_user</span>
+</div>
+<h3 class="font-headline-lg text-headline-lg text-primary mb-3">Privacy-First &amp; Evidence-Based</h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed mb-6">
+              No invasive advertising trackers, no vanity public feeds, no selling biomarkers. Every reference links to peer-reviewed nutritional science and transparent health standards.
+            </p>
+</div>
+<div class="p-4 rounded-xl bg-surface-container-lowest flex items-center justify-between">
+<span class="font-label-md text-label-md text-primary font-medium">Strict Zero Data Resale Policy</span>
+<span class="font-label-sm text-label-sm text-secondary bg-secondary-container px-2 py-0.5 rounded font-mono">End-to-End Encrypted</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Visual Storytelling / Mindful Sustenance Narrative -->
+<section class="w-full max-w-6xl mx-auto px-6 py-12" id="philosophy">
+<div class="rounded-3xl bg-surface-container p-8 md:p-12 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+<div class="lg:col-span-6 flex flex-col gap-4">
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-widest">Our Philosophy</span>
+<h2 class="font-headline-xl text-headline-xl text-primary tracking-tight">Food is not a ledger of debt. It is nourishment.</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
+            Most software in this category treats you like an unruly machine that needs strict calorie deficits and aggressive warning alerts. AteThat was created out of deep weariness with guilt-driven systems.
+          </p>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+            Whether you are managing complex medication regimens, balancing chronic gastrointestinal health, or simply honoring your daily meals, our platform provides a peaceful sanctuary to observe and understand your body.
+          </p>
+<div class="pt-2 flex items-center gap-4">
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-primary">100%</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Guilt-free language</span>
+</div>
+<div class="w-px h-8 bg-outline-variant"></div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-primary">0</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Gamified red streaks</span>
+</div>
+<div class="w-px h-8 bg-outline-variant"></div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-primary">Full</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Data Sovereignty</span>
+</div>
+</div>
+</div>
+<div class="lg:col-span-6">
+<div class="relative w-full h-80 rounded-2xl overflow-hidden shadow-lg">
+<img class="w-full h-full object-cover" data-alt="Editorial still life photograph of fresh whole foods including figs, dark leafy greens, sourdough bread, and ceramic herbal tea cups on a serene slate-blue stone countertop with warm morning window light casting gentle shadows, embodying peaceful mindful nourishment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCyNFaLHr5qXN13NsY57NJPMYXCgzEtRgzTjiHJFl_f8HQdSfP2EkcFBHSJ5sO93GqPBICnKTeH_WG09j2Fk92L1mDRa4hLdhEX_62xnfczZWSzb7Vi96bFy7ujn-wVYntge1EdQLETxM8wPmP8pwF-k-GJbRqLAPl1pmeRzzMu7uZBMgGYoaX0KuNEAN5_3W5zZAvSacJLlsNmc6i0ScrBoaAiCzYDqx8jLHK_vdkhsMyM195HvHkR">
+<div class="absolute inset-0 bg-gradient-to-t from-primary/60 via-transparent to-transparent"></div>
+<div class="absolute bottom-4 left-4 right-4 text-on-primary">
+<span class="font-label-sm text-label-sm opacity-90 uppercase tracking-wider">Mindful Nourishment</span>
+<p class="font-headline-sm text-headline-sm">Clarity in what enters your body.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Trust & Security Banner -->
+<section class="w-full max-w-6xl mx-auto px-6 py-12" id="security">
+<div class="w-full rounded-2xl bg-primary text-on-primary p-8 md:p-12 shadow-lg flex flex-col md:flex-row items-center justify-between gap-8">
+<div class="flex items-start gap-5">
+<div class="w-12 h-12 rounded-xl bg-on-primary/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-2xl text-secondary-container">lock</span>
+</div>
+<div>
+<h3 class="font-headline-lg text-headline-lg text-on-primary mb-2">Encrypted, private, exportable at any time.</h3>
+<p class="font-body-md text-body-md text-on-primary-container max-w-xl">
+              Your personal health narrative stays strictly yours. Zero third-party ad pixels, HIPAA-aligned storage practices, and one-click full data takeout in JSON or CSV.
+            </p>
+</div>
+</div>
+<div class="shrink-0 flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+<a class="px-5 py-3 rounded-lg bg-on-primary/10 hover:bg-on-primary/20 text-on-primary font-label-lg text-label-lg transition-colors text-center" href="#security-whitepaper">Security Whitepaper</a>
+<a class="px-5 py-3 rounded-lg bg-secondary-container text-on-secondary-container font-label-lg text-label-lg shadow-sm hover:bg-secondary-fixed-dim transition-colors text-center" href="#signup">Start Free Journal</a>
+</div>
+</div>
+</section>
+<!-- Final Thoughtful CTA -->
+<section class="w-full max-w-4xl mx-auto px-6 py-16 text-center flex flex-col items-center">
+<h2 class="font-headline-xl text-headline-xl text-primary tracking-tight mb-4">
+        Begin your tranquil health journal today.
+      </h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl mb-8 leading-relaxed">
+        No credit card required. Free tier includes complete daily food trays, medication scheduling, and nutritional balances.
+      </p>
+<div class="flex flex-col sm:flex-row items-center gap-4">
+<a class="font-label-lg text-label-lg bg-primary text-on-primary px-8 py-3.5 rounded-lg shadow-md hover:bg-primary-container transition-all" href="#signup">
+          Create Free Account
+        </a>
+<a class="font-label-lg text-label-lg text-primary px-6 py-3.5 rounded-lg hover:bg-surface-container transition-colors" href="#demo">
+          Browse Sample Week →
+        </a>
+</div>
+</section>
+<!-- Quiet Footer -->
+<footer class="w-full bg-surface-container-low mt-8">
+<div class="max-w-6xl mx-auto px-6 py-14 flex flex-col gap-10">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+<div class="md:col-span-1 flex flex-col gap-3">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">spa</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-primary tracking-tight">AteThat</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+              Mindful nutrition, medication, and supplement chronicle built for lifelong human balance.
+            </p>
+</div>
+<div class="flex flex-col gap-2.5">
+<span class="font-label-sm text-label-sm text-primary font-semibold uppercase tracking-wider">Product</span>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#features">Nutrient Ledger</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#medications">Medication Timelines</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#trays">Meal Trays Builder</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#sources">USDA Data Verification</a>
+</div>
+<div class="flex flex-col gap-2.5">
+<span class="font-label-sm text-label-sm text-primary font-semibold uppercase tracking-wider">Ethos &amp; Trust</span>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#philosophy">Anti-Diet Culture Manifesto</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#security">Data Privacy Charter</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#export">Data Portability (Takeout)</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#security">Security Architecture</a>
+</div>
+<div class="flex flex-col gap-2.5">
+<span class="font-label-sm text-label-sm text-primary font-semibold uppercase tracking-wider">Connect</span>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#contact">Clinical Advisory Board</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#feedback">Feedback &amp; Ideas</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#status">System Status</a>
+<a class="font-body-sm text-body-sm text-primary font-medium hover:underline" href="#login">Member Sign In</a>
+</div>
+</div>
+<div class="w-full pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 font-body-sm text-body-sm text-on-surface-variant">
+<p>© 2024 AteThat Health Technologies. All rights reserved. Your body is your home.</p>
+<div class="flex items-center gap-6">
+<a class="hover:text-primary transition-colors" href="#terms">Terms of Sustenance</a>
+<a class="hover:text-primary transition-colors" href="#privacy">Privacy Promise</a>
+<span class="font-mono text-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container">v2.4 • Clinical-Calm</span>
+</div>
+</div>
+</div>
+</footer>
+</div>
+<script>
+    // Micro-interaction for the live preview toggle
+    const btnMorning = document.getElementById('view-morning');
+    const btnEvening = document.getElementById('view-evening');
+
+    if (btnMorning && btnEvening) {
+      btnMorning.addEventListener('click', () => {
+        btnMorning.classList.add('bg-surface-container-lowest', 'text-primary', 'shadow-sm');
+        btnMorning.classList.remove('text-on-surface-variant');
+        btnEvening.classList.remove('bg-surface-container-lowest', 'text-primary', 'shadow-sm');
+        btnEvening.classList.add('text-on-surface-variant');
+      });
+
+      btnEvening.addEventListener('click', () => {
+        btnEvening.classList.add('bg-surface-container-lowest', 'text-primary', 'shadow-sm');
+        btnEvening.classList.remove('text-on-surface-variant');
+        btnMorning.classList.remove('bg-surface-container-lowest', 'text-primary', 'shadow-sm');
+        btnMorning.classList.add('text-on-surface-variant');
+      });
+    }
+  </script>
+</div></main></body></html>

@@ -1,0 +1,145 @@
+syntax = "proto3";
+
+package atethat.v1;
+
+// API supplies an authenticated principal through verified signed metadata, not a user_id field.
+// Core checks ownership independently. All instants on this boundary are UTC RFC 3339 strings.
+service IdentityService {
+  rpc Register(RegisterRequest) returns (GenericMessage);
+  rpc VerifyEmail(VerifyEmailRequest) returns (VerifyEmailResponse);
+  rpc ResendVerification(EmailRequest) returns (GenericMessage);
+  rpc Login(LoginRequest) returns (SessionResult);
+  rpc StartGoogleSignIn(StartGoogleSignInRequest) returns (StartGoogleSignInResponse);
+  rpc StartGoogleLink(Empty) returns (StartGoogleSignInResponse);
+  rpc StartGoogleDeletionRequest(Empty) returns (StartGoogleSignInResponse);
+  rpc StartGoogleDeletionCancellation(Empty) returns (StartGoogleSignInResponse);
+  rpc CompleteGoogleSignIn(CompleteGoogleSignInRequest) returns (CompleteGoogleSignInResponse);
+  rpc RefreshSession(RefreshSessionRequest) returns (SessionResult);
+  rpc Logout(LogoutRequest) returns (Empty);
+  rpc RequestPasswordReset(EmailRequest) returns (GenericMessage);
+  rpc ResetPassword(ResetPasswordRequest) returns (Empty);
+  rpc CompleteEmailSignIn(EmailTokenRequest) returns (SessionResult);
+  rpc RequestAccountDeletion(RequestAccountDeletionRequest) returns (AccountDeletionStatus);
+  rpc CancelAccountDeletion(CancelAccountDeletionRequest) returns (SessionResult);
+}
+
+service ProfileService {
+  rpc GetProfile(Empty) returns (Profile);
+  rpc UpdateProfile(UpdateProfileRequest) returns (Profile);
+  rpc GetPreferences(Empty) returns (Preferences);
+  rpc UpdatePreferences(UpdatePreferencesRequest) returns (Preferences);
+  rpc GetCurrentTrackingDay(Empty) returns (TrackingDayContext);
+}
+
+message Empty {}
+message GenericMessage { string message = 1; }
+message EmailRequest { string email = 1; }
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+  string display_name = 3;
+  string timezone = 4;
+}
+message VerifyEmailRequest { string token = 1; }
+message VerifyEmailResponse { bool email_verified = 1; }
+message EmailTokenRequest {
+  string token = 1;
+  string new_password = 2;
+}
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+message StartGoogleSignInRequest { string return_to = 1; }
+message StartGoogleSignInResponse { string authorization_url = 1; }
+message CompleteGoogleSignInRequest {
+  string code = 1;
+  string state = 2;
+}
+message CompleteGoogleSignInResponse {
+  SessionResult session = 1;
+  string return_to = 2;
+  bool new_user = 3;
+  // The server-validated OAuth operation from the consumed state record.
+  string operation = 4;
+}
+message RefreshSessionRequest { string refresh_token = 1; }
+message LogoutRequest { string refresh_token = 1; }
+message ResetPasswordRequest {
+  string token = 1;
+  string new_password = 2;
+}
+message RequestAccountDeletionRequest { string password = 1; }
+message CancelAccountDeletionRequest {
+  string email = 1;
+  string password = 2;
+}
+message AccountDeletionStatus {
+  string status = 1;
+  string requested_at = 2;
+  string purge_after = 3;
+}
+message SessionResult {
+  string access_token = 1;
+  uint32 expires_in_seconds = 2;
+  User user = 3;
+  // Only API receives this value; it is sent to the browser as an HttpOnly cookie.
+  string refresh_token = 4;
+}
+message User {
+  string id = 1;
+  string email = 2;
+  bool email_verified = 3;
+  string status = 4;
+}
+message DecimalQuantity {
+  string amount = 1;
+  string unit = 2;
+}
+message Profile {
+  string id = 1;
+  uint64 version = 2;
+  string display_name = 3;
+  string date_of_birth = 4;
+  string sex = 5;
+  DecimalQuantity height = 6;
+  DecimalQuantity weight = 7;
+  string activity_level = 8;
+  string goal = 9;
+  string timezone = 10;
+  string updated_at = 11;
+  bool has_google_identity = 12;
+}
+message UpdateProfileRequest {
+  uint64 version = 1;
+  optional string display_name = 2;
+  optional string date_of_birth = 3;
+  optional string sex = 4;
+  DecimalQuantity height = 5;
+  DecimalQuantity weight = 6;
+  optional string activity_level = 7;
+  optional string goal = 8;
+  optional string timezone = 9;
+}
+message Preferences {
+  string id = 1;
+  uint64 version = 2;
+  string daily_reset_time = 3;
+  string unit_system = 4;
+  repeated string dashboard_nutrients = 5;
+}
+message UpdatePreferencesRequest {
+  uint64 version = 1;
+  optional string daily_reset_time = 2;
+  optional string unit_system = 3;
+  // Set when supplied, even for an intentionally empty list.
+  NutrientKeys dashboard_nutrients = 4;
+}
+message NutrientKeys { repeated string values = 1; }
+message TrackingDayContext {
+  string tracking_day = 1;
+  string timezone = 2;
+  string daily_reset_time = 3;
+  uint32 rule_version = 4;
+  string as_of_utc = 5;
+}

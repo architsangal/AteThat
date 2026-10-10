@@ -1,0 +1,101 @@
+syntax = "proto3";
+
+package atethat.v1;
+
+import "atethat/v1/foods.proto";
+
+service FoodLogService {
+  rpc Preview(PreviewFoodGroupRequest) returns (FoodGroupPreview);
+  rpc Confirm(ConfirmFoodGroupRequest) returns (FoodLogGroup);
+  rpc ListGroups(ListFoodGroupsRequest) returns (FoodGroupPage);
+  rpc GetGroup(FoodGroupRequest) returns (FoodLogGroup);
+  rpc VoidGroup(FoodGroupRequest) returns (FoodEmpty);
+  rpc PreviewMeal(PreviewMealRequest) returns (FoodGroupPreview);
+  rpc GetLogItem(FoodLogItemRequest) returns (FoodLogItemSnapshot);
+  rpc CorrectItem(CorrectFoodLogItemRequest) returns (FoodGroupPreview);
+  rpc VoidItem(FoodLogItemRequest) returns (FoodEmpty);
+}
+
+message FoodSource {
+  string type = 1;
+  string provider_food_id = 2;
+  string custom_food_id = 3;
+  string name = 4;
+}
+
+message FoodLogItemInput {
+  uint32 position = 1;
+  string food_type = 2;
+  string provider_food_id = 3;
+  string custom_food_id = 4;
+  FoodQuantity quantity = 5;
+  string food_state = 6;
+  map<string, FoodNutrient> user_override_nutrition = 7;
+}
+
+message PreviewFoodGroupRequest {
+  string logged_at = 1;
+  string meal_category = 2;
+  string label = 3;
+  repeated FoodLogItemInput items = 4;
+}
+
+message FoodLogItemSnapshot {
+  string id = 1;
+  uint32 position = 2;
+  FoodSource food_source = 3;
+  FoodQuantity quantity = 4;
+  string food_state = 5;
+  map<string, FoodNutrient> provider_nutrition = 6;
+  map<string, FoodNutrient> user_override_nutrition = 7;
+  map<string, FoodNutrient> final_nutrition = 8;
+}
+
+message FoodLogGroup {
+  string id = 1;
+  string root_group_id = 2;
+  uint64 revision = 3;
+  string status = 4;
+  string logged_at = 5;
+  string tracking_day = 6;
+  string timezone_at_logging = 7;
+  string daily_reset_time_at_logging = 8;
+  string meal_category = 9;
+  string label = 10;
+  uint32 item_count = 11;
+  repeated FoodLogItemSnapshot items = 12;
+  map<string, FoodNutrient> aggregate_final_nutrition = 13;
+  string calculation_version = 14;
+  string confirmed_at = 15;
+  bool was_replayed = 16;
+  string supersedes_group_id = 17;
+  string correction_reason = 18;
+}
+
+message FoodGroupPreview {
+  string preview_token = 1;
+  string expires_at = 2;
+  FoodLogGroup group = 3;
+}
+
+message ConfirmFoodGroupRequest {
+  string preview_token = 1;
+  string idempotency_key = 2;
+}
+
+message ListFoodGroupsRequest {
+  string tracking_day = 1;
+  uint32 limit = 2;
+  string cursor = 3;
+}
+
+message FoodGroupPage {
+  repeated FoodLogGroup items = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}
+
+message FoodGroupRequest { string id = 1; }
+message PreviewMealRequest { string meal_id = 1; string logged_at = 2; string meal_category = 3; string label = 4; }
+message FoodLogItemRequest { string id = 1; }
+message CorrectFoodLogItemRequest { string id = 1; FoodQuantity quantity = 2; string reason = 3; }

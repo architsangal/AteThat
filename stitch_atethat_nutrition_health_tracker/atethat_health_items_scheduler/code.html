@@ -1,0 +1,511 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_dashboard" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-tertiary-container": "#ef8946", "secondary": "#236960", "on-tertiary-fixed": "#321200", "secondary-container": "#a9ede1", "error-container": "#ffdad6", "secondary-fixed-dim": "#90d3c8", "inverse-on-surface": "#eaf1ff", "on-error": "#ffffff", "on-surface-variant": "#43474e", "on-secondary-fixed": "#00201c", "surface-container-low": "#eff4ff", "on-secondary": "#ffffff", "error": "#ba1a1a", "primary-fixed-dim": "#adc8f5", "inverse-surface": "#213145", "on-secondary-fixed-variant": "#005049", "on-primary-container": "#8aa4cf", "on-primary": "#ffffff", "tertiary-container": "#602900", "surface-tint": "#455f87", "on-surface": "#0b1c30", "background": "#f8f9ff", "on-primary-fixed-variant": "#2d486d", "primary-container": "#1e3a5f", "surface-container": "#e5eeff", "on-background": "#0b1c30", "tertiary": "#3f1900", "tertiary-fixed": "#ffdbc9", "surface-container-highest": "#d3e4fe", "on-tertiary": "#ffffff", "primary": "#022448", "on-secondary-container": "#286d64", "on-tertiary-fixed-variant": "#753400", "surface-container-high": "#dce9ff", "surface-bright": "#f8f9ff", "outline": "#74777f", "tertiary-fixed-dim": "#ffb68c", "primary-fixed": "#d5e3ff", "surface": "#f8f9ff", "surface-variant": "#d3e4fe", "surface-container-lowest": "#ffffff", "on-primary-fixed": "#001c3b", "outline-variant": "#c4c6cf", "secondary-fixed": "#acefe4", "inverse-primary": "#adc8f5", "on-error-container": "#93000a", "surface-dim": "#cbdbf5" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-xl": "2rem", "space-sm": "0.5rem", "space-xs": "0.25rem", "margin-mobile": "1rem", "margin": "2rem", "space-2xl": "3rem", "space-md": "1rem", "gutter": "1.5rem", "gutter-mobile": "1rem", "space-lg": "1.5rem" }, "fontFamily": { "label-sm": [ "Inter" ], "headline-sm": [ "Plus Jakarta Sans" ], "headline-xl-mobile": [ "Plus Jakarta Sans" ], "headline-md": [ "Plus Jakarta Sans" ], "data-metric": [ "Inter" ], "body-md": [ "Inter" ], "label-md": [ "Inter" ], "label-lg": [ "Inter" ], "body-lg": [ "Inter" ], "headline-xl": [ "Plus Jakarta Sans" ], "headline-lg": [ "Plus Jakarta Sans" ], "body-sm": [ "Inter" ] }, "fontSize": { "label-sm": [ "0.6875rem", { "lineHeight": "0.875rem", "letterSpacing": "0.04em", "fontWeight": "600" } ], "headline-sm": [ "1.125rem", { "lineHeight": "1.5rem", "letterSpacing": "-0.01em", "fontWeight": "600" } ], "headline-xl-mobile": [ "1.75rem", { "lineHeight": "2.25rem", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "headline-md": [ "1.25rem", { "lineHeight": "1.75rem", "letterSpacing": "-0.015em", "fontWeight": "600" } ], "data-metric": [ "1.375rem", { "lineHeight": "1.625rem", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "body-md": [ "1rem", { "lineHeight": "1.5rem", "fontWeight": "400" } ], "label-md": [ "0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.02em", "fontWeight": "500" } ], "label-lg": [ "0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "0.01em", "fontWeight": "500" } ], "body-lg": [ "1.125rem", { "lineHeight": "1.75rem", "fontWeight": "400" } ], "headline-xl": [ "2.25rem", { "lineHeight": "2.75rem", "letterSpacing": "-0.025em", "fontWeight": "600" } ], "headline-lg": [ "1.5rem", { "lineHeight": "2rem", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "body-sm": [ "0.875rem", { "lineHeight": "1.25rem", "fontWeight": "400" } ] } } } }</script></head><body class="bg-background font-body-md text-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-low/80 backdrop-blur-xl z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col pt-6"><div class="px-6 pb-6 flex items-center justify-between"><div class="flex items-center gap-3"><img alt="AteThat Wordmark Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UBnqyvHv4zwe867pCIMwGRQxdxwpwa1OQ64bVHJMBRU9LAmzlrwgkZuoDzI1d7g-F9sZvSrjWYHfg2XMde1wWUh3t2sV5paUdGwCqq_gNA-WSF_KR-fX9xYdVa80N6bfRxprM-ISuz2JnJ7cxDUs8IRvUmjq2QvT-t-VszfvhOyOaYj0tTQK0Hd-obrbVwHMt0KXSVNBuoxxhE7iAMHesBUrQAIi9LZv9hM6MbnD53f2-hmkPjBboFTJc"><span class="font-headline-sm text-headline-sm text-primary tracking-tight">AteThat</span></div></div><div class="px-6 pb-4"><p class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant/70">Know what nourishes you</p></div><nav class="flex flex-col px-3 gap-1" data-active-classes="bg-primary-container text-on-primary font-label-lg rounded-lg shadow-sm"><a class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[20px]">grid_view</span><span>Dashboard</span></a><a class="flex items-center justify-between px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="log-food" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-[20px]">add_circle</span><span>Log Food</span></div><span class="font-label-sm text-label-sm bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full">+ Multi-Tray</span></a><a class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="history" href="#"><span class="material-symbols-outlined text-[20px]">calendar_today</span><span>History</span></a><a class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="meals" href="#"><span class="material-symbols-outlined text-[20px]">restaurant_menu</span><span>Meals</span></a><a aria-current="page" class="flex items-center gap-3 px-3 py-2.5 transition-colors bg-primary-container text-on-primary font-label-lg rounded-lg shadow-sm" data-path="health-items" href="#"><span class="material-symbols-outlined text-[20px]">medication</span><span>Health Items</span></a><a class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="nutrition-targets" href="#"><span class="material-symbols-outlined text-[20px]">tune</span><span>Nutrition Targets</span></a><a class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="profile-settings" href="#"><span class="material-symbols-outlined text-[20px]">settings</span><span>Profile &amp; Settings</span></a></nav></div><div class="p-4 mx-3 mb-4 rounded-xl bg-surface-container"><div class="flex items-center gap-2 mb-1"><span class="material-symbols-outlined text-secondary text-[18px]">spa</span><span class="font-label-sm text-label-sm text-secondary font-semibold uppercase tracking-wider">Mindful Pace</span></div><p class="font-body-sm text-body-sm text-on-surface-variant">Sustenance tracked without anxiety.</p></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-gutter"><div class="flex items-center gap-4"><div class="flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded-full"><span class="material-symbols-outlined text-[18px] text-secondary">event</span><span class="font-label-md text-label-md text-on-surface font-medium">Today, Oct 24</span><span class="text-on-surface-variant/40">•</span><span class="font-label-sm text-label-sm text-on-surface-variant font-mono">IST (UTC+05:30)</span><span class="material-symbols-outlined text-[16px] text-on-surface-variant cursor-pointer hover:text-on-surface transition-colors">arrow_drop_down</span></div><div class="flex items-center gap-2 bg-surface-container-lowest px-3 py-2 rounded-lg w-80 shadow-[0_1px_4px_rgba(0,0,0,0.03)]"><span class="material-symbols-outlined text-[18px] text-on-surface-variant">search</span><input class="w-full bg-transparent border-0 p-0 font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none" placeholder="Search foods or health items..." type="text"><kbd class="font-label-sm text-label-sm bg-surface-container px-1.5 py-0.5 rounded text-on-surface-variant">⌘K</kbd></div></div><div class="flex items-center gap-3"><a class="inline-flex items-center gap-1.5 bg-primary text-on-primary font-label-lg text-label-lg px-4 py-2 rounded-lg hover:bg-primary-container transition-colors shadow-sm" data-path="log-food" href="#"><span class="material-symbols-outlined text-[18px]">add</span><span>Log Food</span></a><div class="flex items-center bg-surface-container-low p-1 rounded-full gap-1"><button class="flex items-center justify-center w-7 h-7 rounded-full bg-surface-container-lowest text-on-surface shadow-xs" type="button"><span class="material-symbols-outlined text-[16px]">light_mode</span></button><button class="flex items-center justify-center w-7 h-7 rounded-full text-on-surface-variant hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[16px]">dark_mode</span></button></div><div class="flex items-center gap-2 pl-2 cursor-pointer"><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-2 ring-surface-container-highest" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYSM7uYh5StprhJl460C-akoNfTMZHCkbfSdIt-uSNt5A6IYwPafFnM-3fHfR7gacd2q2l4d-_HN-GAwFcxfieR3VKAQ8QKMLLEQWORWSDauOAVJZuUplnLwSfIXaQWfIOZYB6tJS6b61vAjbYOqqhYz5dUWtmTO3tA9fNn1bqi548URJVtC2IKpXtnEK0MWwh5HG9XVygyj05L9OwA_C9ziEDa0BYoe2KQSQoDrYfWZJu16w4DhIl"><span class="material-symbols-outlined text-[18px] text-on-surface-variant hover:text-on-surface transition-colors">expand_more</span></div></div></header><main class="w-full pt-16 bg-background min-h-screen"><div class="flex flex-col w-full">
+<div class="p-margin space-y-space-xl max-w-7xl mx-auto w-full">
+<!-- Header Section with Title, Subtitle, and Primary Actions -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-lg">
+<div class="space-y-space-xs max-w-2xl">
+<div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm uppercase tracking-wider">
+<span class="material-symbols-outlined text-[14px]">verified_user</span>
+<span>Regimen Ledger</span>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-primary tracking-tight">Health Items &amp; Daily Regimen</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">
+          Manage prescriptions, vitamins, and supplements with timezone-aware schedules and historical preservation.
+        </p>
+</div>
+<div class="flex items-center gap-space-sm flex-wrap">
+<button class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-surface-container-high text-primary hover:bg-surface-container-highest transition-colors font-label-lg text-label-lg shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]">file_download</span>
+<span>Export Schedule (PDF/CSV)</span>
+</button>
+<button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container transition-colors font-label-lg text-label-lg shadow-sm" id="openDrawerBtn" type="button">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span>+ Add Health Item</span>
+</button>
+</div>
+</div>
+<!-- Quick Stats & Compliance Banner -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-md items-stretch">
+<div class="lg:col-span-8 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between space-y-space-md">
+<div class="flex flex-wrap items-center justify-between gap-space-sm">
+<div>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Today's Regimen Intake</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="font-headline-lg text-headline-lg text-primary">2 of 4</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">doses logged</span>
+<span class="ml-2 font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container">50% Compliant</span>
+</div>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary">schedule</span>
+<span>All alerts synced to Asia/Kolkata (IST • UTC+05:30)</span>
+</div>
+</div>
+<!-- Visual Segmented Compliance Bar -->
+<div class="space-y-2">
+<div class="w-full h-3 bg-surface-container rounded-full overflow-hidden flex">
+<div class="h-full bg-secondary w-1/2 transition-all duration-500 rounded-l-full"></div>
+<div class="h-full bg-surface-container-highest w-1/2"></div>
+</div>
+<div class="flex justify-between items-center font-label-sm text-label-sm text-on-surface-variant">
+<span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-secondary inline-block"></span> 2 Taken (Morning &amp; Midday)</span>
+<span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-surface-container-highest inline-block"></span> 2 Remaining (Evening &amp; Bedtime)</span>
+</div>
+</div>
+</div>
+<!-- Chrono-Alignment Insight Widget -->
+<div class="lg:col-span-4 bg-surface-container-low rounded-xl p-space-lg shadow-sm flex flex-col justify-between space-y-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-semibold">Chrono-biology</span>
+<span class="material-symbols-outlined text-secondary text-[20px]">light_mode</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-primary">Optimal Nutrient Timing</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Fat-soluble vitamins (D3) are scheduled alongside dietary lipids for maximized bio-absorption.</p>
+</div>
+<div class="pt-2 font-label-sm text-label-sm text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span>Zero timing contradictions detected</span>
+</div>
+</div>
+</div>
+<!-- Navigation Tabs -->
+<div class="flex items-center gap-2 overflow-x-auto pb-1">
+<button class="px-4 py-2 rounded-lg bg-primary-container text-on-primary font-label-lg text-label-lg whitespace-nowrap shadow-sm" type="button">
+        Active Items (4)
+      </button>
+<button class="px-4 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container font-label-lg text-label-lg whitespace-nowrap transition-colors" type="button">
+        Past &amp; Archived
+      </button>
+<button class="px-4 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container font-label-lg text-label-lg whitespace-nowrap transition-colors" type="button">
+        Schedules &amp; Intervals
+      </button>
+<button class="px-4 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container font-label-lg text-label-lg whitespace-nowrap transition-colors" type="button">
+        History &amp; Adherence
+      </button>
+</div>
+<!-- Main Content Grid with Active Items and Docked Slide-over Form -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-space-lg items-start">
+<!-- Cards Grid (Spans 8 columns on large desktop) -->
+<div class="xl:col-span-8 space-y-space-md">
+<!-- Card 1: Metformin Hydrochloride (Prescription) -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+<div class="flex flex-col sm:flex-row sm:items-start justify-between gap-space-md">
+<div class="space-y-space-xs min-w-0">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm">
+                  Medication • Daily
+                </span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-low font-label-sm text-label-sm text-on-surface-variant">
+                  Rx #98421
+                </span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary truncate">Metformin Hydrochloride</h3>
+<p class="font-label-lg text-label-lg text-secondary font-medium">500mg • Oral tablet with meals</p>
+</div>
+<!-- Adherence Pill -->
+<div class="bg-surface-container-low px-3 py-1.5 rounded-lg text-right shrink-0">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">30-Day Adherence</span>
+<span class="font-data-metric text-data-metric text-primary">98%</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant block">72/74 logged</span>
+</div>
+</div>
+<!-- Schedule & Instructions Box -->
+<div class="mt-space-md grid grid-cols-1 sm:grid-cols-2 gap-space-sm bg-surface-container-low/60 p-space-sm rounded-lg">
+<div class="space-y-1">
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary">alarm</span>
+<span>Daily Dosing Times</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface font-medium">
+                Post Lunch (1:30 PM IST) • Post Dinner (9:00 PM IST)
+              </p>
+</div>
+<div class="space-y-1">
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary">info</span>
+<span>Usage Guidelines</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                Take immediately after meals with water. Do not crush.
+              </p>
+</div>
+</div>
+<!-- Footer Timeline Context & Actions -->
+<div class="mt-space-md pt-space-sm flex flex-wrap items-center justify-between gap-space-sm">
+<span class="font-label-sm text-label-sm text-on-surface-variant">
+              Started 12 Aug 2024 • Prescribed by Dr. A. Varma
+            </span>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors" type="button">
+                Log Dose (Dinner)
+              </button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors" type="button">
+                Edit Schedule
+              </button>
+<button class="w-8 h-8 rounded-lg bg-surface-container-low text-on-surface-variant flex items-center justify-center hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 2: Vitamin D3 (Cholecalciferol) -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+<div class="flex flex-col sm:flex-row sm:items-start justify-between gap-space-md">
+<div class="space-y-space-xs min-w-0">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">
+                  Supplement • Weekly
+                </span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-low font-label-sm text-label-sm text-on-surface-variant">
+                  Lipid Bound
+                </span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary truncate">Vitamin D3 (Cholecalciferol)</h3>
+<p class="font-label-lg text-label-lg text-secondary font-medium">60,000 IU • Gel Capsule</p>
+</div>
+<!-- Next Schedule Counter -->
+<div class="bg-surface-container-low px-3 py-1.5 rounded-lg text-right shrink-0">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Next Recurrence</span>
+<span class="font-label-md text-label-md text-primary font-semibold">Sun, 27 Oct</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant block">09:00 AM IST</span>
+</div>
+</div>
+<div class="mt-space-md grid grid-cols-1 sm:grid-cols-2 gap-space-sm bg-surface-container-low/60 p-space-sm rounded-lg">
+<div class="space-y-1">
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary">event_repeat</span>
+<span>Interval</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface font-medium">
+                Every Sunday Morning with Breakfast
+              </p>
+</div>
+<div class="space-y-1">
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary">tips_and_updates</span>
+<span>Bio-Absorption Note</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                Take with wholesome food containing healthy fats (avocado/eggs).
+              </p>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm flex flex-wrap items-center justify-between gap-space-sm">
+<span class="font-label-sm text-label-sm text-on-surface-variant">
+              Next scheduled in 3 days • 8 weeks remaining in course
+            </span>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 rounded-lg bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors" type="button">
+                Log Dose Early
+              </button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors" type="button">
+                Edit Schedule
+              </button>
+<button class="w-8 h-8 rounded-lg bg-surface-container-low text-on-surface-variant flex items-center justify-center hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 3: Omega-3 Triple Strength Fish Oil (Already Logged Today) -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+<div class="flex flex-col sm:flex-row sm:items-start justify-between gap-space-md">
+<div class="space-y-space-xs min-w-0">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">
+                  Supplement • Daily
+                </span>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[12px]">check</span>
+<span>Taken at 08:15 AM today</span>
+</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary truncate">Omega-3 Triple Strength Fish Oil</h3>
+<p class="font-label-lg text-label-lg text-secondary font-medium">1000mg • (EPA 500mg, DHA 300mg)</p>
+</div>
+<div class="flex items-center gap-1 text-secondary bg-secondary-container/40 px-3 py-1 rounded-full">
+<span class="material-symbols-outlined text-[16px]">done_all</span>
+<span class="font-label-sm text-label-sm font-semibold">Done for Today</span>
+</div>
+</div>
+<div class="mt-space-md grid grid-cols-1 sm:grid-cols-2 gap-space-sm bg-surface-container-low/60 p-space-sm rounded-lg">
+<div class="space-y-1">
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary">calendar_today</span>
+<span>Scheduled Rhythm</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface font-medium">
+                Daily at breakfast (08:30 AM IST)
+              </p>
+</div>
+<div class="space-y-1">
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary">inventory_2</span>
+<span>Batch &amp; Source</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                Nordic Naturals • Purified deep sea triglyceride form
+              </p>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm flex flex-wrap items-center justify-between gap-space-sm">
+<span class="font-label-sm text-label-sm text-on-surface-variant">
+              Logged 15m ahead of schedule • Next tomorrow 08:30 AM IST
+            </span>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container font-label-md text-label-md transition-colors" type="button">
+                Undo Log
+              </button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors" type="button">
+                Edit Schedule
+              </button>
+</div>
+</div>
+</div>
+<!-- Card 4: Magnesium Glycinate (Upcoming Tonight) -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+<div class="flex flex-col sm:flex-row sm:items-start justify-between gap-space-md">
+<div class="space-y-space-xs min-w-0">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">
+                  Supplement • Daily
+                </span>
+<span class="px-2.5 py-0.5 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm">
+                  Upcoming Tonight
+                </span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary truncate">Magnesium Glycinate</h3>
+<p class="font-label-lg text-label-lg text-secondary font-medium">200mg elemental magnesium • Highly chelated</p>
+</div>
+<div class="bg-surface-container-low px-3 py-1.5 rounded-lg text-right shrink-0">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Bedtime Window</span>
+<span class="font-label-md text-label-md text-primary font-semibold">10:00 PM IST</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant block">30 min before sleep</span>
+</div>
+</div>
+<div class="mt-space-md grid grid-cols-1 sm:grid-cols-2 gap-space-sm bg-surface-container-low/60 p-space-sm rounded-lg">
+<div class="space-y-1">
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary">bedtime</span>
+<span>Sleep Synergies</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface font-medium">
+                Supports neuromuscular recovery &amp; parasympathetic tone.
+              </p>
+</div>
+<div class="space-y-1">
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary">notifications_active</span>
+<span>Alert Status</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                Reminder queued for 09:45 PM IST on primary phone.
+              </p>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm flex flex-wrap items-center justify-between gap-space-sm">
+<span class="font-label-sm text-label-sm text-on-surface-variant">
+              Scheduled 10:00 PM IST • Dose 1 of 1 for tonight
+            </span>
+<div class="flex items-center gap-2">
+<button class="px-4 py-1.5 rounded-lg bg-secondary text-on-secondary font-label-md text-label-md hover:bg-secondary/90 transition-colors" type="button">
+                Mark as Taken
+              </button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors" type="button">
+                Skip Today
+              </button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors" type="button">
+                Reschedule
+              </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Docked Schedule Builder & Regimen Editor Sidebar Panel -->
+<div class="xl:col-span-4 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm space-y-space-md" id="scheduleDrawer">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[22px]">calendar_add_on</span>
+<h2 class="font-headline-sm text-headline-sm text-primary">Schedule Builder</h2>
+</div>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container">
+            Preservation Mode
+          </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+          Create or customize regular intake patterns. Dosage timestamps adapt to user timezones automatically.
+        </p>
+<form class="space-y-space-md" onsubmit="event.preventDefault();">
+<!-- Item Name -->
+<div class="space-y-1">
+<label class="block font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">
+              Item Name &amp; Salt
+            </label>
+<input class="w-full bg-surface-container-low px-3 py-2.5 rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant/60 focus:bg-surface-container-lowest focus:outline-none" placeholder="e.g., CoQ10 Ubiquinol" type="text" value="Ubiquinol CoQ10">
+</div>
+<!-- Category Selector -->
+<div class="space-y-1">
+<label class="block font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">
+              Category
+            </label>
+<div class="grid grid-cols-2 gap-2">
+<button class="py-2 rounded-lg bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors flex items-center justify-center gap-1.5" type="button">
+<span class="material-symbols-outlined text-[16px]">prescriptions</span>
+<span>Medication</span>
+</button>
+<button class="py-2 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md shadow-sm flex items-center justify-center gap-1.5" type="button">
+<span class="material-symbols-outlined text-[16px]">eco</span>
+<span>Supplement</span>
+</button>
+</div>
+</div>
+<!-- Dosage & Form -->
+<div class="grid grid-cols-2 gap-space-sm">
+<div class="space-y-1">
+<label class="block font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">
+                Strength / Dose
+              </label>
+<input class="w-full bg-surface-container-low px-3 py-2.5 rounded-lg font-body-sm text-body-sm text-on-surface focus:bg-surface-container-lowest focus:outline-none" placeholder="e.g., 100mg" type="text" value="100mg">
+</div>
+<div class="space-y-1">
+<label class="block font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">
+                Physical Form
+              </label>
+<select class="w-full bg-surface-container-low px-3 py-2.5 rounded-lg font-body-sm text-body-sm text-on-surface focus:bg-surface-container-lowest focus:outline-none">
+<option>Softgel Capsule</option>
+<option>Oral Tablet</option>
+<option>Liquid Drop</option>
+<option>Powder</option>
+</select>
+</div>
+</div>
+<!-- Frequency Dropdown -->
+<div class="space-y-1">
+<label class="block font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">
+              Frequency Pattern
+            </label>
+<select class="w-full bg-surface-container-low px-3 py-2.5 rounded-lg font-body-sm text-body-sm text-on-surface focus:bg-surface-container-lowest focus:outline-none">
+<option selected="">Daily (Same time every day)</option>
+<option>Specific Days of the Week</option>
+<option>Cyclic Interval (e.g., Every 3 days)</option>
+<option>PRN / As Needed Only</option>
+</select>
+</div>
+<!-- Time Picker with Timezone Indicator -->
+<div class="space-y-1">
+<div class="flex items-center justify-between">
+<label class="block font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">
+                Dosage Time (Alert)
+              </label>
+<span class="font-label-sm text-label-sm text-secondary font-mono">IST (UTC+05:30)</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="relative flex-1">
+<input class="w-full bg-surface-container-low px-3 py-2.5 rounded-lg font-body-sm text-body-sm text-on-surface focus:bg-surface-container-lowest focus:outline-none" type="time" value="08:30">
+</div>
+<button class="px-3 py-2.5 bg-surface-container rounded-lg font-label-sm text-label-sm text-primary hover:bg-surface-container-high transition-colors" type="button">
+                + Time
+              </button>
+</div>
+</div>
+<!-- Start and End Date -->
+<div class="grid grid-cols-2 gap-space-sm">
+<div class="space-y-1">
+<label class="block font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">
+                Effective Start
+              </label>
+<input class="w-full bg-surface-container-low px-3 py-2.5 rounded-lg font-body-sm text-body-sm text-on-surface focus:bg-surface-container-lowest focus:outline-none" type="date" value="2024-10-24">
+</div>
+<div class="space-y-1">
+<label class="block font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">
+                Course End
+              </label>
+<input class="w-full bg-surface-container-low px-3 py-2.5 rounded-lg font-body-sm text-body-sm text-on-surface focus:bg-surface-container-lowest focus:outline-none" placeholder="Ongoing / None" type="text" value="Ongoing">
+</div>
+</div>
+<!-- Immutability Reassurance Note -->
+<div class="p-space-sm rounded-lg bg-surface-container-low flex items-start gap-2.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-secondary text-[20px] shrink-0 mt-0.5">lock_clock</span>
+<p class="font-body-sm text-body-sm">
+              Schedule edits apply strictly from today onward. Past taken or skipped logs are <strong class="text-primary font-medium">immutably preserved</strong> to protect your clinical audit trail.
+            </p>
+</div>
+<!-- Submission Actions -->
+<div class="flex items-center gap-2 pt-space-xs">
+<button class="flex-1 py-2.5 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg hover:bg-primary-container transition-colors shadow-sm text-center" type="submit">
+              Commit Schedule
+            </button>
+<button class="px-4 py-2.5 rounded-lg bg-surface-container text-on-surface font-label-lg text-label-lg hover:bg-surface-container-high transition-colors" type="button">
+              Cancel
+            </button>
+</div>
+</form>
+</div>
+</div>
+<!-- Supplementary Context: Historical Preservation Ledger Summary -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm space-y-space-md">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-sm">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-primary">Audit Ledger &amp; Regimen History</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Immutable change log for physician check-ins and clinical reviews.</p>
+</div>
+<span class="font-label-sm text-label-sm text-secondary flex items-center gap-1 font-mono">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+          Cryptographically Timed (UTC+05:30)
+        </span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead>
+<tr class="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider bg-surface-container-low">
+<th class="py-2.5 px-4 rounded-l-lg">Timestamp</th>
+<th class="py-2.5 px-4">Item</th>
+<th class="py-2.5 px-4">Action</th>
+<th class="py-2.5 px-4">Dosage Change</th>
+<th class="py-2.5 px-4 rounded-r-lg">Context</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-low text-on-surface">
+<tr>
+<td class="py-3 px-4 font-mono font-label-sm text-label-sm text-on-surface-variant">24 Oct, 08:15 IST</td>
+<td class="py-3 px-4 font-medium text-primary">Omega-3 Triple Strength</td>
+<td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">Dose Confirmed</span></td>
+<td class="py-3 px-4 text-on-surface-variant">1000mg capsule</td>
+<td class="py-3 px-4 text-on-surface-variant">Taken with oatmeal &amp; walnuts</td>
+</tr>
+<tr>
+<td class="py-3 px-4 font-mono font-label-sm text-label-sm text-on-surface-variant">23 Oct, 21:05 IST</td>
+<td class="py-3 px-4 font-medium text-primary">Metformin Hydrochloride</td>
+<td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">Dose Confirmed</span></td>
+<td class="py-3 px-4 text-on-surface-variant">500mg tablet</td>
+<td class="py-3 px-4 text-on-surface-variant">Post-dinner intake logged on mobile</td>
+</tr>
+<tr>
+<td class="py-3 px-4 font-mono font-label-sm text-label-sm text-on-surface-variant">20 Oct, 09:00 IST</td>
+<td class="py-3 px-4 font-medium text-primary">Vitamin D3 Cholecalciferol</td>
+<td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">Dose Confirmed</span></td>
+<td class="py-3 px-4 text-on-surface-variant">60,000 IU capsule</td>
+<td class="py-3 px-4 text-on-surface-variant">Weekly scheduled marker achieved</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<script>
+    // Subtle focus interaction to highlight the side schedule drawer on "+ Add Health Item"
+    const openBtn = document.getElementById('openDrawerBtn');
+    const drawer = document.getElementById('scheduleDrawer');
+
+    if (openBtn && drawer) {
+      openBtn.addEventListener('click', () => {
+        drawer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        drawer.classList.add('ring-2', 'ring-secondary');
+        setTimeout(() => {
+          drawer.classList.remove('ring-2', 'ring-secondary');
+        }, 1200);
+      });
+    }
+  </script>
+</div></main></div></body></html>

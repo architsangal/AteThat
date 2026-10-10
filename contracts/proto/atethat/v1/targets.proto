@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package atethat.v1;
+
+import "atethat/v1/identity.proto";
+
+// API forwards an authenticated principal through signed gRPC metadata.
+service TargetService {
+  rpc Calculate(CalculateTargetRequest) returns (TargetVersion);
+  rpc Current(Empty) returns (TargetSelection);
+  rpc Accept(AcceptTargetRequest) returns (TargetVersion);
+  rpc Reject(TargetVersionRequest) returns (Empty);
+  rpc History(TargetHistoryRequest) returns (TargetHistoryPage);
+}
+
+message CalculateTargetRequest {
+  uint64 profile_version = 1;
+  string effective_from_tracking_day = 2;
+}
+message TargetSource {
+  string name = 1;
+  string publisher = 2;
+  string version = 3;
+  string information_url = 4;
+}
+message TargetValue {
+  string reference_value = 1;
+  string active_value = 2;
+  string unit = 3;
+  bool is_manual_override = 4;
+  string override_reason = 5;
+}
+message TargetVersion {
+  string id = 1;
+  uint64 revision = 2;
+  string status = 3;
+  uint64 profile_version = 4;
+  string reference_set_key = 5;
+  string reference_set_version = 6;
+  TargetSource source_attribution = 7;
+  string calculation_version = 8;
+  string effective_from_tracking_day = 9;
+  map<string, TargetValue> targets = 10;
+  string target_basis = 11;
+  string created_at = 12;
+  string reviewed_at = 13;
+}
+message TargetSelection {
+  TargetVersion active = 1;
+  TargetVersion proposed = 2;
+}
+message TargetOverride {
+  string active_value = 1;
+  string override_reason = 2;
+}
+message AcceptTargetRequest {
+  string version_id = 1;
+  string effective_from_tracking_day = 2;
+  map<string, TargetOverride> overrides = 3;
+}
+message TargetVersionRequest { string version_id = 1; }
+message TargetHistoryRequest {
+  uint32 limit = 1;
+  string cursor = 2;
+}
+message TargetHistoryPage {
+  repeated TargetVersion items = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}

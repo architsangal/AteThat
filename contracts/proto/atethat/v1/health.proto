@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package atethat.v1;
+
+service HealthService {
+  rpc CreateItem(UpsertHealthItemRequest) returns (HealthItem);
+  rpc UpdateItem(UpsertHealthItemRequest) returns (HealthItem);
+  rpc GetItem(HealthItemRequest) returns (HealthItem);
+  rpc ListItems(ListHealthItemsRequest) returns (HealthItemPage);
+  rpc DeactivateItem(DeactivateHealthItemRequest) returns (HealthItem);
+  rpc ListOccurrences(ListOccurrencesRequest) returns (OccurrencePage);
+  rpc RecordOccurrence(RecordOccurrenceRequest) returns (HealthOccurrence);
+}
+
+message HealthSchedule {
+  string timezone = 1;
+  string frequency = 2;
+  uint32 interval = 3;
+  repeated string weekdays = 4;
+  repeated string local_times = 5;
+  string effective_from_date = 6;
+  uint64 version = 7;
+}
+
+message HealthItem {
+  string id = 1;
+  uint64 version = 2;
+  string type = 3;
+  string name = 4;
+  string dosage_amount_text = 5;
+  string dosage_unit_text = 6;
+  string instructions = 7;
+  string notes = 8;
+  bool active = 9;
+  string start_date = 10;
+  string end_date = 11;
+  HealthSchedule schedule = 12;
+  string created_at = 13;
+  string updated_at = 14;
+}
+
+message UpsertHealthItemRequest {
+  string id = 1;
+  uint64 version = 2;
+  string type = 3;
+  string name = 4;
+  string dosage_amount_text = 5;
+  string dosage_unit_text = 6;
+  string instructions = 7;
+  string notes = 8;
+  string start_date = 9;
+  HealthSchedule schedule = 10;
+}
+
+message HealthItemRequest { string id = 1; }
+message ListHealthItemsRequest { uint32 limit = 1; string cursor = 2; string active_filter = 3; }
+message HealthItemPage { repeated HealthItem items = 1; string next_cursor = 2; bool has_more = 3; }
+message DeactivateHealthItemRequest { string id = 1; uint64 version = 2; string end_date = 3; }
+
+message HealthOccurrence {
+  string occurrence_id = 1;
+  string health_item_id = 2;
+  uint64 schedule_version = 3;
+  string name = 4;
+  string type = 5;
+  string scheduled_at = 6;
+  string scheduled_local_date = 7;
+  string scheduled_local_time = 8;
+  string timezone = 9;
+  string status = 10;
+  string completed_at = 11;
+  string rescheduled_to = 12;
+  string notes = 13;
+}
+message ListOccurrencesRequest { string from = 1; string to = 2; uint32 limit = 3; string cursor = 4; }
+message OccurrencePage { repeated HealthOccurrence items = 1; string next_cursor = 2; bool has_more = 3; }
+message RecordOccurrenceRequest {
+  string occurrence_id = 1;
+  string status = 2;
+  string completed_at = 3;
+  string rescheduled_to = 4;
+  string notes = 5;
+}

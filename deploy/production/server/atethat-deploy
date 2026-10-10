@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Installed at /usr/local/bin/atethat-deploy on the VPS. This is intentionally
+# argument-free so a GitHub Actions SSH key cannot choose a branch or execute
+# arbitrary commands.
+set -euo pipefail
+
+readonly app_dir=/srv/atethat
+readonly compose_file=deploy/production/compose.yaml
+readonly environment_file=deploy/production/.env
+
+exec 9>/tmp/atethat-deploy.lock
+flock -n 9 || {
+  echo "AteThat deployment already in progress." >&2
+  exit 1
+}
+
+cd "$app_dir"
+git fetch --prune origin main
+git checkout --detach origin/main
+git reset --hard origin/main
+
+docker compose \
+  --project-name atethat-production \
+  --env-file "$environment_file" \
+  -f "$compose_file" \
+  up --detach --build --remove-orphans
+
+docker compose \
+  --project-name atethat-production \
+  --env-file "$environment_file" \
+  -f "$compose_file" \
+  ps

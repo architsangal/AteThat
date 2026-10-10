@@ -1,0 +1,10 @@
+.git
+node_modules
+apps
+docs
+brand
+stitch_atethat_nutrition_health_tracker
+*.zip
+deploy/local/.env
+**/dist
+**/.env
