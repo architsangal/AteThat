@@ -54,7 +54,10 @@ services:
     env_file:
       - path: .env
         required: true
-    networks: [private]
+    # `private` keeps gRPC reachable only from API. `egress` permits Core to
+    # resolve and call external services such as Atlas, SMTP, Google, and USDA.
+    # It publishes no host ports, so Core remains unreachable from the internet.
+    networks: [private, egress]
     # Docker cannot use the host's loopback systemd-resolved listener
     # (127.0.0.53). Core needs public DNS for Atlas SRV, SMTP, Google, and USDA.
     dns:
@@ -82,6 +85,7 @@ networks:
     ipam:
       config:
         - subnet: 172.29.0.0/24
+  egress:
 
 volumes:
   caddy_data:
