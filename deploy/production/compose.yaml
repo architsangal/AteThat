@@ -55,6 +55,11 @@ services:
       - path: .env
         required: true
     networks: [private]
+    # Docker cannot use the host's loopback systemd-resolved listener
+    # (127.0.0.53). Core needs public DNS for Atlas SRV, SMTP, Google, and USDA.
+    dns:
+      - 1.1.1.1
+      - 1.0.0.1
     restart: unless-stopped
     mem_limit: 512m
     logging: *default_logging
