@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"errors"
+	"log"
 	"strings"
 	"time"
 
@@ -251,6 +252,11 @@ func (s *Server) RequestPasswordReset(ctx context.Context, req *pb.EmailRequest)
 	}
 	var user userDoc
 	if err := s.DB.Collection("users").FindOne(ctx, bson.M{"email_normalized": email, "status": "ACTIVE"}).Decode(&user); err != nil {
+		if err != mongo.ErrNoDocuments {
+			log.Printf("password reset: outcome=account_lookup_failed error=%v", err)
+		} else {
+			log.Printf("password reset: outcome=account_not_eligible")
+		}
 		return &pb.GenericMessage{Message: resetMessage}, nil
 	}
 	// A Google-only account has no password to reset. Send a one-time email
