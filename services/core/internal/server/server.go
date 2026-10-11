@@ -245,12 +245,14 @@ func (s *Server) sendEmail(ctx context.Context, to, subject, path, token string)
 }
 
 // sendEmailBestEffort preserves the account-enumeration-safe public responses
-// while making delivery failures observable to operators without logging a
+// while making delivery outcomes observable to operators without logging a
 // recipient address or one-time token.
 func (s *Server) sendEmailBestEffort(ctx context.Context, to, subject, path, token string) {
 	if err := s.sendEmail(ctx, to, subject, path, token); err != nil {
-		log.Printf("email delivery failed: subject=%q error=%v", subject, err)
+		log.Printf("email delivery: outcome=failed template=%q error=%v", subject, err)
+		return
 	}
+	log.Printf("email delivery: outcome=accepted template=%q", subject)
 }
 
 func invalid(message string) error { return status.Error(codes.InvalidArgument, message) }
