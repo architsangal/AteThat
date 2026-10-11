@@ -148,7 +148,7 @@ Install [`deploy/production/server/atethat-deploy`](../deploy/production/server/
 3. Confirm `https://api.atethat.architsangal.in/healthz` returns `{"status":"ok"}`.
 4. Set Cloudflare SSL/TLS encryption to **Full (strict)**. Never use Flexible mode.
 5. Change the API record to **Proxied** if desired, then later allow Cloudflare source ranges only for ports 80/443 at the origin. Do not apply that origin rule before the direct certificate/health verification is complete.
-6. Deploy the frontend to Cloudflare Pages and attach `atethat.architsangal.in`. Its build environment must use `VITE_API_BASE_URL=https://api.atethat.architsangal.in` and `VITE_GOOGLE_SIGNIN_ENABLED=true`.
+6. Deploy the frontend as a Cloudflare Worker with static assets and attach `atethat.architsangal.in`. The versioned [`wrangler.jsonc`](../wrangler.jsonc) serves `apps/web/dist` as a single-page application without executing Worker code per asset request. Its build environment must use `VITE_API_BASE_URL=https://api.atethat.architsangal.in` and `VITE_GOOGLE_SIGNIN_ENABLED=true`.
 
 Keep port 22 globally reachable but key-only, as explicitly chosen by the owner. Do not apply an SSH source-IP allow-list without a deliberate change in access policy.
 
