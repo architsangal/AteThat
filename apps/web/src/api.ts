@@ -1,7 +1,13 @@
 import { clearAccessToken, getAccessToken, setAccessToken } from './session'
 
 const configuredBase = import.meta.env.VITE_API_BASE_URL as string | undefined
-export const apiBaseUrl = (configuredBase || '/api/v1').replace(/\/$/, '')
+
+// The public API is versioned under /api/v1. Cloud deployment configuration
+// may provide only its origin, so accept either form and normalize it here.
+const baseWithoutTrailingSlash = (configuredBase || '/api/v1').replace(/\/$/, '')
+export const apiBaseUrl = baseWithoutTrailingSlash.endsWith('/api/v1')
+  ? baseWithoutTrailingSlash
+  : `${baseWithoutTrailingSlash}/api/v1`
 
 export type ApiError = { code?: string; detail?: string; title?: string }
 export type SessionRefresh = { access_token: string }
