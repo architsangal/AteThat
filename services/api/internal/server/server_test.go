@@ -49,6 +49,7 @@ func TestBasicHTTPBoundaries(t *testing.T) {
 		expected             int
 	}{
 		{http.MethodGet, "/healthz", "", 200},
+		{http.MethodHead, "/healthz", "", 200},
 		{http.MethodGet, "/api/v1/does-not-exist", "", 404},
 		{http.MethodOptions, "/api/v1/auth/login", "https://evil.example", 403},
 		{http.MethodOptions, "/api/v1/auth/login", "http://localhost:5173", 204},
