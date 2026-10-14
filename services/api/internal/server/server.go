@@ -98,7 +98,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
-	if r.URL.Path == "/healthz" && r.Method == http.MethodGet {
+	if r.URL.Path == "/healthz" && (r.Method == http.MethodGet || r.Method == http.MethodHead) {
 		s.json(w, http.StatusOK, map[string]string{"status": "ok"})
 		return
 	}
