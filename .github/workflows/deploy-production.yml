@@ -1,7 +1,9 @@
 name: Deploy production
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -13,6 +15,7 @@ concurrency:
 jobs:
   deploy:
     name: Trigger restricted VPS deployment
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: production
     steps:
