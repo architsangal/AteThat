@@ -193,14 +193,16 @@ type mealComponentDoc struct {
 }
 
 type mealDoc struct {
-	ID         primitive.ObjectID `bson:"_id,omitempty"`
-	UserID     primitive.ObjectID `bson:"user_id"`
-	Version    int64              `bson:"version"`
-	Name       string             `bson:"name"`
-	Components []mealComponentDoc `bson:"components"`
-	DeletedAt  *time.Time         `bson:"deleted_at,omitempty"`
-	CreatedAt  time.Time          `bson:"created_at"`
-	UpdatedAt  time.Time          `bson:"updated_at"`
+	ID             primitive.ObjectID `bson:"_id,omitempty"`
+	UserID         primitive.ObjectID `bson:"user_id"`
+	Version        int64              `bson:"version"`
+	Name           string             `bson:"name"`
+	RecipeServings string             `bson:"recipe_servings,omitempty"`
+	Preparation    string             `bson:"preparation,omitempty"`
+	Components     []mealComponentDoc `bson:"components"`
+	DeletedAt      *time.Time         `bson:"deleted_at,omitempty"`
+	CreatedAt      time.Time          `bson:"created_at"`
+	UpdatedAt      time.Time          `bson:"updated_at"`
 }
 
 type servingDoc struct {
@@ -350,6 +352,7 @@ type healthScheduleDoc struct {
 	Interval          int                `bson:"interval"`
 	Weekdays          []string           `bson:"weekdays"`
 	LocalTimes        []string           `bson:"local_times"`
+	MonthDays         []int32            `bson:"month_days,omitempty"`
 	EffectiveFromDate string             `bson:"effective_from_date"`
 	EffectiveToDate   string             `bson:"effective_to_date,omitempty"`
 	CreatedAt         time.Time          `bson:"created_at"`
@@ -443,6 +446,12 @@ func createIndexes(ctx context.Context, db *mongo.Database) error {
 		},
 		"health_items": {
 			{Keys: bson.D{{Key: "user_id", Value: 1}, {Key: "active", Value: 1}, {Key: "start_date", Value: 1}, {Key: "_id", Value: 1}}},
+		},
+		"wellness_records": {
+			{Keys: bson.D{{Key: "user_id", Value: 1}, {Key: "tracking_day", Value: 1}, {Key: "kind", Value: 1}, {Key: "_id", Value: -1}}},
+		},
+		"wellness_settings": {
+			{Keys: bson.D{{Key: "user_id", Value: 1}}, Options: options.Index().SetUnique(true)},
 		},
 		"health_item_schedule_versions": {
 			{Keys: bson.D{{Key: "user_id", Value: 1}, {Key: "health_item_id", Value: 1}, {Key: "schedule_version", Value: 1}}, Options: options.Index().SetUnique(true)},

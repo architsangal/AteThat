@@ -46,6 +46,7 @@ type Server struct {
 	Dashboard   pb.DashboardServiceClient
 	Health      pb.HealthServiceClient
 	Analysis    pb.AnalysisServiceClient
+	Wellness    pb.WellnessServiceClient
 	authLimiter rateLimiter
 }
 
@@ -60,7 +61,7 @@ func New(ctx context.Context, cfg Config) (*Server, error) {
 	return &Server{Config: cfg, Conn: conn, Identity: pb.NewIdentityServiceClient(conn),
 		Profile: pb.NewProfileServiceClient(conn), Target: pb.NewTargetServiceClient(conn), Food: pb.NewFoodServiceClient(conn),
 		FoodLog: pb.NewFoodLogServiceClient(conn), Dashboard: pb.NewDashboardServiceClient(conn),
-		Health: pb.NewHealthServiceClient(conn), Analysis: pb.NewAnalysisServiceClient(conn)}, nil
+		Health: pb.NewHealthServiceClient(conn), Analysis: pb.NewAnalysisServiceClient(conn), Wellness: pb.NewWellnessServiceClient(conn)}, nil
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -113,6 +114,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 8*time.Second)
 	defer cancel()
 	switch {
+	case path == "/wellness/records" || strings.HasPrefix(path, "/wellness/records/") || path == "/wellness/settings":
+		s.wellnessRoute(w, r, requestID, ctx, path)
 	case path == "/auth/register" && r.Method == http.MethodPost:
 		s.register(w, r, requestID, ctx)
 	case path == "/auth/verify-email" && r.Method == http.MethodPost:
@@ -245,6 +248,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		s.recordHealthOccurrence(w, r, requestID, ctx, strings.TrimPrefix(path, "/health-items/occurrences/"))
 	case strings.HasPrefix(path, "/health-items/") && strings.HasSuffix(path, "/deactivate") && r.Method == http.MethodPost:
 		s.deactivateHealthItem(w, r, requestID, ctx, strings.TrimSuffix(strings.TrimPrefix(path, "/health-items/"), "/deactivate"))
+	case strings.HasPrefix(path, "/health-items/") && strings.HasSuffix(path, "/schedule-history") && r.Method == http.MethodGet:
+		s.scheduleHistory(w, r, requestID, ctx, strings.TrimSuffix(strings.TrimPrefix(path, "/health-items/"), "/schedule-history"))
 	case strings.HasPrefix(path, "/health-items/") && r.Method == http.MethodGet:
 		s.getHealthItem(w, r, requestID, ctx, strings.TrimPrefix(path, "/health-items/"))
 	case strings.HasPrefix(path, "/health-items/") && r.Method == http.MethodPatch:

@@ -9,9 +9,11 @@ import (
 )
 
 type mealBody struct {
-	Version    uint64 `json:"version"`
-	Name       string `json:"name"`
-	Components []struct {
+	Version        uint64 `json:"version"`
+	Name           string `json:"name"`
+	RecipeServings string `json:"recipe_servings"`
+	Preparation    string `json:"preparation"`
+	Components     []struct {
 		Position      uint32 `json:"position"`
 		FoodReference struct {
 			Type           string `json:"type"`
@@ -33,7 +35,7 @@ func mealRequest(id string, body mealBody) *pb.UpsertMealRequest {
 			FoodType: item.FoodReference.Type, ProviderFoodId: item.FoodReference.ProviderFoodID, CustomFoodId: item.FoodReference.CustomFoodID,
 			Quantity: &pb.FoodQuantity{Amount: item.Quantity.Amount, Unit: item.Quantity.Unit}, FoodState: item.FoodState})
 	}
-	return &pb.UpsertMealRequest{Id: id, Version: body.Version, Name: body.Name, Components: components}
+	return &pb.UpsertMealRequest{Id: id, Version: body.Version, Name: body.Name, Components: components, RecipeServings: body.RecipeServings, Preparation: body.Preparation}
 }
 
 func mealJSON(meal *pb.Meal) interface{} {
@@ -44,6 +46,7 @@ func mealJSON(meal *pb.Meal) interface{} {
 			"quantity":       map[string]string{"amount": item.Quantity.Amount, "unit": item.Quantity.Unit}, "food_state": item.FoodState})
 	}
 	return map[string]interface{}{"id": meal.Id, "version": meal.Version, "name": meal.Name, "components": components,
+		"recipe_servings": meal.RecipeServings, "preparation": meal.Preparation,
 		"created_at": meal.CreatedAt, "updated_at": meal.UpdatedAt}
 }
 
@@ -142,7 +145,12 @@ func (s *Server) previewMeal(w http.ResponseWriter, r *http.Request, requestID s
 		return
 	}
 	var body struct {
-		LoggedAt     string `json:"logged_at"`
+		LoggedAt  string `json:"logged_at"`
+		Servings  string `json:"servings"`
+		Overrides []struct {
+			Position  uint32                  `json:"position"`
+			Nutrients map[string]nutrientBody `json:"nutrients"`
+		} `json:"overrides"`
 		MealCategory string `json:"meal_category"`
 		Label        string `json:"label"`
 	}
@@ -150,8 +158,16 @@ func (s *Server) previewMeal(w http.ResponseWriter, r *http.Request, requestID s
 		s.problem(w, requestID, 400, "INVALID_REQUEST", "Invalid JSON request")
 		return
 	}
+	overrides := []*pb.RecipeNutrientOverride{}
+	for _, edit := range body.Overrides {
+		values := map[string]*pb.FoodNutrient{}
+		for key, value := range edit.Nutrients {
+			values[key] = &pb.FoodNutrient{Status: value.Status, Amount: value.Amount, Unit: value.Unit}
+		}
+		overrides = append(overrides, &pb.RecipeNutrientOverride{Position: edit.Position, Nutrients: values})
+	}
 	result, err := s.FoodLog.PreviewMeal(s.rpcContext(ctx, pb.FoodLogService_PreviewMeal_FullMethodName, user.UserID, user.SessionFamily),
-		&pb.PreviewMealRequest{MealId: id, LoggedAt: body.LoggedAt, MealCategory: body.MealCategory, Label: body.Label})
+		&pb.PreviewMealRequest{MealId: id, LoggedAt: body.LoggedAt, MealCategory: body.MealCategory, Label: body.Label, Servings: body.Servings, Overrides: overrides})
 	if err != nil {
 		s.rpcProblem(w, requestID, err)
 		return

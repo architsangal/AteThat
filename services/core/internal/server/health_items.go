@@ -21,14 +21,14 @@ func scheduleFromRequest(userID, itemID primitive.ObjectID, version int64, req *
 		return healthScheduleDoc{}, invalid("schedule is required")
 	}
 	s := health.Schedule{Timezone: req.Timezone, Frequency: req.Frequency, Interval: int(req.Interval),
-		Weekdays: req.Weekdays, LocalTimes: req.LocalTimes, EffectiveFromDate: req.EffectiveFromDate}
+		Weekdays: req.Weekdays, LocalTimes: req.LocalTimes, EffectiveFromDate: req.EffectiveFromDate, EffectiveToDate: req.EffectiveToDate, MonthDays: req.MonthDays}
 	if err := health.Validate(s); err != nil {
 		return healthScheduleDoc{}, invalid(err.Error())
 	}
 	return healthScheduleDoc{ID: primitive.NewObjectID(), UserID: userID, HealthItemID: itemID,
 		ScheduleVersion: version, Timezone: s.Timezone, Frequency: s.Frequency, Interval: s.Interval,
 		Weekdays: append([]string{}, s.Weekdays...), LocalTimes: append([]string{}, s.LocalTimes...),
-		EffectiveFromDate: s.EffectiveFromDate, CreatedAt: now}, nil
+		EffectiveFromDate: s.EffectiveFromDate, EffectiveToDate: s.EffectiveToDate, MonthDays: s.MonthDays, CreatedAt: now}, nil
 }
 
 func validateHealthItem(req *pb.UpsertHealthItemRequest) error {
@@ -49,7 +49,7 @@ func validateHealthItem(req *pb.UpsertHealthItemRequest) error {
 func healthSchedulePB(doc healthScheduleDoc) *pb.HealthSchedule {
 	return &pb.HealthSchedule{Timezone: doc.Timezone, Frequency: doc.Frequency, Interval: uint32(doc.Interval),
 		Weekdays: doc.Weekdays, LocalTimes: doc.LocalTimes, EffectiveFromDate: doc.EffectiveFromDate,
-		Version: uint64(doc.ScheduleVersion)}
+		Version: uint64(doc.ScheduleVersion), EffectiveToDate: doc.EffectiveToDate, MonthDays: doc.MonthDays}
 }
 
 func healthItemPB(doc healthItemDoc, schedule healthScheduleDoc) *pb.HealthItem {
@@ -141,6 +141,9 @@ func (s *Server) UpdateItem(ctx context.Context, req *pb.UpsertHealthItemRequest
 			bson.M{"user_id": userID, "health_item_id": id, "schedule_version": updated.CurrentScheduleVersion}).Decode(&currentSchedule); err != nil {
 			return nil, err
 		}
+		if req.StartDate != updated.StartDate {
+			return nil, invalid("item start date is preserved; change the schedule effective date instead")
+		}
 		set := bson.M{"type": req.Type, "name": strings.TrimSpace(req.Name), "dosage_amount_text": req.DosageAmountText,
 			"dosage_unit_text": req.DosageUnitText, "instructions": req.Instructions, "notes": req.Notes,
 			"start_date": req.StartDate, "updated_at": now}
@@ -151,13 +154,20 @@ func (s *Server) UpdateItem(ctx context.Context, req *pb.UpsertHealthItemRequest
 			}
 			changed := !reflect.DeepEqual(candidate.Weekdays, currentSchedule.Weekdays) || !reflect.DeepEqual(candidate.LocalTimes, currentSchedule.LocalTimes) ||
 				candidate.Timezone != currentSchedule.Timezone || candidate.Frequency != currentSchedule.Frequency ||
-				candidate.Interval != currentSchedule.Interval || candidate.EffectiveFromDate != currentSchedule.EffectiveFromDate
+				candidate.Interval != currentSchedule.Interval || candidate.EffectiveFromDate != currentSchedule.EffectiveFromDate || candidate.EffectiveToDate != currentSchedule.EffectiveToDate || !reflect.DeepEqual(candidate.MonthDays, currentSchedule.MonthDays)
 			if changed {
+				location, _ := time.LoadLocation(candidate.Timezone)
+				if candidate.EffectiveFromDate <= now.In(location).Format("2006-01-02") {
+					return nil, invalid("schedule changes must start on a future date to preserve today's events")
+				}
 				if candidate.EffectiveFromDate < req.StartDate || candidate.EffectiveFromDate <= currentSchedule.EffectiveFromDate {
 					return nil, invalid("new schedule must begin after the previous version and item start")
 				}
 				date, _ := time.Parse("2006-01-02", candidate.EffectiveFromDate)
 				previousEnd := date.AddDate(0, 0, -1).Format("2006-01-02")
+				if currentSchedule.EffectiveToDate != "" && currentSchedule.EffectiveToDate < previousEnd {
+					previousEnd = currentSchedule.EffectiveToDate
+				}
 				if _, err := s.DB.Collection("health_item_schedule_versions").UpdateOne(sc,
 					bson.M{"_id": currentSchedule.ID, "user_id": userID}, bson.M{"$set": bson.M{"effective_to_date": previousEnd}}); err != nil {
 					return nil, err
@@ -179,6 +189,9 @@ func (s *Server) UpdateItem(ctx context.Context, req *pb.UpsertHealthItemRequest
 		return nil, status.Error(codes.Aborted, "health item version conflict")
 	}
 	if err != nil {
+		if status.Code(err) != codes.Unknown {
+			return nil, err
+		}
 		return nil, status.Error(codes.Aborted, "could not update health item")
 	}
 	return healthItemPB(updated, currentSchedule), nil

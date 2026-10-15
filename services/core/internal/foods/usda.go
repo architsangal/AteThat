@@ -23,11 +23,13 @@ type Food struct {
 }
 
 type rawNutrient struct {
-	NutrientID int         `json:"nutrientId"`
-	UnitName   string      `json:"unitName"`
-	Value      json.Number `json:"value"`
-	Nutrient   struct {
+	NutrientID   int         `json:"nutrientId"`
+	NutrientName string      `json:"nutrientName"`
+	UnitName     string      `json:"unitName"`
+	Value        json.Number `json:"value"`
+	Nutrient     struct {
 		ID       int    `json:"id"`
+		Name     string `json:"name"`
 		UnitName string `json:"unitName"`
 	} `json:"nutrient"`
 	Amount json.Number `json:"amount"`
@@ -76,6 +78,8 @@ func Normalize(raw rawFood) Food {
 	for key, unit := range map[string]string{"ENERGY": "kcal", "PROTEIN": "g", "CARBOHYDRATE": "g", "FAT": "g", "FIBER": "g"} {
 		result.Nutrients[key] = Nutrient{Status: "UNKNOWN", Unit: unit}
 	}
+	// Nutrient IDs and units follow USDA's FNDDS mapping:
+	// https://www.ars.usda.gov/ARSUserFiles/80400530/pdf/fndds/2019_2020_FNDDS_Doc.pdf
 	// Energy variants are alternatives, not additive. Prefer the current
 	// metabolizable-energy record when USDA provides more than one.
 	for _, selection := range []struct {
@@ -88,7 +92,38 @@ func Normalize(raw rawFood) Food {
 		{"CARBOHYDRATE", []int{1005}, "G"},
 		{"FAT", []int{1004}, "G"},
 		{"FIBER", []int{1079}, "G"},
+		{"SUGARS", []int{2000}, "G"},
+		{"SATURATED_FAT", []int{1258}, "G"},
+		{"MONOUNSATURATED_FAT", []int{1292}, "G"},
+		{"POLYUNSATURATED_FAT", []int{1293}, "G"},
+		{"CHOLESTEROL", []int{1253}, "MG"},
+		{"CALCIUM", []int{1087}, "MG"},
+		{"IRON", []int{1089}, "MG"},
+		{"MAGNESIUM", []int{1090}, "MG"},
+		{"PHOSPHORUS", []int{1091}, "MG"},
+		{"POTASSIUM", []int{1092}, "MG"},
+		{"SODIUM", []int{1093}, "MG"},
+		{"ZINC", []int{1095}, "MG"},
+		{"SELENIUM", []int{1103}, "UG"},
+		{"VITAMIN_A", []int{1106}, "UG"},
+		{"VITAMIN_C", []int{1162}, "MG"},
+		{"VITAMIN_D", []int{1114}, "UG"},
+		{"VITAMIN_E", []int{1109}, "MG"},
+		{"VITAMIN_K", []int{1185}, "UG"},
+		{"THIAMIN", []int{1165}, "MG"},
+		{"RIBOFLAVIN", []int{1166}, "MG"},
+		{"NIACIN", []int{1167}, "MG"},
+		{"VITAMIN_B6", []int{1175}, "MG"},
+		{"VITAMIN_B12", []int{1178}, "UG"},
+		{"FOLATE_DFE", []int{1190}, "UG"},
 	} {
+		unit := strings.ToLower(selection.unit)
+		if unit == "ug" {
+			unit = "mcg"
+		}
+		if _, exists := result.Nutrients[selection.key]; !exists {
+			result.Nutrients[selection.key] = Nutrient{Status: "UNKNOWN", Unit: unit}
+		}
 		for _, id := range selection.ids {
 			found := false
 			for _, item := range raw.FoodNutrients {
@@ -106,6 +141,31 @@ func Normalize(raw rawFood) Food {
 				}
 			}
 			if found {
+				break
+			}
+		}
+	}
+	// Match these additional components by the explicit name in USDA metadata,
+	// not guessed IDs. Only gram values are accepted; absence stays unknown.
+	for name, key := range map[string]string{
+		"Tryptophan": "TRYPTOPHAN", "Threonine": "THREONINE", "Isoleucine": "ISOLEUCINE", "Leucine": "LEUCINE",
+		"Lysine": "LYSINE", "Methionine": "METHIONINE", "Cystine": "CYSTINE", "Phenylalanine": "PHENYLALANINE",
+		"Tyrosine": "TYROSINE", "Valine": "VALINE", "Arginine": "ARGININE", "Histidine": "HISTIDINE",
+		"Alanine": "ALANINE", "Aspartic acid": "ASPARTIC_ACID", "Glutamic acid": "GLUTAMIC_ACID",
+		"Glycine": "GLYCINE", "Proline": "PROLINE", "Serine": "SERINE",
+		"Fiber, soluble": "SOLUBLE_FIBER", "Fiber, insoluble": "INSOLUBLE_FIBER",
+	} {
+		result.Nutrients[key] = Nutrient{Status: "UNKNOWN", Unit: "g"}
+		for _, item := range raw.FoodNutrients {
+			valueName, valueUnit, value := item.NutrientName, item.UnitName, item.Value
+			if item.NutrientID == 0 {
+				valueName, valueUnit, value = item.Nutrient.Name, item.Nutrient.UnitName, item.Amount
+			}
+			if !strings.EqualFold(strings.TrimSpace(valueName), name) || !strings.EqualFold(valueUnit, "G") || value == "" {
+				continue
+			}
+			if number, err := strconv.ParseFloat(value.String(), 64); err == nil && number >= 0 {
+				result.Nutrients[key] = Nutrient{Status: "KNOWN", Amount: value.String(), Unit: "g"}
 				break
 			}
 		}

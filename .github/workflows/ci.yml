@@ -21,6 +21,8 @@ jobs:
       - run: npm ci
       - run: npm run typecheck:web
       - run: npm run build:web
+      - name: Frontend regression tests
+        run: node --test apps/web/src/features/nutrition/model.test.mjs apps/web/src/features/wellness/schedule-model.test.mjs
 
   go:
     name: Go tests

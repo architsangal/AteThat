@@ -12,6 +12,7 @@ type Schedule struct {
 	Interval          int
 	Weekdays          []string
 	LocalTimes        []string
+	MonthDays         []int32
 	EffectiveFromDate string
 	EffectiveToDate   string
 }
@@ -33,8 +34,25 @@ func Validate(s Schedule) error {
 	if s.Interval < 1 || s.Interval > 365 {
 		return errors.New("invalid recurrence interval")
 	}
-	if s.Frequency != "DAILY" && s.Frequency != "WEEKLY" {
+	if s.Frequency != "DAILY" && s.Frequency != "WEEKLY" && s.Frequency != "MONTHLY" && s.Frequency != "PAUSED" {
 		return errors.New("invalid frequency")
+	}
+	if s.Frequency == "MONTHLY" {
+		if len(s.MonthDays) == 0 || len(s.MonthDays) > 31 {
+			return errors.New("monthly schedule requires calendar days")
+		}
+		seen := map[int32]bool{}
+		for _, day := range s.MonthDays {
+			if day < 1 || day > 31 || seen[day] {
+				return errors.New("invalid or duplicate month day")
+			}
+			seen[day] = true
+		}
+	} else if len(s.MonthDays) > 0 {
+		return errors.New("month days require monthly recurrence")
+	}
+	if s.Frequency != "WEEKLY" && len(s.Weekdays) > 0 {
+		return errors.New("weekdays require weekly recurrence")
 	}
 	if s.Frequency == "DAILY" && len(s.Weekdays) != 0 {
 		return errors.New("daily schedule must not include weekdays")
@@ -49,7 +67,7 @@ func Validate(s Schedule) error {
 		}
 		seen[weekday] = true
 	}
-	if len(s.LocalTimes) == 0 || len(s.LocalTimes) > 12 {
+	if (s.Frequency != "PAUSED" && len(s.LocalTimes) == 0) || len(s.LocalTimes) > 12 {
 		return errors.New("schedule requires 1–12 local times")
 	}
 	seen = map[string]bool{}
@@ -80,6 +98,9 @@ func Expand(s Schedule, from, to time.Time) ([]Occurrence, error) {
 	if !from.Before(to) || to.Sub(from) > 32*24*time.Hour {
 		return nil, errors.New("occurrence range must be at most 32 days")
 	}
+	if s.Frequency == "PAUSED" {
+		return []Occurrence{}, nil
+	}
 	location, _ := time.LoadLocation(s.Timezone)
 	anchor, _ := time.Parse("2006-01-02", s.EffectiveFromDate)
 	firstLocal := from.In(location)
@@ -99,6 +120,15 @@ func Expand(s Schedule, from, to time.Time) ([]Occurrence, error) {
 		eligible := false
 		if s.Frequency == "DAILY" {
 			eligible = days%s.Interval == 0
+		} else if s.Frequency == "MONTHLY" {
+			months := (date.Year()-anchor.Year())*12 + int(date.Month()-anchor.Month())
+			if months%s.Interval == 0 {
+				for _, day := range s.MonthDays {
+					if date.Day() == int(day) {
+						eligible = true
+					}
+				}
+			}
 		} else {
 			anchorWeek := anchor.AddDate(0, 0, -int((int(anchor.Weekday())+6)%7))
 			weeks := int(date.Sub(anchorWeek).Hours()/24) / 7

@@ -8,6 +8,14 @@ import {
 import { apiBaseUrl, deleteAuthenticatedJson, getAuthenticatedJson, getJson, patchAuthenticatedJson, postAuthenticatedIdempotentJson, postAuthenticatedJson, postJson, putAuthenticatedJson, refreshAccessToken } from './api'
 import { clearAccessToken, getAccessToken, setAccessToken } from './session'
 import { ThemeProvider, useTheme } from './theme'
+import { NutritionAnalysisPage } from './features/nutrition/NutritionAnalysisPage'
+import { nutrientFields, type Page } from './features/nutrition/model'
+import { NutrientInputs, NutrientOverrideInputs } from './features/nutrition/NutrientInputs'
+import { RecipesPage } from './features/recipes/RecipesPage'
+import { WellnessPage, WellnessOverview } from './features/wellness/WellnessPage'
+import { ScheduleEditor, type SchedulableItem } from './features/wellness/ScheduleEditor'
+import { HealthAdherence } from './features/wellness/HealthAdherence'
+import './features/phase-two.css'
 
 type Icon = typeof Home
 
@@ -17,6 +25,8 @@ const navigation: { label: string; to: string; icon: Icon }[] = [
   { label: 'History', to: '/app/history', icon: CalendarDays },
   { label: 'Analysis', to: '/app/analysis', icon: Activity },
   { label: 'Meals', to: '/app/meals', icon: UtensilsCrossed },
+  { label: 'Recipes', to: '/app/recipes', icon: UtensilsCrossed },
+  { label: 'Water, weight & activity', to: '/app/wellness', icon: Activity },
   { label: 'Health items', to: '/app/health', icon: HeartPulse },
   { label: 'Nutrition targets', to: '/app/targets', icon: Activity },
   { label: 'Settings', to: '/app/settings', icon: Settings2 },
@@ -103,6 +113,7 @@ function TermsPage() {
       <section><h2>Health information</h2><p>AteThat is a tracking tool, not a medical professional or a substitute for medical advice, diagnosis, or treatment. Check important nutrition or medication decisions with a qualified professional.</p></section>
       <section><h2>Account deletion and permanent removal</h2><p>A verified account-deletion request starts a <strong>30-day deletion-pending period</strong> and ends account access immediately. You may cancel the request during that period only by freshly verifying your sign-in method. At the end of the 30 days, user-owned account data is scheduled for permanent removal, except information we must retain to meet applicable legal obligations. Removed data may not be recoverable.</p><p>The 30-day period does not start merely by stopping use of AteThat or deleting a browser session.</p></section>
       <section><h2>Service changes</h2><p>During development, the service may be interrupted, changed, or reset. Please do not rely on this local version as the only copy of important records. We will review and complete these terms, including operator and contact details, before public launch.</p></section>
+      <section><h2>Data storage and recovery</h2><p>AteThat currently uses MongoDB Atlas Free (M0) without application-managed backups, snapshots, or point-in-time recovery. We cannot guarantee restoration of records lost through accidental deletion, application errors, unauthorized access, or a storage-service failure. Keep a separate copy of information that is important to you. We do not currently promise a recovery time or a maximum amount of data that could be lost. This wording will be updated if verified backup and recovery capabilities are introduced.</p></section>
     </div>
     <Link className="quiet-link" to="/"><ArrowLeft size={16} /> Back to home</Link>
   </main><PublicFooter /></div>
@@ -344,13 +355,14 @@ function Dashboard() {
     <div className="dashboard-grid"><section className="panel energy-panel"><div className="panel-top"><span className="panel-kicker">Energy</span><span className="info-pill"><Info size={14} /> {data?.timezone || 'Account timezone'}</span></div><h2>{energy?.status === 'KNOWN' ? `${energy.amount} kcal` : 'No confirmed energy total yet'}</h2><p>{data?.nutrition.targets.ENERGY?.status === 'KNOWN' ? `Against your accepted general benchmark of ${data.nutrition.targets.ENERGY.amount} kcal. This is not a personalized calorie prescription.` : 'Accept a nutrition benchmark to see progress.'}</p><div className="empty-meter"><span style={{ width: `${Math.min(100, Math.max(0, Number(data?.nutrition.progress.ENERGY?.percent || 0)))}%` }} /></div><Link className="quiet-link" to="/app/log-food">Log food <ArrowRight size={16} /></Link></section>
       <section className="panel nutrient-panel"><div className="panel-top"><h2>Routine nutrients</h2><CircleHelp size={18} aria-hidden="true" /></div>{[['PROTEIN', 'Protein', 'protein'], ['CARBOHYDRATE', 'Carbohydrates', 'carbs'], ['FAT', 'Fat', 'fat'], ['FIBER', 'Fibre', 'fibre']].map(([key, label, color]) => <div className="nutrient-row" key={key}><div><span className={`nutrient-dot ${color}`} />{label}</div><span>{data?.nutrition.totals[key]?.status === 'KNOWN' ? `${data.nutrition.totals[key].amount} ${data.nutrition.totals[key].unit}` : 'unknown'}</span><div className="nutrient-track"><span style={{ width: `${Math.min(100, Math.max(0, Number(data?.nutrition.progress[key]?.percent || 0)))}%` }} /></div></div>)}<Link className="quiet-link" to="/app/targets">View nutrition targets <ArrowRight size={16} /></Link></section></div>
     <div className="dashboard-grid dashboard-secondary"><section className="panel"><div className="panel-top"><h2>Today’s food</h2><Link className="quiet-link" to="/app/history">View history <ArrowRight size={15} /></Link></div>{data?.food_log_groups.items.length ? data.food_log_groups.items.map(group => <div className="dashboard-group" key={group.id}><strong>{group.label || group.meal_category.toLowerCase()}</strong><span>{group.item_count} foods · {group.aggregate_final_nutrition.ENERGY?.status === 'KNOWN' ? `${group.aggregate_final_nutrition.ENERGY.amount} kcal` : 'energy unknown'}</span></div>) : <EmptyState icon={UtensilsCrossed} title="No food logged yet" text="You can add several foods together and review their totals before confirming." action={<Link className="button button-outline button-small" to="/app/log-food">Log your first meal</Link>} />}</section><section className="panel"><div className="panel-top"><h2>Health routine</h2><Link className="quiet-link" to="/app/health">View items <ArrowRight size={15} /></Link></div>{upcoming.length ? upcoming.map(item => <div className="dashboard-group" key={item.occurrence_id}><strong>{item.name}</strong><span>{item.scheduled_local.date} {item.scheduled_local.time} ({item.scheduled_local.timezone}) · {item.status.toLowerCase()}</span></div>) : <EmptyState icon={HeartPulse} title="No upcoming items" text="Scheduled medication and supplements for the next 24 hours appear here." />}</section></div>
+    <WellnessOverview />
   </>
 }
 
 type FoodResult = { food_reference: { type: 'USDA'; provider_food_id: string }; name: string; food_state: string; base_quantity: { amount: string; unit: string }; nutrients: Record<string, { status: string; amount?: string; unit: string }>; source_url: string }
 type FoodPage = { items: FoodResult[]; page: { next_cursor: string | null; has_more: boolean } }
 type CustomFood = { id: string; version: number; name: string; description: string; food_state: string; base_quantity: { amount: string; unit: string }; nutrients: FoodResult['nutrients'] }
-type SavedMeal = { id: string; version: number; name: string; components: { position: number; food_reference: { type: 'USDA' | 'CUSTOM'; provider_food_id: string | null; custom_food_id: string | null }; quantity: { amount: string; unit: string }; food_state: string }[] }
+type SavedMeal = { id: string; version: number; name: string; recipe_servings?: string; preparation?: string; components: { position: number; food_reference: { type: 'USDA' | 'CUSTOM'; provider_food_id: string | null; custom_food_id: string | null }; quantity: { amount: string; unit: string }; food_state: string }[] }
 type SavedFoodLink = { food_key: string; food_reference: { type: 'USDA' | 'CUSTOM'; provider_food_id: string | null; custom_food_id: string | null }; name: string; confirmed_log_count?: number }
 type SavedServing = { id: string; version: number; label: string; food_reference: { type: 'USDA' | 'CUSTOM'; provider_food_id: string | null; custom_food_id: string | null }; quantity: { amount: string; unit: string }; food_state: string }
 type DraftFood = { key: string; type: 'USDA' | 'CUSTOM'; id: string; name: string; foodState: string; quantity: string; unit: string; overrides: Record<string, { status: string; amount: string; unit: string }> }
@@ -381,6 +393,10 @@ function AppDatePicker({ label, value, name, onChange, className = '' }: { label
   const open = context.openPickerId === pickerId
   const [visibleMonth, setVisibleMonth] = useState(() => parseLocalDate(value || isoLocalDate(new Date())))
   const selected = value ? parseLocalDate(value) : null
+  const currentYear = new Date().getFullYear()
+  const firstYear = Math.min(currentYear - 120, visibleMonth.getFullYear())
+  const lastYear = Math.max(name === 'date_of_birth' ? currentYear : currentYear + 10, visibleMonth.getFullYear())
+  const years = Array.from({ length: lastYear - firstYear + 1 }, (_, index) => lastYear - index)
   const days = useMemo(() => {
     const first = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), 1)
     const dayCount = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 0).getDate()
@@ -393,7 +409,7 @@ function AppDatePicker({ label, value, name, onChange, className = '' }: { label
     return () => window.removeEventListener('keydown', closeOnEscape)
   }, [context, open])
   const displayValue = selected?.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }) || 'Select date'
-  return <div className={`app-date-picker ${className}`}><span className="app-date-label">{label}</span>{name && <input type="hidden" name={name} value={value} />}<button className="app-date-trigger" type="button" aria-haspopup="dialog" aria-expanded={open} onClick={() => { setVisibleMonth(selected || new Date()); context.setOpenPickerId(open ? null : pickerId) }}><CalendarDays size={17} /><span>{displayValue}</span><ChevronDown size={16} /></button>{open && <div className="app-calendar" role="dialog" aria-label={`${label} date picker`}><div className="app-calendar-head"><button type="button" className="calendar-nav" aria-label="Previous month" onClick={() => setVisibleMonth(previous => new Date(previous.getFullYear(), previous.getMonth() - 1, 1))}><ChevronLeft size={17} /></button><strong>{visibleMonth.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</strong><button type="button" className="calendar-nav" aria-label="Next month" onClick={() => setVisibleMonth(previous => new Date(previous.getFullYear(), previous.getMonth() + 1, 1))}><ChevronRight size={17} /></button></div><div className="calendar-weekdays">{['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => <span key={day}>{day}</span>)}</div><div className="calendar-days">{days.map((date, index) => date ? <button type="button" key={isoLocalDate(date)} className={`calendar-day ${isoLocalDate(date) === value ? 'calendar-day-selected' : ''} ${isoLocalDate(date) === isoLocalDate(new Date()) ? 'calendar-day-today' : ''}`} onClick={() => { onChange(isoLocalDate(date)); context.setOpenPickerId(null) }}>{date.getDate()}</button> : <span key={`blank-${index}`} aria-hidden="true" />)}</div></div>}</div>
+  return <div className={`app-date-picker ${className}`}><span className="app-date-label">{label}</span>{name && <input type="hidden" name={name} value={value} />}<button className="app-date-trigger" type="button" aria-haspopup="dialog" aria-expanded={open} onClick={() => { setVisibleMonth(selected || new Date()); context.setOpenPickerId(open ? null : pickerId) }}><CalendarDays size={17} /><span>{displayValue}</span><ChevronDown size={16} /></button>{open && <div className="app-calendar" role="dialog" aria-label={`${label} date picker`}><div className="app-calendar-head"><button type="button" className="calendar-nav" aria-label="Previous month" onClick={() => setVisibleMonth(previous => new Date(previous.getFullYear(), previous.getMonth() - 1, 1))}><ChevronLeft size={17} /></button><div className="calendar-selectors"><select aria-label={`${label} month`} value={visibleMonth.getMonth()} onChange={event => setVisibleMonth(previous => new Date(previous.getFullYear(), Number(event.target.value), 1))}>{Array.from({ length: 12 }, (_, month) => <option key={month} value={month}>{new Date(2000, month, 1).toLocaleDateString(undefined, { month: 'long' })}</option>)}</select><select aria-label={`${label} year`} value={visibleMonth.getFullYear()} onChange={event => setVisibleMonth(previous => new Date(Number(event.target.value), previous.getMonth(), 1))}>{years.map(year => <option key={year} value={year}>{year}</option>)}</select></div><button type="button" className="calendar-nav" aria-label="Next month" onClick={() => setVisibleMonth(previous => new Date(previous.getFullYear(), previous.getMonth() + 1, 1))}><ChevronRight size={17} /></button></div><div className="calendar-weekdays">{['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => <span key={day}>{day}</span>)}</div><div className="calendar-days">{days.map((date, index) => date ? <button type="button" key={isoLocalDate(date)} className={`calendar-day ${isoLocalDate(date) === value ? 'calendar-day-selected' : ''} ${isoLocalDate(date) === isoLocalDate(new Date()) ? 'calendar-day-today' : ''}`} onClick={() => { onChange(isoLocalDate(date)); context.setOpenPickerId(null) }}>{date.getDate()}</button> : <span key={`blank-${index}`} aria-hidden="true" />)}</div></div>}</div>
 }
 
 function LogFood() {
@@ -542,7 +558,7 @@ function LogFood() {
     finally { setBusy(false) }
   }
   function editDraft(key: string, quantity: string) {
-    setDraft(previous => previous.map(item => item.key === key ? { ...item, quantity } : item))
+    setDraft(previous => previous.map(item => item.key === key ? { ...item, quantity, overrides: {} } : item))
     setPreview(null)
   }
   function setOverride(key: string, nutrient: string, amount: string, unit: string) {
@@ -596,11 +612,20 @@ function LogFood() {
     finally { setBusy(false) }
   }
   async function reviewMeal(meal: SavedMeal) {
+    const servings = meal.recipe_servings ? window.prompt(`This recipe makes ${meal.recipe_servings} servings. How many servings did you eat?`, '1') : undefined
+    if (meal.recipe_servings && !servings) return
     setBusy(true); setError(''); setConfirmed(null)
     try {
       const response = await postAuthenticatedJson<GroupPreview>(`/meals/${meal.id}/preview`, {
-        logged_at: new Date().toISOString(), meal_category: category, label: label || meal.name })
-      setPreview(response); setConfirmationKey(crypto.randomUUID()); setDraft([])
+        logged_at: new Date().toISOString(), meal_category: category, label: label || meal.name, ...(servings ? { servings } : {}) })
+      setPreview(response); setConfirmationKey(crypto.randomUUID())
+      setLabel(label || meal.name)
+      setDraft(meal.components.map((component, index) => ({
+        key: crypto.randomUUID(), type: component.food_reference.type,
+        id: component.food_reference.type === 'USDA' ? component.food_reference.provider_food_id || '' : component.food_reference.custom_food_id || '',
+        name: response.group.items[index].food_source.name, foodState: component.food_state,
+        quantity: response.group.items[index].quantity.amount, unit: response.group.items[index].quantity.unit, overrides: {},
+      })))
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not preview saved meal.') }
     finally { setBusy(false) }
   }
@@ -616,7 +641,7 @@ function LogFood() {
   return <><PageHead eyebrow="Food logging" title="Build your food log" description="Add one or several foods, review the totals together, then explicitly confirm the group." />
     <section className="panel section-panel"><div className="panel-top"><h2>Quick picks</h2><span className="muted">Your own favourites and confirmed history</span></div><div className="filter-row">{(['FAVOURITES', 'RECENT', 'FREQUENT'] as const).map(value => <button key={value} type="button" className={`filter-chip ${savedSource === value ? 'filter-chip-active' : ''}`} onClick={() => setSavedSource(value)}>{value === 'FAVOURITES' ? 'Favourites' : value === 'RECENT' ? 'Recent' : 'Frequent'}</button>)}</div>{savedSource && savedLinks.length === 0 && <p className="muted">No {savedSource.toLowerCase()} foods yet.</p>}{savedSource && savedLinks.map(link => <article className="food-result" key={link.food_key}><div><h3>{link.name}</h3><p>{link.food_reference.type}{link.confirmed_log_count ? ` · logged ${link.confirmed_log_count} times` : ''}</p></div><div className="history-actions"><button className="button button-outline button-small" type="button" disabled={busy} onClick={() => void addSavedLink(link)}>Add</button>{savedSource === 'FAVOURITES' && <button className="quiet-link" type="button" disabled={busy} onClick={() => void removeFavourite(link)}>Unsave</button>}</div></article>)}{savedCursor && <button className="button button-outline button-small" type="button" disabled={busy} onClick={() => void moreSavedLinks()}>Load more</button>}{draft.length > 0 && <div className="filter-row">{draft.map(food => <button className="quiet-link" type="button" key={food.key} disabled={busy} onClick={() => void favourite(food)}>Save {food.name} as favourite</button>)}</div>}</section>
     <section className="panel section-panel"><div className="panel-top"><h2>Named servings</h2><button className="quiet-link" type="button" onClick={() => setShowServings(value => !value)}>{showServings ? 'Hide' : 'Show'} servings</button></div><p className="muted">Save a reusable quantity such as “1 roti = 45 g”. It fills the amount in your draft, then you still review and confirm the food log.</p>{showServings && servings.length === 0 && <p className="muted">No servings saved yet.</p>}{showServings && servings.map(serving => <article className="food-result" key={serving.id}><div><h3>{serving.label}</h3><p>{serving.quantity.amount} {serving.quantity.unit} · {serving.food_reference.type}</p></div><div className="history-actions"><button className="button button-outline button-small" type="button" disabled={busy} onClick={() => void addServing(serving)}>Add</button><button className="quiet-link" type="button" disabled={busy} onClick={() => void renameServing(serving)}>Rename</button><button className="quiet-link" type="button" disabled={busy} onClick={() => void deleteServing(serving)}>Delete</button></div></article>)}{showServings && servingCursor && <button className="button button-outline button-small" type="button" disabled={busy} onClick={() => void moreServings()}>Load more servings</button>}{draft.map(food => <button className="quiet-link" type="button" key={food.key} disabled={busy} onClick={() => void saveServing(food)}>Save {food.quantity} {food.unit} of {food.name} as serving</button>)}</section>
-    {draft.length > 0 && <section className="panel section-panel"><h2>Adjust nutrition values (optional)</h2><p className="muted">Enter the value for the exact quantity in your draft. Your value replaces the source value for that nutrient in this log only. Leave a field blank to use the source value.</p>{draft.map(food => <div className="group-review" key={food.key}><h3>{food.name} · {food.quantity} {food.unit}</h3><div className="filter-row">{[['ENERGY', 'kcal'], ['PROTEIN', 'g'], ['CARBOHYDRATE', 'g'], ['FAT', 'g'], ['FIBER', 'g']].map(([key, unit]) => <label key={key}>{nutrientLabel(key)} ({unit})<input type="number" min="0" step="any" value={food.overrides?.[key]?.amount || ''} onChange={event => setOverride(food.key, key, event.target.value, unit)} placeholder="Use source" /></label>)}</div></div>)}</section>}
+    {draft.length > 0 && <section className="panel section-panel"><h2>Adjust nutrition values (optional)</h2><p className="muted">Enter the value for the exact quantity in your draft. Your value replaces the source value for that nutrient in this log only. Leave a field blank to use the source value. Changing quantity clears overrides so they cannot accidentally carry over to a different portion.</p>{draft.map(food => <div className="group-review" key={food.key}><h3>{food.name} · {food.quantity} {food.unit}</h3><NutrientOverrideInputs values={food.overrides} onChange={(code,amount,unit)=>setOverride(food.key,code,amount,unit)} /></div>)}</section>}
     <div className="two-column"><section className="panel"><div className="filter-row"><button className={`filter-chip ${source === 'USDA' ? 'filter-chip-active' : ''}`} type="button" onClick={() => setSource('USDA')}>USDA foods</button><button className={`filter-chip ${source === 'CUSTOM' ? 'filter-chip-active' : ''}`} type="button" onClick={() => setSource('CUSTOM')}>My foods</button><button className={`filter-chip ${source === 'MEAL' ? 'filter-chip-active' : ''}`} type="button" onClick={() => setSource('MEAL')}>Saved meals</button></div>{source === 'USDA' ? <><form className="food-search-form" onSubmit={event => search(event)}><label className="search-field"><Search size={19} /><input type="search" placeholder="Search USDA foods" aria-label="Search USDA foods" value={query} onChange={event => setQuery(event.target.value)} minLength={2} required /></label><select aria-label="Food state" value={state} onChange={event => setState(event.target.value)}><option value="">Any state</option><option value="RAW">Raw</option><option value="COOKED">Cooked</option></select><button className="button button-primary button-small" type="submit" disabled={busy}>{busy ? 'Searching…' : 'Search'}</button></form><p className="muted">USDA FoodData Central values are per 100 g. Missing values are unknown, not zero.</p>{searched && items.length === 0 && <EmptyState icon={Search} title="No foods found" text="Try a broader search or a different food state." />}{items.length > 0 && <div className="food-results">{items.map(item => <article className="food-result" key={item.food_reference.provider_food_id}><div><h3>{item.name}</h3><p>USDA · {item.base_quantity.amount} {item.base_quantity.unit} · {item.food_state.toLowerCase()}</p><p>{['ENERGY', 'PROTEIN', 'CARBOHYDRATE', 'FAT', 'FIBER'].map(key => `${key.toLowerCase()}: ${item.nutrients[key]?.status === 'KNOWN' ? `${item.nutrients[key].amount} ${item.nutrients[key].unit}` : 'unknown'}`).join(' · ')}</p><a className="quiet-link" href={item.source_url} target="_blank" rel="noreferrer">USDA source <ArrowRight size={15} /></a></div><button className="button button-outline button-small" type="button" onClick={() => addFood(item)}>Add</button></article>)}{cursor && <button className="button button-outline button-small" type="button" disabled={busy} onClick={() => search(undefined, cursor)}>Load more foods</button>}</div>}</> : source === 'CUSTOM' ? <div className="food-results">{customFoods.length === 0 && <EmptyState icon={UtensilsCrossed} title="No custom foods" text="Create one in Meals & foods, then come back to add it." />}{customFoods.map(food => <article className="food-result" key={food.id}><div><h3>{food.name}</h3><p>{food.base_quantity.amount} {food.base_quantity.unit} · {food.food_state.toLowerCase()}</p></div><button className="button button-outline button-small" type="button" onClick={() => addFood(food)}>Add</button></article>)}</div> : <div className="food-results">{meals.length === 0 && <EmptyState icon={UtensilsCrossed} title="No saved meals" text="Add foods to a draft, then save it as a reusable meal." />}{meals.map(meal => <article className="food-result" key={meal.id}><div><h3>{meal.name}</h3><p>{meal.components.length} foods</p></div><button className="button button-outline button-small" type="button" disabled={busy} onClick={() => reviewMeal(meal)}>Review & log</button></article>)}</div>}</section><aside className="panel tray-panel"><div className="panel-top"><h2>Your food group</h2><span className="info-pill">{draft.length} items</span></div>{draft.length === 0 && !confirmed && !preview && <EmptyState icon={UtensilsCrossed} title="Your group is empty" text="Add foods or choose a saved meal." />}{draft.map(item => <div className="draft-food" key={item.key}><strong>{item.name}</strong><div><label>Quantity <input type="number" min="0.001" step="any" value={item.quantity} onChange={event => editDraft(item.key, event.target.value)} /> {item.unit}</label><button className="icon-button" type="button" aria-label={`Remove ${item.name}`} onClick={() => { setDraft(previous => previous.filter(food => food.key !== item.key)); setPreview(null) }}><X size={17} /></button></div></div>)}{draft.length > 0 && <><label className="draft-meta">Meal category<select value={category} onChange={event => { setCategory(event.target.value); setPreview(null) }}><option>BREAKFAST</option><option>LUNCH</option><option>DINNER</option><option>SNACK</option><option>OTHER</option></select></label><label className="draft-meta">Label (optional)<input maxLength={160} value={label} onChange={event => { setLabel(event.target.value); setPreview(null) }} /></label><button className="button button-primary full-width" type="button" disabled={busy || draft.length > 50} onClick={review}>Review food group</button><button className="button button-outline full-width" type="button" disabled={busy} onClick={saveMeal}>Save as reusable meal</button></>}{preview && <div className="group-review"><h3>Review before saving</h3><p>{preview.group.item_count} foods · Tracking Day {preview.group.tracking_day}</p>{preview.group.items.map(item => <p key={item.position}>{item.food_source.name}: {item.quantity.amount} {item.quantity.unit}</p>)}<h4>Combined nutrition</h4>{Object.entries(preview.group.aggregate_final_nutrition).map(([key, value]) => <p key={key}>{key}: {value.status === 'KNOWN' ? `${value.amount} ${value.unit}` : 'unknown'}</p>)}<p className="muted">Preview expires at {new Date(preview.expires_at).toLocaleTimeString()}.</p><button className="button button-primary full-width" type="button" disabled={busy} onClick={confirm}>Confirm and save</button></div>}{confirmed && <p className="form-message form-success" role="status">Saved {confirmed.item_count} foods for {confirmed.tracking_day}. <Link to="/app/history">View history</Link></p>}{error && <p className="form-message form-error" role="alert">{error}</p>}</aside></div>
   </>
 }
@@ -711,78 +736,7 @@ function HistoryPage() {
   </>
 }
 
-type FullAnalysis = { from: string; to: string; totals: FoodResult['nutrients']; confirmed_group_count: number; confirmed_item_count: number; compacted_day_count: number }
 type HealthHistoryEntry = { occurrence_id: string; name: string; type: string; status: string; scheduled_at: string; scheduled_local: { date: string; time: string; timezone: string } }
-
-function AnalysisPage() {
-  const today = new Date().toISOString().slice(0, 10)
-  const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10)
-  const [fromDay, setFromDay] = useState(weekAgo)
-  const [toDay, setToDay] = useState(today)
-  const [days, setDays] = useState<NutritionDay[]>([])
-  const [dayCursor, setDayCursor] = useState<string | null>(null)
-  const [health, setHealth] = useState<HealthHistoryEntry[]>([])
-  const [healthCursor, setHealthCursor] = useState<string | null>(null)
-  const [analysis, setAnalysis] = useState<FullAnalysis | null>(null)
-  const [loaded, setLoaded] = useState(false)
-  const [error, setError] = useState('')
-  const [busy, setBusy] = useState(false)
-  async function load() {
-    if (fromDay > toDay || (Date.parse(`${toDay}T00:00:00Z`) - Date.parse(`${fromDay}T00:00:00Z`)) > 365 * 86400000) {
-      setError('Choose a date range of at most 365 days.'); return
-    }
-    setBusy(true); setError('')
-    setLoaded(false); setAnalysis(null); setDays([]); setHealth([]); setDayCursor(null); setHealthCursor(null)
-    try {
-      const from = `${fromDay}T00:00:00Z`
-      const to = new Date(Date.parse(`${toDay}T00:00:00Z`) + 86400000).toISOString()
-      const dayParams = new URLSearchParams({ from_tracking_day: fromDay, to_tracking_day: toDay, limit: '30' })
-      const healthParams = new URLSearchParams({ from, to, limit: '30' })
-      const [daily, actionPage] = await Promise.all([
-        getAuthenticatedJson<{ items: NutritionDay[]; page: { next_cursor: string | null } }>(`/history/nutrition?${dayParams}`),
-        getAuthenticatedJson<{ items: HealthHistoryEntry[]; page: { next_cursor: string | null } }>(`/history/health-items?${healthParams}`),
-      ])
-      setDays(daily.items)
-      setDayCursor(daily.page.next_cursor)
-      setHealth(actionPage.items)
-      setHealthCursor(actionPage.page.next_cursor)
-      setLoaded(true)
-      try {
-        setAnalysis(await getAuthenticatedJson<FullAnalysis>(`/nutrition/full-analysis?${new URLSearchParams({ from, to })}`))
-      } catch (cause) {
-        setAnalysis(null)
-        setError(cause instanceof Error ? `${cause.message} Daily summaries remain available below.` : 'UTC range total is unavailable; daily summaries remain available below.')
-      }
-    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not load analysis.') }
-    finally { setBusy(false) }
-  }
-  async function moreDays() {
-    if (!dayCursor) return
-    setBusy(true); setError('')
-    try {
-      const query = new URLSearchParams({ from_tracking_day: fromDay, to_tracking_day: toDay, limit: '30', cursor: dayCursor })
-      const page = await getAuthenticatedJson<{ items: NutritionDay[]; page: { next_cursor: string | null } }>(`/history/nutrition?${query}`)
-      setDays(previous => [...previous, ...page.items]); setDayCursor(page.page.next_cursor)
-    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not load more days.') }
-    finally { setBusy(false) }
-  }
-  async function moreHealth() {
-    if (!healthCursor) return
-    setBusy(true); setError('')
-    try {
-      const from = `${fromDay}T00:00:00Z`
-      const to = new Date(Date.parse(`${toDay}T00:00:00Z`) + 86400000).toISOString()
-      const query = new URLSearchParams({ from, to, limit: '30', cursor: healthCursor })
-      const page = await getAuthenticatedJson<{ items: HealthHistoryEntry[]; page: { next_cursor: string | null } }>(`/history/health-items?${query}`)
-      setHealth(previous => [...previous, ...page.items]); setHealthCursor(page.page.next_cursor)
-    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not load more actions.') }
-    finally { setBusy(false) }
-  }
-  return <><PageHead eyebrow="Your patterns" title="Analysis" description="Compare daily food totals and review recorded health actions. Unknown nutrient values stay unknown." />
-    <section className="panel analysis-panel"><form className="analysis-filter" onSubmit={event => { event.preventDefault(); void load() }}><AppDatePicker label="From" value={fromDay} onChange={setFromDay} /><AppDatePicker label="Through" value={toDay} onChange={setToDay} /><button className="button button-primary" type="submit" disabled={busy}>Show analysis</button></form>{error && <p className="form-message form-error" role="alert">{error}</p>}{analysis && <><h2>Nutrition within UTC calendar dates</h2><p className="muted">{analysis.confirmed_group_count} confirmed groups · {analysis.confirmed_item_count} foods{analysis.compacted_day_count > 0 ? ` · ${analysis.compacted_day_count} compacted days` : ''}. This total uses UTC midnight boundaries. The daily rows below use your stored Tracking Days, so boundary foods may differ.</p><div className="target-rows">{Object.entries(analysis.totals).map(([key, value]) => <div key={key}><span>{nutrientLabel(key)}</span><strong>{value.status === 'KNOWN' ? `${value.amount} ${value.unit}` : 'Unknown'}</strong></div>)}</div></>}
-    </section><div className="two-column"><section className="panel"><h2>Daily nutrition by Tracking Day</h2>{loaded && days.length === 0 && <p className="muted">No confirmed food for this range.</p>}{days.map(day => <article className="food-result" key={day.tracking_day}><div><h3>{day.tracking_day}</h3><p>{day.confirmed_item_count} foods · {day.totals.ENERGY?.status === 'KNOWN' ? `${day.totals.ENERGY.amount} kcal` : 'energy unknown'} · {day.timezone}</p>{day.detail_compacted && <p>Detailed food records were compacted after 90 days.</p>}</div><Link className="quiet-link" to={`/app/history?tracking_day=${day.tracking_day}`}>View day</Link></article>)}{dayCursor && <button className="button button-outline button-small" type="button" disabled={busy} onClick={() => void moreDays()}>Load more</button>}</section><section className="panel"><h2>Health action history</h2>{loaded && health.length === 0 && <p className="muted">No recorded actions for this range.</p>}{health.map(item => <article className="food-result" key={item.occurrence_id}><div><h3>{item.name}</h3><p>{item.status.toLowerCase()} · {item.scheduled_local.date} {item.scheduled_local.time} ({item.scheduled_local.timezone})</p></div></article>)}{healthCursor && <button className="button button-outline button-small" type="button" disabled={busy} onClick={() => void moreHealth()}>Load more</button>}</section></div>
-  </>
-}
 
 function CustomFoodsPage() {
   const [foods, setFoods] = useState<CustomFood[]>([])
@@ -810,8 +764,8 @@ function CustomFoodsPage() {
     event.preventDefault(); setBusy(true); setError(''); setMessage('')
     const form = event.currentTarget
     const values = Object.fromEntries(new FormData(form))
-    const nutrients: Record<string, { status: string; amount?: string; unit: string }> = {}
-    for (const [key, unit] of [['ENERGY', 'kcal'], ['PROTEIN', 'g'], ['CARBOHYDRATE', 'g'], ['FAT', 'g'], ['FIBER', 'g']]) {
+    const nutrients: Record<string, { status: string; amount?: string; unit: string }> = { ...editing?.nutrients }
+    for (const [key, unit] of nutrientFields) {
       const amount = String(values[key] || '').trim()
       nutrients[key] = amount ? { status: 'KNOWN', amount, unit } : { status: 'UNKNOWN', unit }
     }
@@ -835,7 +789,7 @@ function CustomFoodsPage() {
     finally { setBusy(false) }
   }
   return <><PageHead eyebrow="Your kitchen" title="Custom foods" description="Save private food definitions for reuse. Existing confirmed logs keep their own snapshots." />
-    <div className="two-column"><section className="panel"><h2>My foods</h2>{foods.length === 0 && <EmptyState icon={UtensilsCrossed} title="No custom foods yet" text="Add a recipe or product with values you know." />}{foods.map(food => <article className="food-result" key={food.id}><div><h3>{food.name}</h3><p>{food.base_quantity.amount} {food.base_quantity.unit} · {food.food_state.toLowerCase()}</p></div><div className="history-actions"><button className="quiet-link" type="button" disabled={busy} onClick={() => { setEditing(food); setError(''); setMessage('') }}>Edit</button><button className="quiet-link" type="button" disabled={busy} onClick={() => remove(food.id)}>Delete</button></div></article>)}{foodCursor && <button className="button button-outline button-small" type="button" disabled={busy} onClick={() => void moreFoods()}>Load more</button>}</section><section className="panel"><h2>{editing ? `Edit ${editing.name}` : 'Add a custom food'}</h2><form key={editing?.id || 'new'} className="custom-food-form" onSubmit={saveFood}><label>Name<input name="name" required minLength={2} maxLength={120} defaultValue={editing?.name || ''} /></label><label>Description<input name="description" maxLength={500} defaultValue={editing?.description || ''} /></label><label>Food state<select name="food_state" defaultValue={editing?.food_state || 'PREPARED'}><option>PREPARED</option><option>RAW</option><option>COOKED</option><option>UNKNOWN</option></select></label><div className="custom-food-base"><label>Base amount<input name="base_amount" type="number" min="0.001" step="any" defaultValue={editing?.base_quantity.amount || '100'} required /></label><label>Unit<select name="base_unit" defaultValue={editing?.base_quantity.unit || 'g'}><option>g</option><option>ml</option></select></label></div><p className="muted">Enter nutrients for the base amount. Leave unknown values empty.</p>{[['ENERGY', 'kcal'], ['PROTEIN', 'g'], ['CARBOHYDRATE', 'g'], ['FAT', 'g'], ['FIBER', 'g']].map(([key, unit]) => <label key={key}>{key.toLowerCase()} ({unit})<input name={key} type="number" min="0" step="any" defaultValue={editing?.nutrients[key]?.status === 'KNOWN' ? editing.nutrients[key].amount : ''} /></label>)}{error && <p className="form-message form-error" role="alert">{error}</p>}{message && <p className="form-message form-success" role="status">{message}</p>}<div className="history-actions"><button className="button button-primary" type="submit" disabled={busy}>{busy ? 'Saving…' : editing ? 'Save changes' : 'Save custom food'}</button>{editing && <button className="button button-outline" type="button" disabled={busy} onClick={() => { setEditing(null); setError(''); setMessage('') }}>Cancel</button>}</div></form></section></div>
+    <div className="two-column"><section className="panel"><h2>My foods</h2>{foods.length === 0 && <EmptyState icon={UtensilsCrossed} title="No custom foods yet" text="Add a recipe or product with values you know." />}{foods.map(food => <article className="food-result" key={food.id}><div><h3>{food.name}</h3><p>{food.base_quantity.amount} {food.base_quantity.unit} · {food.food_state.toLowerCase()}</p></div><div className="history-actions"><button className="quiet-link" type="button" disabled={busy} onClick={() => { setEditing(food); setError(''); setMessage('') }}>Edit</button><button className="quiet-link" type="button" disabled={busy} onClick={() => remove(food.id)}>Delete</button></div></article>)}{foodCursor && <button className="button button-outline button-small" type="button" disabled={busy} onClick={() => void moreFoods()}>Load more</button>}</section><section className="panel"><h2>{editing ? `Edit ${editing.name}` : 'Add a custom food'}</h2><form key={editing?.id || 'new'} className="custom-food-form" onSubmit={saveFood}><label>Name<input name="name" required minLength={2} maxLength={120} defaultValue={editing?.name || ''} /></label><label>Description<input name="description" maxLength={500} defaultValue={editing?.description || ''} /></label><label>Food state<select name="food_state" defaultValue={editing?.food_state || 'PREPARED'}><option>PREPARED</option><option>RAW</option><option>COOKED</option><option>UNKNOWN</option></select></label><div className="custom-food-base"><label>Base amount<input name="base_amount" type="number" min="0.001" step="any" defaultValue={editing?.base_quantity.amount || '100'} required /></label><label>Unit<select name="base_unit" defaultValue={editing?.base_quantity.unit || 'g'}><option>g</option><option>ml</option></select></label></div><p className="muted">Enter nutrients for the base amount. Leave unknown values empty.</p><NutrientInputs values={editing?.nutrients} />{error && <p className="form-message form-error" role="alert">{error}</p>}{message && <p className="form-message form-success" role="status">{message}</p>}<div className="history-actions"><button className="button button-primary" type="submit" disabled={busy}>{busy ? 'Saving…' : editing ? 'Save changes' : 'Save custom food'}</button>{editing && <button className="button button-outline" type="button" disabled={busy} onClick={() => { setEditing(null); setError(''); setMessage('') }}>Cancel</button>}</div></form></section></div>
     <SavedMealsManager />
   </>
 }
@@ -858,7 +812,7 @@ function SavedMealsManager() {
     if (!name || name === meal.name) return
     setBusy(true); setError('')
     try {
-      await patchAuthenticatedJson(`/meals/${meal.id}`, { version: meal.version, name, components: meal.components })
+      await patchAuthenticatedJson(`/meals/${meal.id}`, { version: meal.version, name, components: meal.components, recipe_servings: meal.recipe_servings || '', preparation: meal.preparation || '' })
       await load()
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not rename meal.') }
     finally { setBusy(false) }
@@ -876,6 +830,7 @@ function SavedMealsManager() {
 type HealthItem = { id: string; version: number; type: string; name: string; dosage: { amount_text: string; unit_text: string }; instructions: string; notes: string; start_date: string; active: boolean; schedule: { timezone: string; recurrence: { frequency: string; interval: number; weekdays: string[]; local_times: string[] }; effective_from_date: string } }
 type HealthOccurrence = { occurrence_id: string; name: string; type: string; status: string; scheduled_at: string; scheduled_local: { date: string; time: string; timezone: string } }
 function HealthPage() {
+  const [scheduleEditor, setScheduleEditor] = useState<SchedulableItem | null>(null)
   const [items, setItems] = useState<HealthItem[]>([])
   const [occurrences, setOccurrences] = useState<HealthOccurrence[]>([])
   const [timezone, setTimezone] = useState('Asia/Kolkata')
@@ -886,15 +841,16 @@ function HealthPage() {
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
   async function reloadItems() {
-    const response = await getAuthenticatedJson<{ items: HealthItem[] }>('/health-items?limit=50')
-    setItems(response.items)
+    const result:HealthItem[]=[];let cursor:string|null=null
+    do { const query=new URLSearchParams({limit:'50',...(cursor?{cursor}:{})});const page:Page<HealthItem>=await getAuthenticatedJson(`/health-items?${query}`);result.push(...page.items);cursor=page.page.next_cursor } while(cursor)
+    setItems(result)
   }
   async function reloadOccurrences(selectedDay: string) {
     const from = new Date(`${selectedDay}T00:00:00Z`)
     const to = new Date(from.getTime() + 7 * 24 * 60 * 60 * 1000)
-    const params = new URLSearchParams({ from: from.toISOString(), to: to.toISOString(), limit: '100' })
-    const response = await getAuthenticatedJson<{ items: HealthOccurrence[] }>(`/health-items/occurrences?${params}`)
-    setOccurrences(response.items)
+    const result:HealthOccurrence[]=[];let cursor:string|null=null
+    do { const params=new URLSearchParams({from:from.toISOString(),to:to.toISOString(),limit:'100',...(cursor?{cursor}:{})});const page:Page<HealthOccurrence>=await getAuthenticatedJson(`/health-items/occurrences?${params}`);result.push(...page.items);cursor=page.page.next_cursor } while(cursor)
+    setOccurrences(result)
   }
   useEffect(() => {
     getAuthenticatedJson<{ timezone: string }>('/profile').then(profile => setTimezone(profile.timezone)).catch(() => {})
@@ -911,8 +867,8 @@ function HealthPage() {
         dosage: { amount_text: values.dosage_amount, unit_text: values.dosage_unit },
         instructions: values.instructions, notes: values.notes, start_date: values.start_date,
         schedule: { timezone, recurrence: { frequency, interval: Number(values.interval),
-          weekdays: frequency === 'WEEKLY' ? weekdays : [], local_times: localTimes },
-          effective_from_date: values.start_date } })
+          weekdays: frequency === 'WEEKLY' ? weekdays : [], local_times: localTimes, month_days:frequency==='MONTHLY'?String(values.month_days||'').split(',').map(value=>Number(value.trim())):[] },
+          effective_from_date: values.start_date, effective_to_date:values.end_date||'' } })
       form.reset(); setWeekdays([]); setFrequency('DAILY'); setMessage('Health item saved. Times shown below use its schedule timezone.')
       await Promise.all([reloadItems(), reloadOccurrences(day)])
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not save health item.') }
@@ -937,21 +893,13 @@ function HealthPage() {
     finally { setBusy(false) }
   }
   async function editItem(item: HealthItem, changeSchedule: boolean) {
-    const name = changeSchedule ? item.name : window.prompt('Health item name', item.name)?.trim()
+    if (changeSchedule) {setScheduleEditor(item); return}
+    const name = window.prompt('Health item name', item.name)?.trim()
     if (!name) return
-    let schedule: HealthItem['schedule'] | undefined
-    if (changeSchedule) {
-      const localTimes = window.prompt('New local time(s), comma separated (HH:MM)', item.schedule.recurrence.local_times.join(', '))?.split(',').map(value => value.trim()).filter(Boolean)
-      if (!localTimes?.length) return
-      const effectiveFromDate = window.prompt('New schedule effective from date (YYYY-MM-DD). This must be after the previous schedule start.', new Date(Date.now() + 86400000).toISOString().slice(0, 10))?.trim()
-      if (!effectiveFromDate) return
-      schedule = { ...item.schedule, recurrence: { ...item.schedule.recurrence, local_times: localTimes }, effective_from_date: effectiveFromDate }
-    }
     setBusy(true); setError('')
     try {
       await patchAuthenticatedJson(`/health-items/${item.id}`, { version: item.version, type: item.type, name,
-        dosage: item.dosage, instructions: item.instructions, notes: item.notes, start_date: item.start_date,
-        ...(schedule ? { schedule } : {}) })
+        dosage: item.dosage, instructions: item.instructions, notes: item.notes, start_date: item.start_date })
       await Promise.all([reloadItems(), reloadOccurrences(day)])
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not update health item.') }
     finally { setBusy(false) }
@@ -968,9 +916,11 @@ function HealthPage() {
   }
   return <><PageHead eyebrow="Your routine" title="Health items" description="Track medication and supplements in your chosen timezone. This is a record, not medical advice." />
     {error && <p className="form-message form-error" role="alert">{error}</p>}{message && <p className="form-message form-success" role="status">{message}</p>}
-    <div className="two-column"><section className="panel"><h2>Your items</h2>{items.length === 0 && <EmptyState icon={HeartPulse} title="No health items yet" text="Create an item with a schedule to see occurrences." />}{items.map(item => <article className="food-result" key={item.id}><div><h3>{item.name}</h3><p>{item.type.toLowerCase()} · {item.dosage.amount_text} {item.dosage.unit_text} · {item.schedule.recurrence.frequency.toLowerCase()} · {item.schedule.timezone}</p><p>{item.active ? 'Active' : 'Inactive'}</p></div>{item.active && <button className="quiet-link" type="button" disabled={busy} onClick={() => deactivate(item)}>Deactivate</button>}</article>)}</section><section className="panel"><h2>Add a health item</h2><form className="custom-food-form health-form" onSubmit={create}><label>Type<select name="type"><option>SUPPLEMENT</option><option>MEDICATION</option></select></label><label>Name<input name="name" minLength={2} maxLength={120} required /></label><div className="custom-food-base"><label>Amount<input name="dosage_amount" maxLength={80} placeholder="1" /></label><label>Unit<input name="dosage_unit" maxLength={80} placeholder="tablet" /></label></div><label>Instructions (your own words)<input name="instructions" maxLength={500} /></label><label>Notes<input name="notes" maxLength={1000} /></label><label>Start date<input name="start_date" type="date" defaultValue={day} required /></label><label>Frequency<select value={frequency} onChange={event => setFrequency(event.target.value)}><option>DAILY</option><option>WEEKLY</option></select></label><label>Interval<input name="interval" type="number" min="1" max="365" defaultValue="1" required /></label>{frequency === 'WEEKLY' && <div className="weekday-list">{['MON','TUE','WED','THU','FRI','SAT','SUN'].map(value => <label key={value}><input type="checkbox" checked={weekdays.includes(value)} onChange={() => setWeekdays(previous => previous.includes(value) ? previous.filter(day => day !== value) : [...previous, value])} />{value}</label>)}</div>}<label>Local time(s), comma separated<input name="local_times" defaultValue="08:00" required placeholder="08:00, 20:00" /></label><p className="muted">Schedule timezone: {timezone}. Change your account timezone in Settings before adding an item if needed.</p><button className="button button-primary" disabled={busy} type="submit">Save item</button></form></section></div>
+    <div className="two-column"><section className="panel"><h2>Your items</h2>{items.length === 0 && <EmptyState icon={HeartPulse} title="No health items yet" text="Create an item with a schedule to see occurrences." />}{items.map(item => <article className="food-result" key={item.id}><div><h3>{item.name}</h3><p>{item.type.toLowerCase()} · {item.dosage.amount_text} {item.dosage.unit_text} · {item.schedule.recurrence.frequency.toLowerCase()} · {item.schedule.timezone}</p><p>{item.active ? 'Active' : 'Inactive'}</p></div>{item.active && <button className="quiet-link" type="button" disabled={busy} onClick={() => deactivate(item)}>Deactivate</button>}</article>)}</section><section className="panel"><h2>Add a health item</h2><form className="custom-food-form health-form" onSubmit={create}><label>Type<select name="type"><option>SUPPLEMENT</option><option>MEDICATION</option></select></label><label>Name<input name="name" minLength={2} maxLength={120} required /></label><div className="custom-food-base"><label>Amount<input name="dosage_amount" maxLength={80} placeholder="1" /></label><label>Unit<input name="dosage_unit" maxLength={80} placeholder="tablet" /></label></div><label>Instructions (your own words)<input name="instructions" maxLength={500} /></label><label>Notes<input name="notes" maxLength={1000} /></label><label>Start date<input name="start_date" type="date" defaultValue={day} required /></label><label>Frequency<select value={frequency} onChange={event => setFrequency(event.target.value)}><option>DAILY</option><option>WEEKLY</option><option>MONTHLY</option></select></label><label>Interval<input name="interval" type="number" min="1" max="365" defaultValue="1" required /></label>{frequency === 'WEEKLY' && <div className="weekday-list">{['MON','TUE','WED','THU','FRI','SAT','SUN'].map(value => <label key={value}><input type="checkbox" checked={weekdays.includes(value)} onChange={() => setWeekdays(previous => previous.includes(value) ? previous.filter(day => day !== value) : [...previous, value])} />{value}</label>)}</div>}{frequency==='MONTHLY' && <label>Calendar dates (1–31, comma separated)<input name="month_days" defaultValue="1" required placeholder="1, 15, 28" /></label>}<label>Last schedule date (optional)<input name="end_date" type="date" /></label><label>Local time(s), comma separated<input name="local_times" defaultValue="08:00" required placeholder="08:00, 20:00" /></label><p className="muted">Schedule timezone: {timezone}. Change your account timezone in Settings before adding an item if needed.</p><button className="button button-primary" disabled={busy} type="submit">Save item</button></form></section></div>
     <section className="panel health-occurrences"><div className="panel-top"><h2>Scheduled occurrences</h2><label>Week starting <input type="date" value={day} onChange={event => setDay(event.target.value)} /></label></div>{occurrences.length === 0 && <p className="muted">No occurrences in this seven-day window.</p>}{occurrences.map(occurrence => <article className="food-result" key={occurrence.occurrence_id}><div><h3>{occurrence.name}</h3><p>{occurrence.scheduled_local.date} at {occurrence.scheduled_local.time} ({occurrence.scheduled_local.timezone}) · {occurrence.status.toLowerCase()}</p></div><div className="history-actions"><button className="button button-outline button-small" type="button" disabled={busy} onClick={() => action(occurrence, 'TAKEN')}>Taken</button><button className="quiet-link" type="button" disabled={busy} onClick={() => action(occurrence, 'SKIPPED')}>Skipped</button></div></article>)}</section>
-    <section className="panel section-panel"><h2>Manage health records</h2><p className="muted">Changing scheduled times creates a new version; earlier recorded actions remain available in Analysis.</p>{items.filter(item => item.active).map(item => <div className="food-result" key={item.id}><strong>{item.name}</strong><div className="history-actions"><button className="quiet-link" type="button" disabled={busy} onClick={() => void editItem(item, false)}>Rename</button><button className="quiet-link" type="button" disabled={busy} onClick={() => void editItem(item, true)}>Change times</button></div></div>)}{occurrences.map(occurrence => <div className="food-result" key={occurrence.occurrence_id}><span>{occurrence.name} · {occurrence.scheduled_local.date} {occurrence.scheduled_local.time}</span><button className="quiet-link" type="button" disabled={busy} onClick={() => void reschedule(occurrence)}>Reschedule this occurrence</button></div>)}</section>
+    <section className="panel section-panel"><h2>Manage health records</h2><p className="muted">Changing scheduled times creates a new version; earlier actions are available in Schedule adherence & history below.</p>{items.map(item => <div className="food-result" key={item.id}><strong>{item.name}</strong><div className="history-actions"><button className="quiet-link" type="button" disabled={busy || !item.active} onClick={() => void editItem(item, false)}>Rename</button><button className="quiet-link" type="button" disabled={busy} onClick={() => void editItem(item, true)}>Schedule & history</button></div></div>)}{occurrences.map(occurrence => <div className="food-result" key={occurrence.occurrence_id}><span>{occurrence.name} · {occurrence.scheduled_local.date} {occurrence.scheduled_local.time}</span><button className="quiet-link" type="button" disabled={busy} onClick={() => void reschedule(occurrence)}>Reschedule this occurrence</button></div>)}</section>
+    {scheduleEditor && <ScheduleEditor key={scheduleEditor.id} item={scheduleEditor} onClose={() => setScheduleEditor(null)} onSaved={async () => { await Promise.all([reloadItems(), reloadOccurrences(day)]); setMessage('Schedule version saved. Past recorded events are preserved.') }} />}
+    <HealthAdherence revision={`${message}:${occurrences.map(row => row.status).join(',')}`} />
   </>
 }
 
@@ -1214,7 +1164,9 @@ export default function App() {
     <Route path="/app" element={<AppShell><Dashboard /></AppShell>} />
     <Route path="/app/log-food" element={<AppShell><LogFood /></AppShell>} />
     <Route path="/app/history" element={<AppShell><HistoryPage /></AppShell>} />
-    <Route path="/app/analysis" element={<AppShell><AnalysisPage /></AppShell>} />
+    <Route path="/app/analysis" element={<AppShell><NutritionAnalysisPage /></AppShell>} />
+    <Route path="/app/recipes" element={<AppShell><RecipesPage /></AppShell>} />
+    <Route path="/app/wellness" element={<AppShell><WellnessPage /></AppShell>} />
     <Route path="/app/meals" element={<AppShell><CustomFoodsPage /></AppShell>} />
     <Route path="/app/health" element={<AppShell><HealthPage /></AppShell>} />
     <Route path="/app/targets" element={<AppShell><TargetsPage /></AppShell>} />

@@ -168,7 +168,7 @@ func (s *Server) purgeUser(ctx context.Context, userID primitive.ObjectID) error
 	}
 	defer session.EndSession(ctx)
 	_, err = session.WithTransaction(ctx, func(sc mongo.SessionContext) (interface{}, error) {
-		collections := []string{"auth_identities", "oauth_states", "sessions", "email_tokens", "user_profiles", "user_preferences", "nutrition_target_versions", "custom_foods", "meals", "serving_definitions", "food_favourites", "food_log_previews", "food_log_groups", "food_logs", "daily_nutrition_summaries", "health_items", "health_item_schedule_versions", "health_item_events"}
+		collections := []string{"wellness_records", "wellness_settings", "auth_identities", "oauth_states", "sessions", "email_tokens", "user_profiles", "user_preferences", "nutrition_target_versions", "custom_foods", "meals", "serving_definitions", "food_favourites", "food_log_previews", "food_log_groups", "food_logs", "daily_nutrition_summaries", "health_items", "health_item_schedule_versions", "health_item_events"}
 		for _, collection := range collections {
 			if _, err := s.DB.Collection(collection).DeleteMany(sc, bson.M{"user_id": userID}); err != nil {
 				return nil, err

@@ -26,3 +26,22 @@ message FullAnalysisRequest { string from = 1; string to = 2; }
 message FullAnalysisResponse { string from = 1; string to = 2; map<string, FoodNutrient> totals = 3; uint32 confirmed_group_count = 4; uint32 confirmed_item_count = 5; uint32 compacted_day_count = 6; }
 message HealthHistoryRequest { string from = 1; string to = 2; uint32 limit = 3; string cursor = 4; }
 message HealthHistoryPage { repeated HealthOccurrence items = 1; string next_cursor = 2; bool has_more = 3; }
+
+service WellnessService {
+  rpc SaveRecord(WellnessRecord) returns (WellnessRecord);
+  rpc ListRecords(WellnessListRequest) returns (WellnessPage);
+  rpc DeleteRecord(WellnessDeleteRequest) returns (FoodEmpty);
+  rpc GetSettings(FoodEmpty) returns (WellnessSettings);
+  rpc SaveSettings(WellnessSettings) returns (WellnessSettings);
+}
+message WellnessRecord {
+  string id = 1; uint64 version = 2; string kind = 3;
+  string amount = 4; string unit = 5; string logged_at = 6;
+  string tracking_day = 7; string timezone = 8; string daily_reset_time = 9;
+  string name = 10; string intensity = 11; string estimated_kcal = 12;
+  string notes = 13;
+}
+message WellnessListRequest { string kind = 1; string from_tracking_day = 2; string to_tracking_day = 3; uint32 limit = 4; string cursor = 5; }
+message WellnessPage { repeated WellnessRecord items = 1; string next_cursor = 2; }
+message WellnessDeleteRequest { string id = 1; uint64 version = 2; }
+message WellnessSettings { string water_target_ml = 1; uint64 version = 2; }

@@ -38,6 +38,8 @@ message PreviewFoodGroupRequest {
   string meal_category = 2;
   string label = 3;
   repeated FoodLogItemInput items = 4;
+  string recipe_yield = 5;
+  string recipe_portions = 6;
 }
 
 message FoodLogItemSnapshot {
@@ -96,6 +98,7 @@ message FoodGroupPage {
 }
 
 message FoodGroupRequest { string id = 1; }
-message PreviewMealRequest { string meal_id = 1; string logged_at = 2; string meal_category = 3; string label = 4; }
+message PreviewMealRequest { string meal_id = 1; string logged_at = 2; string meal_category = 3; string label = 4; string servings = 5; repeated RecipeNutrientOverride overrides = 6; }
+message RecipeNutrientOverride { uint32 position = 1; map<string, FoodNutrient> nutrients = 2; }
 message FoodLogItemRequest { string id = 1; }
 message CorrectFoodLogItemRequest { string id = 1; FoodQuantity quantity = 2; string reason = 3; }

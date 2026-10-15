@@ -17,6 +17,14 @@ import (
 
 func (s *Server) mealInput(ctx context.Context, userID primitive.ObjectID, req *pb.UpsertMealRequest) (mealDoc, error) {
 	name := strings.TrimSpace(req.Name)
+	if req.RecipeServings != "" {
+		if _, ok := positiveDecimal(req.RecipeServings); !ok {
+			return mealDoc{}, invalid("recipe servings must be a positive decimal")
+		}
+	}
+	if len(req.Preparation) > 4000 {
+		return mealDoc{}, invalid("preparation must be at most 4000 characters")
+	}
 	if len(name) < 2 || len(name) > 120 || len(req.Components) < 1 || len(req.Components) > 50 {
 		return mealDoc{}, invalid("meal requires a name and 1–50 components")
 	}
@@ -52,7 +60,7 @@ func (s *Server) mealInput(ctx context.Context, userID primitive.ObjectID, req *
 			ProviderFoodID: input.ProviderFoodId, CustomFoodID: input.CustomFoodId,
 			Quantity: quantityDoc{Amount: amount, Unit: input.Quantity.Unit}, FoodState: input.FoodState})
 	}
-	return mealDoc{Name: name, Components: components}, nil
+	return mealDoc{Name: name, Components: components, RecipeServings: req.RecipeServings, Preparation: strings.TrimSpace(req.Preparation)}, nil
 }
 
 func mealPB(doc mealDoc) *pb.Meal {
@@ -63,6 +71,7 @@ func mealPB(doc mealDoc) *pb.Meal {
 			Quantity: &pb.FoodQuantity{Amount: item.Quantity.Amount.String(), Unit: item.Quantity.Unit}, FoodState: item.FoodState})
 	}
 	return &pb.Meal{Id: doc.ID.Hex(), Version: uint64(doc.Version), Name: doc.Name, Components: components,
+		RecipeServings: doc.RecipeServings, Preparation: doc.Preparation,
 		CreatedAt: doc.CreatedAt.UTC().Format(time.RFC3339Nano), UpdatedAt: doc.UpdatedAt.UTC().Format(time.RFC3339Nano)}
 }
 
@@ -101,7 +110,7 @@ func (s *Server) UpdateMeal(ctx context.Context, req *pb.UpsertMealRequest) (*pb
 	}
 	var doc mealDoc
 	err = s.DB.Collection("meals").FindOneAndUpdate(ctx, bson.M{"_id": id, "user_id": userID, "version": int64(req.Version), "deleted_at": bson.M{"$exists": false}},
-		bson.M{"$set": bson.M{"name": input.Name, "components": input.Components, "updated_at": time.Now().UTC()}, "$inc": bson.M{"version": 1}},
+		bson.M{"$set": bson.M{"name": input.Name, "components": input.Components, "recipe_servings": input.RecipeServings, "preparation": input.Preparation, "updated_at": time.Now().UTC()}, "$inc": bson.M{"version": 1}},
 		options.FindOneAndUpdate().SetReturnDocument(options.After)).Decode(&doc)
 	if err == mongo.ErrNoDocuments {
 		return nil, status.Error(codes.Aborted, "meal version conflict")

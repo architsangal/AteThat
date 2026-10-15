@@ -14,10 +14,12 @@ type nutrientBody struct {
 	Unit   string `json:"unit"`
 }
 type logGroupBody struct {
-	LoggedAt     string `json:"logged_at"`
-	MealCategory string `json:"meal_category"`
-	Label        string `json:"label"`
-	Items        []struct {
+	RecipeYield    string `json:"recipe_yield"`
+	RecipePortions string `json:"recipe_portions"`
+	LoggedAt       string `json:"logged_at"`
+	MealCategory   string `json:"meal_category"`
+	Label          string `json:"label"`
+	Items          []struct {
 		Position      uint32 `json:"position"`
 		FoodReference struct {
 			Type           string `json:"type"`
@@ -87,7 +89,7 @@ func (s *Server) previewFoodGroup(w http.ResponseWriter, r *http.Request, reques
 			FoodState: item.FoodState, UserOverrideNutrition: overrides})
 	}
 	result, err := s.FoodLog.Preview(s.rpcContext(ctx, pb.FoodLogService_Preview_FullMethodName, user.UserID, user.SessionFamily),
-		&pb.PreviewFoodGroupRequest{LoggedAt: body.LoggedAt, MealCategory: body.MealCategory, Label: body.Label, Items: items})
+		&pb.PreviewFoodGroupRequest{LoggedAt: body.LoggedAt, MealCategory: body.MealCategory, Label: body.Label, Items: items, RecipeYield: body.RecipeYield, RecipePortions: body.RecipePortions})
 	if err != nil {
 		s.rpcProblem(w, requestID, err)
 		return

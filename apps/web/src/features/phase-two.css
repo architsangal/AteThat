@@ -1,0 +1,40 @@
+.nutrition-stat-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin: 20px 0; }
+.nutrition-stat-grid h2 { margin: 14px 0; font-size: clamp(1.4rem, 2.5vw, 2rem); font-variant-numeric: tabular-nums; }
+.nutrition-stat-grid small { font-size: .9rem; color: var(--text-muted); }
+.nutrition-empty { text-align: center; padding: 64px 24px; margin-top: 20px; }
+.nutrition-trend { margin: 20px 0 0; }
+.nutrition-trend svg { width: 100%; max-height: 300px; overflow: visible; }
+.nutrition-trend text { font-size: 11px; fill: var(--text-muted); }
+.nutrition-trend figcaption { color: var(--text-muted); font-size: .8rem; margin-top: 10px; }
+.chart-grid { stroke: var(--border); stroke-dasharray: 3 6; }
+.chart-line { stroke: var(--primary); stroke-width: 3; stroke-linecap: round; }
+.chart-point { fill: var(--accent); stroke: var(--surface); stroke-width: 2; }
+.nutrition-table-wrap { overflow-x: auto; max-width: 100%; }
+.nutrition-table { width: 100%; border-collapse: collapse; font-size: .85rem; text-align: left; }
+.nutrition-table th, .nutrition-table td { padding: 14px 10px; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; }
+.nutrition-table th { font-weight: 600; }
+.nutrition-table thead { color: var(--text-muted); font-size: .75rem; }
+.nutrient-section { margin-top: 20px; border: 1px solid var(--border); border-radius: 12px; padding: 12px; }
+.nutrient-section summary { cursor: pointer; padding: 6px; font-weight: 650; }
+.contribution-group { margin: 20px 0; }
+.contribution-group h3 { display: flex; justify-content: space-between; gap: 12px; font-size: .9rem; }
+.contribution-group h3 span { color: var(--text-muted); }
+.contribution-food { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: .85rem; }
+.contribution-food small { display: block; margin-top: 5px; color: var(--text-muted); }
+.recipe-layout { display: grid; grid-template-columns: minmax(260px, .8fr) minmax(0, 1.7fr); gap: 20px; align-items: start; }
+.recipe-card { border: 1px solid var(--border); background: var(--surface-soft); border-radius: 14px; padding: 20px; margin: 18px 0; }
+.recipe-card h3 { margin: 0 0 9px; }
+.recipe-fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 20px; min-width: 0; }
+.recipe-fieldset label, .analysis-filter label, .panel-top > label { display: grid; gap: 8px; font-size: .8rem; font-weight: 600; }
+.recipe-fieldset input, .recipe-fieldset select, .recipe-fieldset textarea, .analysis-filter input, .panel-top select { width: 100%; min-width: 0; border: 1px solid var(--border); border-radius: 9px; padding: 12px; color: var(--text); background: var(--surface-soft); font: inherit; }
+.recipe-meta, .recipe-quantity { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.recipe-quantity { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; align-items: end; margin-top: 14px; }
+.recipe-search { display: flex; flex-wrap: wrap; gap: 10px; }
+.recipe-search input, .recipe-search select { flex: 1; width: auto; }
+.recipe-search-results { max-height: 300px; overflow-y: auto; }
+.recipe-ingredient { padding: 18px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-soft); }
+.recipe-review { margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--border); }
+.recipe-review .button { margin-top: 16px; }
+.recipe-layout .panel { min-width: 0; }
+@media (max-width: 900px) { .recipe-layout { grid-template-columns: 1fr; } .nutrition-stat-grid { grid-template-columns: 1fr; } }
+@media (max-width: 540px) { .recipe-meta, .recipe-quantity { grid-template-columns: 1fr; } .nutrition-table th, .nutrition-table td { padding: 12px 6px; } .nutrition-stat-grid { gap: 10px; } }
