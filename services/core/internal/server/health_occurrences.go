@@ -98,7 +98,7 @@ func (s *Server) occurrenceFromSchedule(item healthItemDoc, schedule healthSched
 func scheduleDomain(doc healthScheduleDoc) health.Schedule {
 	return health.Schedule{Timezone: doc.Timezone, Frequency: doc.Frequency, Interval: doc.Interval,
 		Weekdays: doc.Weekdays, LocalTimes: doc.LocalTimes, EffectiveFromDate: doc.EffectiveFromDate,
-		EffectiveToDate: doc.EffectiveToDate}
+		EffectiveToDate: doc.EffectiveToDate, MonthDays: doc.MonthDays}
 }
 
 func eventOnOccurrence(item *pb.HealthOccurrence, event healthEventDoc) {

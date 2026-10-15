@@ -26,6 +26,7 @@ const (
 	HealthService_DeactivateItem_FullMethodName   = "/atethat.v1.HealthService/DeactivateItem"
 	HealthService_ListOccurrences_FullMethodName  = "/atethat.v1.HealthService/ListOccurrences"
 	HealthService_RecordOccurrence_FullMethodName = "/atethat.v1.HealthService/RecordOccurrence"
+	HealthService_ScheduleHistory_FullMethodName  = "/atethat.v1.HealthService/ScheduleHistory"
 )
 
 // HealthServiceClient is the client API for HealthService service.
@@ -39,6 +40,7 @@ type HealthServiceClient interface {
 	DeactivateItem(ctx context.Context, in *DeactivateHealthItemRequest, opts ...grpc.CallOption) (*HealthItem, error)
 	ListOccurrences(ctx context.Context, in *ListOccurrencesRequest, opts ...grpc.CallOption) (*OccurrencePage, error)
 	RecordOccurrence(ctx context.Context, in *RecordOccurrenceRequest, opts ...grpc.CallOption) (*HealthOccurrence, error)
+	ScheduleHistory(ctx context.Context, in *ScheduleHistoryRequest, opts ...grpc.CallOption) (*ScheduleHistoryPage, error)
 }
 
 type healthServiceClient struct {
@@ -112,6 +114,15 @@ func (c *healthServiceClient) RecordOccurrence(ctx context.Context, in *RecordOc
 	return out, nil
 }
 
+func (c *healthServiceClient) ScheduleHistory(ctx context.Context, in *ScheduleHistoryRequest, opts ...grpc.CallOption) (*ScheduleHistoryPage, error) {
+	out := new(ScheduleHistoryPage)
+	err := c.cc.Invoke(ctx, HealthService_ScheduleHistory_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // HealthServiceServer is the server API for HealthService service.
 // All implementations must embed UnimplementedHealthServiceServer
 // for forward compatibility
@@ -123,6 +134,7 @@ type HealthServiceServer interface {
 	DeactivateItem(context.Context, *DeactivateHealthItemRequest) (*HealthItem, error)
 	ListOccurrences(context.Context, *ListOccurrencesRequest) (*OccurrencePage, error)
 	RecordOccurrence(context.Context, *RecordOccurrenceRequest) (*HealthOccurrence, error)
+	ScheduleHistory(context.Context, *ScheduleHistoryRequest) (*ScheduleHistoryPage, error)
 	mustEmbedUnimplementedHealthServiceServer()
 }
 
@@ -150,6 +162,9 @@ func (UnimplementedHealthServiceServer) ListOccurrences(context.Context, *ListOc
 }
 func (UnimplementedHealthServiceServer) RecordOccurrence(context.Context, *RecordOccurrenceRequest) (*HealthOccurrence, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RecordOccurrence not implemented")
+}
+func (UnimplementedHealthServiceServer) ScheduleHistory(context.Context, *ScheduleHistoryRequest) (*ScheduleHistoryPage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ScheduleHistory not implemented")
 }
 func (UnimplementedHealthServiceServer) mustEmbedUnimplementedHealthServiceServer() {}
 
@@ -290,6 +305,24 @@ func _HealthService_RecordOccurrence_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HealthService_ScheduleHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ScheduleHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HealthServiceServer).ScheduleHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HealthService_ScheduleHistory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HealthServiceServer).ScheduleHistory(ctx, req.(*ScheduleHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // HealthService_ServiceDesc is the grpc.ServiceDesc for HealthService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -324,6 +357,10 @@ var HealthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RecordOccurrence",
 			Handler:    _HealthService_RecordOccurrence_Handler,
+		},
+		{
+			MethodName: "ScheduleHistory",
+			Handler:    _HealthService_ScheduleHistory_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

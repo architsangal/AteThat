@@ -181,3 +181,241 @@ var AnalysisService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "atethat/v1/analysis.proto",
 }
+
+const (
+	WellnessService_SaveRecord_FullMethodName   = "/atethat.v1.WellnessService/SaveRecord"
+	WellnessService_ListRecords_FullMethodName  = "/atethat.v1.WellnessService/ListRecords"
+	WellnessService_DeleteRecord_FullMethodName = "/atethat.v1.WellnessService/DeleteRecord"
+	WellnessService_GetSettings_FullMethodName  = "/atethat.v1.WellnessService/GetSettings"
+	WellnessService_SaveSettings_FullMethodName = "/atethat.v1.WellnessService/SaveSettings"
+)
+
+// WellnessServiceClient is the client API for WellnessService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type WellnessServiceClient interface {
+	SaveRecord(ctx context.Context, in *WellnessRecord, opts ...grpc.CallOption) (*WellnessRecord, error)
+	ListRecords(ctx context.Context, in *WellnessListRequest, opts ...grpc.CallOption) (*WellnessPage, error)
+	DeleteRecord(ctx context.Context, in *WellnessDeleteRequest, opts ...grpc.CallOption) (*FoodEmpty, error)
+	GetSettings(ctx context.Context, in *FoodEmpty, opts ...grpc.CallOption) (*WellnessSettings, error)
+	SaveSettings(ctx context.Context, in *WellnessSettings, opts ...grpc.CallOption) (*WellnessSettings, error)
+}
+
+type wellnessServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewWellnessServiceClient(cc grpc.ClientConnInterface) WellnessServiceClient {
+	return &wellnessServiceClient{cc}
+}
+
+func (c *wellnessServiceClient) SaveRecord(ctx context.Context, in *WellnessRecord, opts ...grpc.CallOption) (*WellnessRecord, error) {
+	out := new(WellnessRecord)
+	err := c.cc.Invoke(ctx, WellnessService_SaveRecord_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *wellnessServiceClient) ListRecords(ctx context.Context, in *WellnessListRequest, opts ...grpc.CallOption) (*WellnessPage, error) {
+	out := new(WellnessPage)
+	err := c.cc.Invoke(ctx, WellnessService_ListRecords_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *wellnessServiceClient) DeleteRecord(ctx context.Context, in *WellnessDeleteRequest, opts ...grpc.CallOption) (*FoodEmpty, error) {
+	out := new(FoodEmpty)
+	err := c.cc.Invoke(ctx, WellnessService_DeleteRecord_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *wellnessServiceClient) GetSettings(ctx context.Context, in *FoodEmpty, opts ...grpc.CallOption) (*WellnessSettings, error) {
+	out := new(WellnessSettings)
+	err := c.cc.Invoke(ctx, WellnessService_GetSettings_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *wellnessServiceClient) SaveSettings(ctx context.Context, in *WellnessSettings, opts ...grpc.CallOption) (*WellnessSettings, error) {
+	out := new(WellnessSettings)
+	err := c.cc.Invoke(ctx, WellnessService_SaveSettings_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// WellnessServiceServer is the server API for WellnessService service.
+// All implementations must embed UnimplementedWellnessServiceServer
+// for forward compatibility
+type WellnessServiceServer interface {
+	SaveRecord(context.Context, *WellnessRecord) (*WellnessRecord, error)
+	ListRecords(context.Context, *WellnessListRequest) (*WellnessPage, error)
+	DeleteRecord(context.Context, *WellnessDeleteRequest) (*FoodEmpty, error)
+	GetSettings(context.Context, *FoodEmpty) (*WellnessSettings, error)
+	SaveSettings(context.Context, *WellnessSettings) (*WellnessSettings, error)
+	mustEmbedUnimplementedWellnessServiceServer()
+}
+
+// UnimplementedWellnessServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedWellnessServiceServer struct {
+}
+
+func (UnimplementedWellnessServiceServer) SaveRecord(context.Context, *WellnessRecord) (*WellnessRecord, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SaveRecord not implemented")
+}
+func (UnimplementedWellnessServiceServer) ListRecords(context.Context, *WellnessListRequest) (*WellnessPage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListRecords not implemented")
+}
+func (UnimplementedWellnessServiceServer) DeleteRecord(context.Context, *WellnessDeleteRequest) (*FoodEmpty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteRecord not implemented")
+}
+func (UnimplementedWellnessServiceServer) GetSettings(context.Context, *FoodEmpty) (*WellnessSettings, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSettings not implemented")
+}
+func (UnimplementedWellnessServiceServer) SaveSettings(context.Context, *WellnessSettings) (*WellnessSettings, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SaveSettings not implemented")
+}
+func (UnimplementedWellnessServiceServer) mustEmbedUnimplementedWellnessServiceServer() {}
+
+// UnsafeWellnessServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to WellnessServiceServer will
+// result in compilation errors.
+type UnsafeWellnessServiceServer interface {
+	mustEmbedUnimplementedWellnessServiceServer()
+}
+
+func RegisterWellnessServiceServer(s grpc.ServiceRegistrar, srv WellnessServiceServer) {
+	s.RegisterService(&WellnessService_ServiceDesc, srv)
+}
+
+func _WellnessService_SaveRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WellnessRecord)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WellnessServiceServer).SaveRecord(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WellnessService_SaveRecord_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WellnessServiceServer).SaveRecord(ctx, req.(*WellnessRecord))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WellnessService_ListRecords_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WellnessListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WellnessServiceServer).ListRecords(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WellnessService_ListRecords_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WellnessServiceServer).ListRecords(ctx, req.(*WellnessListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WellnessService_DeleteRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WellnessDeleteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WellnessServiceServer).DeleteRecord(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WellnessService_DeleteRecord_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WellnessServiceServer).DeleteRecord(ctx, req.(*WellnessDeleteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WellnessService_GetSettings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FoodEmpty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WellnessServiceServer).GetSettings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WellnessService_GetSettings_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WellnessServiceServer).GetSettings(ctx, req.(*FoodEmpty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WellnessService_SaveSettings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WellnessSettings)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WellnessServiceServer).SaveSettings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WellnessService_SaveSettings_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WellnessServiceServer).SaveSettings(ctx, req.(*WellnessSettings))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// WellnessService_ServiceDesc is the grpc.ServiceDesc for WellnessService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var WellnessService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "atethat.v1.WellnessService",
+	HandlerType: (*WellnessServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "SaveRecord",
+			Handler:    _WellnessService_SaveRecord_Handler,
+		},
+		{
+			MethodName: "ListRecords",
+			Handler:    _WellnessService_ListRecords_Handler,
+		},
+		{
+			MethodName: "DeleteRecord",
+			Handler:    _WellnessService_DeleteRecord_Handler,
+		},
+		{
+			MethodName: "GetSettings",
+			Handler:    _WellnessService_GetSettings_Handler,
+		},
+		{
+			MethodName: "SaveSettings",
+			Handler:    _WellnessService_SaveSettings_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "atethat/v1/analysis.proto",
+}
