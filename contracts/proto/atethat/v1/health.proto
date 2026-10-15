@@ -10,6 +10,7 @@ service HealthService {
   rpc DeactivateItem(DeactivateHealthItemRequest) returns (HealthItem);
   rpc ListOccurrences(ListOccurrencesRequest) returns (OccurrencePage);
   rpc RecordOccurrence(RecordOccurrenceRequest) returns (HealthOccurrence);
+  rpc ScheduleHistory(ScheduleHistoryRequest) returns (ScheduleHistoryPage);
 }
 
 message HealthSchedule {
@@ -20,7 +21,11 @@ message HealthSchedule {
   repeated string local_times = 5;
   string effective_from_date = 6;
   uint64 version = 7;
+  string effective_to_date = 8;
+  repeated int32 month_days = 9;
 }
+message ScheduleHistoryRequest { string item_id = 1; uint32 limit = 2; uint64 before_version = 3; }
+message ScheduleHistoryPage { repeated HealthSchedule items = 1; uint64 next_before_version = 2; }
 
 message HealthItem {
   string id = 1;

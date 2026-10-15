@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"github.com/architsangal/AteThat/services/core/internal/foods"
 
 	pb "github.com/architsangal/AteThat/services/core/internal/gen/atethat/v1"
 	"go.mongodb.org/mongo-driver/bson"
@@ -18,11 +19,35 @@ func (s *Server) PreviewMeal(ctx context.Context, req *pb.PreviewMealRequest) (*
 		return nil, err
 	}
 	items := make([]*pb.FoodLogItemInput, 0, len(meal.Components))
+	if len(req.Overrides) > len(meal.Components) {
+		return nil, invalid("too many recipe overrides")
+	}
+	overrides := map[uint32]map[string]*pb.FoodNutrient{}
+	for _, edit := range req.Overrides {
+		if edit == nil || int(edit.Position) >= len(meal.Components) {
+			return nil, invalid("invalid ingredient position")
+		}
+		if _, exists := overrides[edit.Position]; exists {
+			return nil, invalid("duplicate ingredient override")
+		}
+		overrides[edit.Position] = edit.Nutrients
+	}
 	for _, component := range meal.Components {
+		quantity := component.Quantity
+		if req.Servings != "" {
+			if meal.RecipeServings == "" {
+				return nil, invalid("portion scaling requires a recipe yield")
+			}
+			amount, err := foods.Scale(component.Quantity.Amount, req.Servings, meal.RecipeServings)
+			if err != nil || amount == "0" {
+				return nil, invalid("invalid recipe portion")
+			}
+			quantity = &pb.FoodQuantity{Amount: amount, Unit: component.Quantity.Unit}
+		}
 		items = append(items, &pb.FoodLogItemInput{Position: component.Position,
 			FoodType: component.FoodType, ProviderFoodId: component.ProviderFoodId,
-			CustomFoodId: component.CustomFoodId, Quantity: component.Quantity,
-			FoodState: component.FoodState})
+			CustomFoodId: component.CustomFoodId, Quantity: quantity,
+			FoodState: component.FoodState, UserOverrideNutrition: overrides[component.Position]})
 	}
 	preview, err := s.Preview(ctx, &pb.PreviewFoodGroupRequest{LoggedAt: req.LoggedAt,
 		MealCategory: req.MealCategory, Label: req.Label, Items: items})

@@ -58,6 +58,7 @@ type Server struct {
 	pb.UnimplementedDashboardServiceServer
 	pb.UnimplementedHealthServiceServer
 	pb.UnimplementedAnalysisServiceServer
+	pb.UnimplementedWellnessServiceServer
 	DB     *mongo.Database
 	Client *mongo.Client
 	Cfg    Config
@@ -105,6 +106,7 @@ func (s *Server) GRPC() *grpc.Server {
 	pb.RegisterDashboardServiceServer(server, s)
 	pb.RegisterHealthServiceServer(server, s)
 	pb.RegisterAnalysisServiceServer(server, s)
+	pb.RegisterWellnessServiceServer(server, s)
 	return server
 }
 

@@ -44,6 +44,8 @@ Retention duration, user-visible audit history, and whether every ordinary edit 
 
 ### 3. Analytics
 
+This section concerns operational/product-event analytics and its asynchronous pipeline. It does not defer the user-facing nutrition, water, weight, and adherence charts included in Phase 2.
+
 Analytics is deferred until there are useful questions to answer and a privacy policy for event data. The eventual analytics path is:
 
 ```text

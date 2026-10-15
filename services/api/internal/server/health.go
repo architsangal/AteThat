@@ -26,8 +26,10 @@ type healthItemBody struct {
 			Interval   uint32   `json:"interval"`
 			Weekdays   []string `json:"weekdays"`
 			LocalTimes []string `json:"local_times"`
+			MonthDays  []int32  `json:"month_days"`
 		} `json:"recurrence"`
 		EffectiveFromDate string `json:"effective_from_date"`
+		EffectiveToDate   string `json:"effective_to_date"`
 	} `json:"schedule"`
 }
 
@@ -39,19 +41,54 @@ func healthItemRequest(id string, body healthItemBody) *pb.UpsertHealthItemReque
 		req.Schedule = &pb.HealthSchedule{Timezone: body.Schedule.Timezone,
 			Frequency: body.Schedule.Recurrence.Frequency, Interval: body.Schedule.Recurrence.Interval,
 			Weekdays: body.Schedule.Recurrence.Weekdays, LocalTimes: body.Schedule.Recurrence.LocalTimes,
-			EffectiveFromDate: body.Schedule.EffectiveFromDate}
+			EffectiveFromDate: body.Schedule.EffectiveFromDate, EffectiveToDate: body.Schedule.EffectiveToDate, MonthDays: body.Schedule.Recurrence.MonthDays}
 	}
 	return req
+}
+
+func (s *Server) scheduleHistory(w http.ResponseWriter, r *http.Request, requestID string, ctx context.Context, id string) {
+	user, ok := s.authenticated(r, w, requestID)
+	if !ok {
+		return
+	}
+	limit, ok := analysisLimit(w, s, requestID, r.URL.Query().Get("limit"), 20, 50)
+	if !ok {
+		return
+	}
+	var before uint64
+	if raw := r.URL.Query().Get("before_version"); raw != "" {
+		var err error
+		before, err = strconv.ParseUint(raw, 10, 63)
+		if err != nil {
+			s.problem(w, requestID, 422, "VALIDATION_FAILED", "Invalid version cursor")
+			return
+		}
+	}
+	page, err := s.Health.ScheduleHistory(s.rpcContext(ctx, pb.HealthService_ScheduleHistory_FullMethodName, user.UserID, user.SessionFamily), &pb.ScheduleHistoryRequest{ItemId: id, Limit: limit, BeforeVersion: before})
+	if err != nil {
+		s.rpcProblem(w, requestID, err)
+		return
+	}
+	items := []interface{}{}
+	for _, schedule := range page.Items {
+		items = append(items, healthScheduleJSON(schedule))
+	}
+	s.json(w, 200, map[string]interface{}{"items": items, "next_before_version": page.NextBeforeVersion})
+}
+
+func healthScheduleJSON(schedule *pb.HealthSchedule) interface{} {
+	return map[string]interface{}{"version": schedule.Version, "timezone": schedule.Timezone,
+		"effective_from_date": schedule.EffectiveFromDate, "effective_to_date": schedule.EffectiveToDate,
+		"recurrence": map[string]interface{}{"frequency": schedule.Frequency, "interval": schedule.Interval,
+			"weekdays": append([]string{}, schedule.Weekdays...), "local_times": append([]string{}, schedule.LocalTimes...),
+			"month_days": append([]int32{}, schedule.MonthDays...)}}
 }
 
 func healthItemJSON(item *pb.HealthItem) interface{} {
 	return map[string]interface{}{"id": item.Id, "version": item.Version, "type": item.Type, "name": item.Name,
 		"dosage":       map[string]string{"amount_text": item.DosageAmountText, "unit_text": item.DosageUnitText},
 		"instructions": item.Instructions, "notes": item.Notes, "active": item.Active, "start_date": item.StartDate,
-		"end_date": nilIfEmpty(item.EndDate), "schedule": map[string]interface{}{"timezone": item.Schedule.Timezone,
-			"recurrence": map[string]interface{}{"frequency": item.Schedule.Frequency, "interval": item.Schedule.Interval,
-				"weekdays": item.Schedule.Weekdays, "local_times": item.Schedule.LocalTimes},
-			"effective_from_date": item.Schedule.EffectiveFromDate, "version": item.Schedule.Version},
+		"end_date": nilIfEmpty(item.EndDate), "schedule": healthScheduleJSON(item.Schedule),
 		"created_at": item.CreatedAt, "updated_at": item.UpdatedAt}
 }
 

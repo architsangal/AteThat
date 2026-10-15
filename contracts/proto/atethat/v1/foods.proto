@@ -110,6 +110,8 @@ message Meal {
   repeated MealComponent components = 4;
   string created_at = 5;
   string updated_at = 6;
+  string recipe_servings = 7;
+  string preparation = 8;
 }
 
 message UpsertMealRequest {
@@ -117,6 +119,8 @@ message UpsertMealRequest {
   uint64 version = 2;
   string name = 3;
   repeated MealComponent components = 4;
+  string recipe_servings = 5;
+  string preparation = 6;
 }
 message MealRequest { string id = 1; }
 message ListMealsRequest { uint32 limit = 1; string cursor = 2; }

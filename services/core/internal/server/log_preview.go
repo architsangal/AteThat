@@ -19,7 +19,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-const foodCalculationVersion = "nutrition-normalizer-v1"
+const foodCalculationVersion = "nutrition-normalizer-v2"
 
 func nutritionDoc(input map[string]*pb.FoodNutrient) (map[string]foodNutrientDoc, error) {
 	result := make(map[string]foodNutrientDoc, len(input))
@@ -128,6 +128,14 @@ func (s *Server) Preview(ctx context.Context, req *pb.PreviewFoodGroupRequest) (
 	if len(req.Items) < 1 || len(req.Items) > 50 || len(req.Label) > 160 {
 		return nil, invalid("food group requires 1–50 items and a short label")
 	}
+	if req.RecipeYield != "" || req.RecipePortions != "" {
+		if _, ok := positiveDecimal(req.RecipeYield); !ok {
+			return nil, invalid("invalid recipe yield")
+		}
+		if _, ok := positiveDecimal(req.RecipePortions); !ok {
+			return nil, invalid("invalid recipe portions")
+		}
+	}
 	if req.MealCategory != "BREAKFAST" && req.MealCategory != "LUNCH" && req.MealCategory != "DINNER" && req.MealCategory != "SNACK" && req.MealCategory != "OTHER" {
 		return nil, invalid("invalid meal category")
 	}
@@ -160,7 +168,14 @@ func (s *Server) Preview(ctx context.Context, req *pb.PreviewFoodGroupRequest) (
 		if input == nil || int(input.Position) != index || input.Quantity == nil {
 			return nil, invalid("food positions must be consecutive")
 		}
-		amount, ok := positiveDecimal(input.Quantity.Amount)
+		quantityText := input.Quantity.Amount
+		if req.RecipeYield != "" {
+			quantityText, err = foods.Scale(quantityText, req.RecipePortions, req.RecipeYield)
+			if err != nil {
+				return nil, invalid("invalid recipe quantity")
+			}
+		}
+		amount, ok := positiveDecimal(quantityText)
 		if !ok {
 			return nil, invalid("invalid food quantity")
 		}
@@ -205,7 +220,7 @@ func (s *Server) Preview(ctx context.Context, req *pb.PreviewFoodGroupRequest) (
 		if input.Quantity.Unit != baseUnit {
 			return nil, invalid("serving unit must match the food base unit")
 		}
-		scaled, err := scaleNutrition(provider, input.Quantity.Amount, baseAmount)
+		scaled, err := scaleNutrition(provider, quantityText, baseAmount)
 		if err != nil {
 			return nil, invalid("could not normalize food nutrients")
 		}
