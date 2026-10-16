@@ -2,7 +2,15 @@
 
 Phase 1 is complete. Its source baseline is release `v1.0.0`, commit `a5fa61f4afc403b4b8c38351fb34087e206596a0`.
 
-## Approved sequence
+## Phase 1 — completed foundation
+
+The released core authentication, Tracking Day, logging, food/meal and scheduling foundation remains in place.
+
+## Phase 2 — released implementation
+
+Released as [v2.0.0](https://github.com/architsangal/AteThat/releases/tag/v2.0.0) at `4e649a2a2ca1ba23395f98f415d71ed6d7a6bd03`, including the production-QA B6/B12 identifier fix. The implementation/verification below is complete, not a deployment proposal.
+
+### Approved sequence
 
 1. Richer nutrition analysis and recipes.
 2. Water, weight, and activity logging.
@@ -11,9 +19,9 @@ Phase 1 is complete. Its source baseline is release `v1.0.0`, commit `a5fa61f4af
 
 Notifications/reminders, offline operation, PWA, and AI are excluded from Phase 2. Database backup/recovery implementation is also excluded; Terms and Conditions must accurately state the current recovery limitation. Existing infrastructure is reused.
 
-All implementation is tested locally before a PR. Feature branches start from `dev`; reviewed changes merge into `dev`, then release PRs promote `dev` to `main`. Do not push or deploy this implementation until the owner requests it.
+All implementation is tested locally before a PR. Feature branches start from `dev`; reviewed changes merge into `dev`, then release PRs promote `dev` to `main`. The owner authorized and completed this release promotion/deployment; future changes still need their own authorization.
 
-## Milestone 1: initial local implementation
+### Milestone 1: initial local implementation
 
 - Nutrient groups, daily trends, known-day averages, current-target comparison, and daily food/meal contribution drill-downs.
 - Analysis follows stored Tracking Days. All daily pages are fetched for the requested bounded range. Missing days and unknown values are excluded from averages and shown as chart gaps. Current target comparisons are explicitly distinguished from historical target versions.
@@ -29,7 +37,7 @@ All implementation is tested locally before a PR. Feature branches start from `d
 - Existing user-owned serving definitions (for example a bowl mapped to grams) are retained and verified through the API and browser. The mapping fills the draft quantity; the user still reviews before confirmation.
 - Terms page includes current Atlas M0 recovery limitations without a recovery guarantee.
 
-## Milestones 2 and 3: local implementation
+### Milestones 2 and 3: local implementation
 
 - Water, weight, and named activity records with add/edit/remove, version checks, range history, and daily trend charts.
 - Water supports ml/L, weight kg/lb, and activity minutes with intensity and optional estimated kcal. Canonical amounts and optional estimates are stored as BSON Decimal128. API decimals are strings; conversions use the Core rational calculator with six-decimal precision.
@@ -41,7 +49,7 @@ All implementation is tested locally before a PR. Feature branches start from `d
 - Schedule adherence/history shows taken/missed/skipped/rescheduled/upcoming counts and taken/due percentage, excluding future events. Its bounded date filter is explicitly UTC; event rows show saved local schedule dates/timezones. All occurrence pages are fetched.
 - Wellness collections are indexed by owner and included in account deletion.
 
-## Contract additions
+### Contract additions
 
 `POST /meals` and `PATCH /meals/{id}` accept `recipe_servings` (positive decimal string, optional) and `preparation` (up to 4000 characters). Responses return both fields. An empty yield identifies an ordinary saved meal.
 
@@ -59,7 +67,7 @@ Recipe previews additionally accept `overrides: [{position, nutrients}]`. Values
 
 Health schedules add `effective_to_date` and `recurrence.month_days`, plus `MONTHLY` and `PAUSED` frequencies. `GET /health-items/{id}/schedule-history?limit=20&before_version=...` returns owned versions in descending version order with `next_before_version` (0 when exhausted).
 
-## Local verification
+### Local verification
 
 - `npm run build:web`
 - `node --test apps/web/src/features/nutrition/model.test.mjs apps/web/src/features/wellness/schedule-model.test.mjs`
@@ -69,10 +77,18 @@ Health schedules add `effective_to_date` and `recurrence.month_days`, plus `MONT
 
 The local smoke script targets only `localhost:18080` and marks only its synthetic fixture account verified. It never reads production secrets or connects to production.
 
-## Release gate
+### Release gate
 
-The owner authorized PR promotion and production deployment on 2026-10-16, superseding the earlier local-only restriction. The automated build, model tests, Core/API tests with local MongoDB, and REST smoke workflow are required before a PR. Production completion must be recorded separately after verification.
+The owner authorized PR promotion and production deployment on 2026-10-16, superseding the earlier local-only restriction. The automated build, model tests, Core/API tests with local MongoDB, and REST smoke workflow are required before a PR. Production completion and evidence are recorded in the status document.
 
-Chrome access was restored and the pending visual pass was completed on 2026-10-16. Checks include monthly schedule creation, taken/adherence update, pause/reopen/resume, preserved schedule versions, recipe override invalidation/review/confirmation, saved-meal quantity recalculation and vitamin override, named-serving reuse, wellness note editing, and 390-pixel nutrition/wellness/recipe/schedule layouts without page-level horizontal overflow. The pause/reopen pass found and fixed a null time-list crash; frontend and API JSON regression tests cover it. Owner acceptance and authorized PR/release promotion are still required before production.
+Chrome access was restored and the pending visual pass was completed on 2026-10-16. Checks include monthly schedule creation, taken/adherence update, pause/reopen/resume, preserved schedule versions, recipe override invalidation/review/confirmation, saved-meal quantity recalculation and vitamin override, named-serving reuse, wellness note editing, and 390-pixel nutrition/wellness/recipe/schedule layouts without page-level horizontal overflow. The pause/reopen pass found and fixed a null time-list crash; frontend and API JSON regression tests cover it. Authorized PR promotion, production deployment and test-account Chrome sanity subsequently completed; see the status document.
 
 See [Phase 2 status and remaining decisions](PHASE_2_STATUS.md) for the scope reconciliation and deferred provider work. Notifications in the original PRD are explicitly excluded by the owner's later decision, along with offline/PWA, AI, and recovery implementation.
+
+## Phase 3 — handoff
+
+The local-first catalogue is newly agreed Phase 3 work. AI, voice, exports and external-agent/MCP access remain original Phase 3 backlog; being excluded from Phase 2 did not cancel them. See [Phase 3 backlog](PHASE_3_BACKLOG.md).
+
+## Phase 4 and later — handoff
+
+Notifications, offline/PWA and broader platform evolution remain conditional [future work](PHASE_4_BACKLOG.md). Recovery is excluded until separately approved; barcode is removed.

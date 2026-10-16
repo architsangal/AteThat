@@ -1,6 +1,6 @@
 # AteThat production deployment
 
-This directory deploys only the public API. The frontend is a separate Cloudflare Pages project at `atethat.architsangal.in`.
+This directory deploys Caddy, the public-facing API and private Core. The frontend is separately hosted as Cloudflare Workers static assets at `atethat.architsangal.in`.
 
 ## Safety boundaries
 
@@ -10,7 +10,9 @@ This directory deploys only the public API. The frontend is a separate Cloudflar
 - `deploy/production/.env` is intentionally ignored by Git. Create it on the VPS from `.env.example`, fill it there, and set `chmod 600 deploy/production/.env`.
 - The Compose memory limits are starting guardrails, not capacity guarantees. Monitor before adding projects.
 
-## First deployment on the VPS
+## Phase 1 — initial VPS provisioning
+
+The production stack is already deployed. The commands below are for a new/replacement server, not a routine update; do not re-clone or overwrite an existing environment file.
 
 ```sh
 sudo mkdir -p /srv/atethat
@@ -25,7 +27,7 @@ docker compose -f deploy/production/compose.yaml --env-file deploy/production/.e
 docker compose -f deploy/production/compose.yaml ps
 ```
 
-Before the first `up`, make the Cloudflare `api` DNS record point to the VPS (`46.202.167.196`) and leave it **DNS-only** until Caddy has obtained its certificate and the health check succeeds. Then it may be proxied through Cloudflare.
+Before the first `up`, make the Cloudflare `api.atethat` DNS record point to the VPS (`46.202.167.196`) and leave it **DNS-only** until Caddy has obtained its certificate and the health check succeeds. Then it may be proxied through Cloudflare.
 
 ## Verification
 
@@ -38,4 +40,16 @@ Expect `{"status":"ok"}` from the health endpoint. Do not continue with OAuth, S
 
 ## Deployment automation
 
-The repository includes a manually triggered GitHub workflow. It deliberately does not deploy on every push. Before enabling it, follow the restricted-user setup in `docs/DEPLOYMENT.md`; the workflow should be allowed to run only the fixed server deployment script, never an arbitrary remote command.
+The backend workflow runs automatically on push to `main`, not on `dev` or manual dispatch. It invokes only the restricted VPS user's forced deployment command; the server fetches `origin/main` and rebuilds the Compose stack. See [deployment/security setup](../../docs/DEPLOYMENT.md). Cloudflare independently deploys frontend production from `main`; previews use `wrangler preview` with the connected Worker name unchanged.
+
+## Phase 2 — released production checkpoint
+
+[v2.0.0](https://github.com/architsangal/AteThat/releases/tag/v2.0.0) pins `4e649a2a2ca1ba23395f98f415d71ed6d7a6bd03`. Backend health and authorized Chrome test-account sanity completed. No extra service was needed; see [verification](../../docs/PHASE_2_STATUS.md). A tag is not a database backup or automatic data rollback.
+
+## Phase 3 — planned deployment requirements
+
+Catalogue work reuses Atlas with a separate logical food database, measured storage/index budget and approved migration/configuration. No Redis/new VPS. AI/export/agent work needs explicit provider cost/privacy/retention and grant/audit decisions before rollout. Locally test, feature → `dev` → `main`, then authorized production sanity.
+
+## Phase 4 and later — conditional operations
+
+Broader workers/audit/analytics, notifications, offline/PWA and scaling remain [future work](../../docs/PHASE_4_BACKLOG.md). Recovery is not promised. Never assume rolling code back restores deleted or changed MongoDB data.
