@@ -34,7 +34,7 @@ if (process.argv.includes('--seed-only')) {
   console.log('Local fixture ready: phase2-local-test@example.invalid (password is the synthetic constant in this script).')
   process.exit(0)
 }
-const food = await request('/foods/custom', 'POST', { name: 'Local test oats', description: 'Synthetic fixture', food_state: 'RAW', base_quantity: { amount: '100', unit: 'g' }, nutrients: { ENERGY: { status: 'KNOWN', amount: '200', unit: 'kcal' }, PROTEIN: { status: 'KNOWN', amount: '10', unit: 'g' }, IRON: { status: 'UNKNOWN', unit: 'mg' }, CALCIUM: { status: 'KNOWN', amount: '0', unit: 'mg' } } })
+const food = await request('/foods/custom', 'POST', { name: 'Local test oats', description: 'Synthetic fixture', food_state: 'RAW', base_quantity: { amount: '100', unit: 'g' }, nutrients: { ENERGY: { status: 'KNOWN', amount: '200', unit: 'kcal' }, PROTEIN: { status: 'KNOWN', amount: '10', unit: 'g' }, IRON: { status: 'UNKNOWN', unit: 'mg' }, CALCIUM: { status: 'KNOWN', amount: '0', unit: 'mg' }, VITAMIN_B6: { status: 'UNKNOWN', unit: 'mg' }, VITAMIN_B12: { status: 'KNOWN', amount: '0.5', unit: 'mcg' } } })
 const component = { position: 0, food_reference: { type: 'CUSTOM', custom_food_id: food.id }, quantity: { amount: '300', unit: 'g' }, food_state: 'RAW' }
 const recipe = await request('/meals', 'POST', { name: 'Local test porridge', recipe_servings: '4', preparation: 'Synthetic fixture', components: [component] })
 const savedMeal = await request('/meals','POST',{name:'QA saved breakfast',components:[component]})
@@ -48,6 +48,8 @@ assert.equal(portion.group.items[0].quantity.amount, '112.5')
 assert.equal(portion.group.aggregate_final_nutrition.ENERGY.amount, '225')
 assert.equal(portion.group.aggregate_final_nutrition.IRON.status, 'UNKNOWN')
 assert.equal(portion.group.aggregate_final_nutrition.CALCIUM.amount, '0')
+assert.equal(portion.group.aggregate_final_nutrition.VITAMIN_B6.status, 'UNKNOWN')
+assert.equal(portion.group.aggregate_final_nutrition.VITAMIN_B12.amount, '0.5625')
 const key = crypto.randomUUID()
 const confirmed = await request('/food-log-groups/confirm', 'POST', { preview_token: portion.preview_token }, { 'Idempotency-Key': key })
 const replay = await request('/food-log-groups/confirm', 'POST', { preview_token: portion.preview_token }, { 'Idempotency-Key': key })
