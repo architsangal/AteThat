@@ -16,7 +16,9 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var nutrientKeyPattern = regexp.MustCompile(`^[A-Z][A-Z_]{0,39}$`)
+// Canonical names include VITAMIN_B6 and VITAMIN_B12. Keep MongoDB path
+// operators/separators excluded while allowing digits after the first letter.
+var nutrientKeyPattern = regexp.MustCompile(`^[A-Z][A-Z0-9_]{0,39}$`)
 
 func positiveDecimal(raw string) (primitive.Decimal128, bool) {
 	if len(raw) > 32 || !nonnegativeDecimalPattern.MatchString(raw) {
