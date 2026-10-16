@@ -1,10 +1,14 @@
 # Phase 2 status and remaining decisions
 
-Reviewed: 2026-10-16. Source: the Phase 2 sections of `2. PRD.pdf`, reconciled with the owner's subsequent exclusions and the actual local implementation.
+Reviewed: 2026-10-16. Source: the Phase 2 sections of `2. PRD.pdf`, reconciled with the owner's subsequent exclusions and the released implementation.
 
-Status: the owner authorized acceptance, PR promotion, production deployment, and Chrome production sanity checks on 2026-10-16. Release is in progress; authorization is not evidence of deployment completion. Barcode scanning is removed from scope, not an outstanding Phase 2 deliverable. The local-first USDA catalogue and quota proposal belongs to Phase 3; expanded Indian-food provider coverage is not a Phase 2 release blocker.
+Status: complete and released as [v2.0.0](https://github.com/architsangal/AteThat/releases/tag/v2.0.0), commit `4e649a2a2ca1ba23395f98f415d71ed6d7a6bd03`. Backend production deployment and designated-test-account Chrome sanity completed on 2026-10-16. Barcode scanning is removed from scope, not an outstanding Phase 2 deliverable. The local-first USDA catalogue and quota proposal belongs to Phase 3; expanded Indian-food provider coverage is not a Phase 2 release blocker.
 
-## Implemented locally
+## Phase 1 — completed baseline
+
+Release `v1.0.0` supplied the core tracking/authentication/production foundation; Phase 2 extends it without replacing its ownership or confirmation rules.
+
+## Phase 2 — implemented and deployed
 
 | Area | Available behavior |
 | --- | --- |
@@ -20,18 +24,18 @@ Status: the owner authorized acceptance, PR promotion, production deployment, an
 
 The water goal is user-selected, not an automatically personalized clinical reference. Schedule pause/resume applies to whole future dates; an ended pause does not resume automatically. Health-history date filters explicitly use UTC, while rows show saved schedule-local dates and times.
 
-## Scope decisions following owner review
+### Scope decisions following owner review
 
 - Barcode scanning and product lookup are removed from planned scope. Do not build them or treat barcode-provider licensing as a Phase 2 blocker.
 - Local-first food search, a shared persistent USDA catalogue, manual cleanup/storage budgeting, and 10 USDA searches per user per day are deferred to Phase 3. See [Phase 3 backlog](PHASE_3_BACKLOG.md). None of these behaviours are claimed as implemented in Phase 2.
 - Existing USDA search and private custom foods/recipes remain available. No additional Indian-food dataset/provider has been selected or integrated, and no paid service has been enabled. Expanded regional coverage remains a future evaluation, not a required Phase 2 decision.
-- No further feature-scope or provider-licensing decision is required to accept the revised Phase 2 implementation. Owner acceptance and release gates below still apply.
+- No further feature-scope or provider-licensing decision is required to accept the revised Phase 2 implementation. The verification and release evidence below records completion.
 
-## Optional analytics views, not claimed as implemented
+### Optional analytics views, not claimed as implemented
 
 The original PRD gives additional analytics examples. Current views provide per-nutrient/calorie/protein trends, averages, target comparisons, meal contributions, water/weight/activity trends, and adherence history. A dedicated combined macro-distribution visualization and a separate protein-consistency score/streak view are not implemented. They are possible follow-on UI enhancements, not provider/licensing blockers or missing tracking capabilities.
 
-## Explicitly outside the revised Phase 2 scope
+### Explicitly outside the revised Phase 2 scope
 
 - Notifications and reminders.
 - Offline logging and synchronization; installable PWA features.
@@ -39,7 +43,7 @@ The original PRD gives additional analytics examples. Current views provide per-
 - Backup, restore, and recovery implementation. Only the agreed Terms limitation was added.
 - Third-party behaviour analytics, message broker, or a separate analytics worker.
 
-## Verification and release tasks
+### Verification and release tasks
 
 - Frontend production build passes.
 - Five focused frontend model tests pass, including null paused-schedule time lists and historical target selection.
@@ -47,8 +51,20 @@ The original PRD gives additional analytics examples. Current views provide per-
 - REST smoke checks cover recipe portions/overrides/snapshots, saved meals/servings, wellness conversion/CRUD/goals, and versioned scheduling/history.
 - Contract checker passes for the existing OpenAPI subset and protobuf descriptors; the Markdown API design documents the additive Phase 2 routes. Full formalization of the older route inventory in OpenAPI remains documentation debt, not a new runtime feature.
 - Chrome checks cover the principal new flows and narrow-screen layouts. The null paused-schedule crash found during QA was fixed in the UI and API and covered by regression tests.
-- Synthetic test records remain only in the local development database. Production was not used for these checks.
+- Local smoke used isolated synthetic fixtures. Authorized production Chrome sanity used a designated test account, with synthetic wellness, recipe, schedule and food records retained there; no personal-account data was modified.
 
-Remaining release work is the authorized feature-to-dev and dev-to-main PR promotion, followed by production deployment and a production smoke check. No new domain or VPS is required for the current implementation. A future provider choice could introduce a separately approved subscription cost.
+Release promotion and production sanity are complete. PRs 14/15 promoted the initial Phase 2 changes; PRs 16/17 promoted the production-QA nutrient-key fix. No new domain or VPS is required for the current implementation. A future provider choice could introduce a separately approved subscription cost.
 
-Evidence: `/private/tmp/atethat-phase2-mobile-review.png` and `/private/tmp/atethat-phase2-final-analysis.png` are local QA screenshots, not committed assets.
+Production QA found that the old nutrient-key regex rejected B6/B12. The corrected rule is `^[A-Z][A-Z0-9_]{0,39}$`, retaining protection against unsafe MongoDB field names. Regressions cover known/unknown vitamin fields and decimal portion scaling.
+
+Production sanity covered USDA search; wellness unit conversion/edit/goal; monthly schedule actions, adherence and versioned pause; recipe fractional portions/override review; unchanged historical nutrition after recipe edits; and analysis known-day/unknown handling. The earlier null paused-time-list crash is also regression-tested.
+
+Evidence: [production deployment run](https://github.com/architsangal/AteThat/actions/runs/38879140661), [production QA report](https://github.com/architsangal/AteThat/pull/17#issuecomment-6212300338), [release verification](https://github.com/architsangal/AteThat/pull/15#issuecomment-6212300886). Temporary local screenshots are not durable release artifacts. The tag is a code checkpoint, not a database backup.
+
+## Phase 3 — next
+
+[Catalogue/quotas and original AI, voice, export, agent roadmap](PHASE_3_BACKLOG.md) are not implemented. No mandatory deliverable remains in revised Phase 2.
+
+## Phase 4 and later — deferred
+
+See [platform backlog](PHASE_4_BACKLOG.md). Recovery remains excluded; barcode is removed, not deferred.

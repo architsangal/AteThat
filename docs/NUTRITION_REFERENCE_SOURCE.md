@@ -1,22 +1,23 @@
-# Nutrition target reference-source research (decision pending)
+# Nutrition sources by phase
 
-Phase 6 must not silently import a nutrition table or show an invented recommendation. The target domain model can record exact source attribution and preserve reference values separately from user overrides, but real calculation remains disabled until a source and method are approved.
+Reconciled: 2026-10-16. Food composition and target references are separate domains. This records implementation/research status, not a new legal opinion or permission to copy third-party tables.
 
-## Most practical permissive starting point
+## Phase 1 — implemented general FDA benchmarks
 
-The U.S. Food and Drug Administration (FDA) publishes [Daily Reference Values for food components](https://www.fda.gov/media/99059/download) and [Reference Daily Intakes for nutrients](https://www.fda.gov/media/99069/download). The [FDA website policy](https://www.fda.gov/about-fda/about-website/website-policies) says its content is generally public domain unless otherwise noted and may be reused; it recommends recording the copy date and linking back to the source. We found no contrary notice on these two FDA tables. Attribution should still name the FDA, include a source URL, and never imply FDA endorsement.
+Core uses `FDA_DAILY_VALUES_ADULT`, version `reviewed-2026-10-08`, basis `GENERAL_BENCHMARK`, attributed to the [FDA table](https://www.fda.gov/media/99059/download). Required comparison values: energy 2,000 kcal, protein 50 g, carbohydrate 275 g, fat 78 g and fibre 28 g.
 
-These are **food-label Daily Values**, not individual requirements. The adult/age-4-and-over table uses a 2,000-kcal reference diet. A Phase 6 implementation using these values should label them as general comparison benchmarks, not as a personalized calorie or nutrient prescription. In particular, the FDA 2,000-kcal reference must not be presented as a calculated energy target for every user.
+These are general food-label benchmarks, not calculated personal needs or prescriptions. Reference values and user overrides remain distinguishable. The previous “Phase 6 / calculation disabled” description was stale.
 
-## More personalized but not yet cleared for import
+## Phase 2 — expanded recorded nutrition
 
-The [USDA National Agricultural Library DRI calculator](https://www.nal.usda.gov/human-nutrition-and-food-safety/dri-calculator) estimates calories and nutrient needs from age, sex, height, weight, and activity. Its [website policy](https://www.nal.usda.gov/web-policies-and-important-links) says most NAL content is public domain but warns that some material may be copyrighted or personal-use-only. The calculator says its DRI data come from the National Academies; it does not provide a clearly reusable, versioned data export or a license for embedding its complete calculation tables in AteThat. The [NIH Office of Dietary Supplements overview](https://ods.od.nih.gov/healthinformation/nutrientrecommendations.aspx) links DRI tables and explains that values vary by age and sex, but many linked source reports belong to the National Academies. Its [site policy](https://ods.od.nih.gov/About/Site_Policies.aspx) cautions that linked documents may be copyright-protected. We should not treat a public calculator as a blanket license to copy its underlying reference set.
+Expanded nutrient groups use explicit provider metadata/units or user input. Missing/unsupported values stay unknown. Expanded recording does not imply a new personalized reference set or recommended daily value for every nutrient. Historical accepted targets are distinct from current comparisons.
 
-The [ICMR-NIN Dietary Guidelines for Indians](https://www.nin.res.in/dietaryguidelines/pdfjs/locale/DGI24thJune2024fin.pdf) contain a restriction on storing or reproducing the publication electronically for a product without prior written permission. The [NIN RDA publication page](https://www.nin.res.in/RDA_Full_Report_2024.html) lists its detailed report as a paid publication. Do not import these tables into the application without appropriate permission and a review of the exact material used.
+## Phase 3 — catalogue and assisted input
 
-## Decision needed
+USDA FoodData Central remains the food-composition provider. The proposed catalogue preserves provenance and normalization versions; user edits become private foods or log overrides. AI proposals retain uncertainty and require review, not invented precision or clinical targets. Review current provider reuse/attribution requirements before new storage integrations.
 
-1. Use FDA Daily Values as explicitly **general benchmarks** for an initial non-personalized view, while leaving personalized energy and nutrition targets unavailable; or
-2. Obtain/approve a reusable personalized reference source and formula before enabling target calculation.
+No personalized energy formula or AI medical recommendation engine is approved. Provider choice, processing/privacy and source permissions need review before adding external AI or new datasets.
 
-Either path must pin source/version, source URL, extraction/review date, covered population, calculation version, and explicit eligibility/unsupported cases. USDA FoodData Central remains the agreed source for **food composition**, which is separate from choosing a target-recommendation source.
+## Phase 4 and later — research, not approved imports
+
+Historical candidates include the [USDA NAL DRI calculator](https://www.nal.usda.gov/human-nutrition-and-food-safety/dri-calculator), [NIH nutrient recommendations](https://ods.od.nih.gov/healthinformation/nutrientrecommendations.aspx) and [ICMR-NIN publications](https://www.nin.res.in/RDA_Full_Report_2024.html). Public access is not blanket permission to embed underlying third-party tables. Reassess exact rights, population, formulas, unsupported cases, attribution and versions before importing/personalizing. Additional Indian-food providers are a separate decision; barcode is removed.

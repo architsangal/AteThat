@@ -1,18 +1,24 @@
 # Phase 4 Backlog - Platform Capabilities
 
-## Purpose
+This document records platform capabilities excluded from the completed Phases 1 and 2. It is a backlog and design guide, not a commitment or implementation plan. Phase 1 must not depend on any of these capabilities to work locally or to be deployed.
 
-This document records capabilities intentionally excluded from Phase 1. It is a backlog and design guide, not a commitment or implementation plan. Phase 1 must not depend on any of these capabilities to work locally or to be deployed.
-
-## Phase 1 Boundary
+## Phase 1 — completed boundary
 
 Phase 1 is a browser-based, multi-user nutrition and health tracking application. It includes the core user journeys defined in the PRD: authentication, profile and preferences, Tracking Day, nutrition targets, food search/review/confirmation, custom foods, meals, health items, schedules, dashboard, and history.
 
 The Phase 1 backend consists only of the API Service and Core Application Service. The Core Service owns domain logic and MongoDB access. No database-wrapper microservice will be created.
 
-Phase 1 may emit structured application logs for debugging and security monitoring, but it does not require a durable asynchronous worker, audit-event store, analytics pipeline, or message broker.
+Phase 1 may emit structured application logs for debugging and security monitoring, but it does not require a separately deployable durable asynchronous worker, audit-event store, analytics pipeline, or message broker.
 
-## Deferred Phase 4 Scope
+## Phase 2 — completed boundary
+
+Expanded user-facing analytics, recipes, wellness and advanced schedules are already shipped in `v2.0.0`. They do not require this platform backlog. Terms disclose recovery limitations; no backup/recovery implementation was added.
+
+## Phase 3 — dependency boundary
+
+The local-first catalogue and original AI/voice/export/MCP work are described in [Phase 3](PHASE_3_BACKLOG.md). Minimum agent permissions/revocation/audit ship with agents; do not defer them to a broad Phase 4 audit rollout. Bounded export/AI job execution may be implemented earlier if needed, without committing to a separate worker or broker.
+
+## Phase 4 and later — conditional scope
 
 ### 1. Worker Service and Durable Background Jobs
 
@@ -36,7 +42,7 @@ Candidate events:
 - Login, logout, failed authentication, password reset, and account-linking events.
 - Creation, update, and deletion of confirmed food logs, targets, meals, health items, schedules, and profile settings.
 - Background-job attempts, failures, and retries.
-- Future external-agent/MCP requests and exports.
+- Broader retention, correlation and processing of external-agent/MCP/export audit events, extending the mandatory minimum records introduced with those Phase 3 features.
 
 Audit records should contain actor type, user ID, action, resource type/ID, timestamp, request/correlation ID, outcome, and minimal change metadata. Sensitive values, passwords, tokens, health notes, and full provider payloads must not be copied into audit logs by default.
 
@@ -81,13 +87,17 @@ Google Sign-In is included in Phase 1. Other OAuth/OpenID Connect providers rema
 
 Phase 4 may introduce multiple backend instances, load balancing, a managed queue, advanced monitoring, and migration from a single VM/VPS to a cloud or container platform. The application will remain portable by using Docker images, environment-based configuration, mounted secret files, and provider-neutral deployment files.
 
-These are deployment choices, not prerequisites for Phase 1. Initial local development and testing come first; a domain, VPS, and cloud account are intentionally not required now.
+These are deployment choices, not prerequisites for Phase 1. The current domain, VPS and Atlas deployment already exist. No new infrastructure is required merely to begin the next phase.
 
-## Entry Criteria for Phase 4 Work
+### Unassigned future decisions
+
+Recovery/restore implementation remains excluded until explicitly approved; a code release tag does not restore data. Regional food-provider expansion and optional macro-distribution/protein-consistency views need separate prioritization. Barcode scanning/product lookup is removed, not part of this backlog.
+
+### Entry criteria for Phase 4 work
 
 Start a Phase 4 item only when its user value, data/privacy impact, operational cost, and acceptance criteria are defined. A capability should not be added solely to increase the number of deployed services.
 
-## Non-Negotiable Product Boundaries
+### Non-negotiable product boundaries
 
 - The product tracks and organizes health information; it does not provide diagnosis, prescriptions, treatment decisions, or automatic dosage changes.
 - All user data remains isolated by authenticated user identity.
