@@ -12,13 +12,21 @@ Responsive shell/themes, authentication, profile, FDA general benchmarks, food s
 
 Expanded nutrient analysis, recipes/portions/overrides, water/weight/activity/optional water goal, advanced schedule history/adherence and DOB month/year selection. [Release verification](../../docs/PHASE_2_STATUS.md) covers production test-account sanity.
 
+## Phase 2.1 — locally verified
+
+Food logging, styled dialogs/validation, on-demand editors, draft retention and responsive layouts have been refined. Skippable account-persisted setup, a feature guide and real local/USDA search accounting are implemented locally. See [audit traceability and local verification](../../docs/PHASE_2_1_STATUS.md).
+
 ## Phase 3 — planned
 
-Local-first food search plus explicit quota-limited USDA discovery; assisted label/photo/text/voice proposals; exports and agent permissions UI where needed. Preserve unknown values and explicit review. Provider/privacy/sequence decisions remain open; see [backlog](../../docs/PHASE_3_BACKLOG.md).
+Further catalogue/provider operational controls; assisted label/photo/text/voice proposals; exports and agent permissions UI where needed. Preserve unknown values and explicit review. Provider/privacy/sequence decisions remain open; see [backlog](../../docs/PHASE_3_BACKLOG.md).
 
 ## Phase 4 and later — deferred
 
 Notifications and offline/PWA are not current capabilities. Barcode is removed. See [platform backlog](../../docs/PHASE_4_BACKLOG.md).
+
+## Phase 2.5 — calculated defaults (local)
+
+Settings reset reads a current server preview, displays all five current/new values, and requires confirmation before saving a revision. Activity selects the protein rate and adult energy branch; missing activity uses Moderate. No separate training toggle. Missing age/sex is never invented; the disabled state explains what is needed. Water/profile weight/food records stay separate. Formula guide exposes the exact selected equation, mapping, assumptions and sources. Manual target edits remain independent.
 
 ## Build configuration and verification
 

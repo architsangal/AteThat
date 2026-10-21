@@ -131,7 +131,12 @@ func targetPB(doc targetVersionDoc) *pb.TargetVersion {
 	for key, value := range doc.Targets {
 		values[key] = &pb.TargetValue{ReferenceValue: value.ReferenceValue.String(),
 			ActiveValue: value.ActiveValue.String(), Unit: value.Unit,
-			IsManualOverride: value.IsManualOverride, OverrideReason: value.OverrideReason}
+			IsManualOverride: value.IsManualOverride, OverrideReason: value.OverrideReason, Provenance: value.Provenance}
+		values[key].ReferenceRange = value.ReferenceRange.pb()
+		values[key].OutsideReference = value.OutsideReference
+		if value.AcknowledgedAt != nil {
+			values[key].AcknowledgedAt = value.AcknowledgedAt.UTC().Format(time.RFC3339Nano)
+		}
 	}
 	result := &pb.TargetVersion{Id: doc.ID.Hex(), Revision: uint64(doc.Revision), Status: doc.Status,
 		ProfileVersion: uint64(doc.ProfileVersion), ReferenceSetKey: doc.ReferenceSet["key"].(string),
@@ -142,6 +147,9 @@ func targetPB(doc targetVersionDoc) *pb.TargetVersion {
 		Targets: values, TargetBasis: doc.TargetBasis, CreatedAt: doc.CreatedAt.UTC().Format(time.RFC3339Nano)}
 	if doc.ReviewedAt != nil {
 		result.ReviewedAt = doc.ReviewedAt.UTC().Format(time.RFC3339Nano)
+	}
+	if doc.InputSnapshot != nil {
+		result.InputSnapshot = doc.InputSnapshot.pb()
 	}
 	return result
 }
@@ -196,6 +204,10 @@ func (s *Server) Accept(ctx context.Context, req *pb.AcceptTargetRequest) (*pb.T
 	if err != nil {
 		return nil, invalid("invalid target version ID")
 	}
+	var candidate targetVersionDoc
+	if e := s.DB.Collection("nutrition_target_versions").FindOne(ctx, bson.M{"_id": id, "user_id": userID}).Decode(&candidate); e == nil && candidate.TargetBasis == "PERSONALIZED_ESTIMATE" {
+		return s.acceptCalculatedProposal(ctx, req)
+	}
 	day, err := s.GetCurrentTrackingDay(ctx, &pb.Empty{})
 	if err != nil {
 		return nil, err
@@ -205,6 +217,9 @@ func (s *Server) Accept(ctx context.Context, req *pb.AcceptTargetRequest) (*pb.T
 	}
 	overrides := make(map[string]targets.Override, len(req.Overrides))
 	for key, value := range req.Overrides {
+		if value == nil || !targets.ValidSelectedAmount(key, value.ActiveValue) {
+			return nil, invalid("invalid target amount")
+		}
 		overrides[key] = targets.Override{ActiveValue: value.ActiveValue, OverrideReason: value.OverrideReason}
 	}
 	now := time.Now().UTC()
@@ -227,6 +242,19 @@ func (s *Server) Accept(ctx context.Context, req *pb.AcceptTargetRequest) (*pb.T
 		converted, err := targetDocFromVersion(userID, version, proposed.CreatedAt)
 		if err != nil {
 			return nil, err
+		}
+		var profile profileDoc
+		if e := s.DB.Collection("user_profiles").FindOne(sc, bson.M{"user_id": userID, "version": proposed.ProfileVersion}).Decode(&profile); e != nil {
+			return nil, status.Error(codes.Aborted, "Profile changed; prepare a fresh proposal.")
+		}
+		inputs, e := planningProfile(profile, now)
+		if e != nil {
+			return nil, e
+		}
+		for _, warning := range applyTargetRanges(converted.Targets, nil, inputs.Age) {
+			if req.Overrides[warning.Nutrient] != nil {
+				return nil, status.Error(codes.FailedPrecondition, "Accept the reference set first, then review outside-reference custom targets in Settings.")
+			}
 		}
 		var previous targetVersionDoc
 		err = collection.FindOne(sc, bson.M{"user_id": userID, "status": "ACTIVE"}).Decode(&previous)

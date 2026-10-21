@@ -1,6 +1,9 @@
 package server
 
 import (
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"net/http"
 	"testing"
 	"time"
 
@@ -47,5 +50,25 @@ func TestQuantityUsesDecimal128(t *testing.T) {
 	}
 	if _, err := parseQuantity(&pb.DecimalQuantity{Amount: "-1", Unit: "kg"}); err == nil {
 		t.Fatal("negative amount accepted")
+	}
+}
+
+func TestUSDAProviderFailuresRemainDistinct(t *testing.T) {
+	for _, test := range []struct {
+		http    int
+		demo    bool
+		rpc     codes.Code
+		message string
+	}{
+		{http.StatusOK, true, codes.OK, ""},
+		{http.StatusTooManyRequests, true, codes.Unavailable, "USDA_DEMO_RATE_LIMITED"},
+		{http.StatusTooManyRequests, false, codes.Unavailable, "USDA_PROVIDER_RATE_LIMITED"},
+		{http.StatusForbidden, false, codes.Unavailable, "USDA_PROVIDER_AUTH_FAILED"},
+		{http.StatusNotFound, true, codes.NotFound, "USDA food not found"},
+	} {
+		err := usdaHTTPError(test.http, test.demo)
+		if status.Code(err) != test.rpc || (err != nil && status.Convert(err).Message() != test.message) {
+			t.Fatalf("HTTP %d demo=%t was misclassified: %v", test.http, test.demo, err)
+		}
 	}
 }

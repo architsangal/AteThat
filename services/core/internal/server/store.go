@@ -93,20 +93,21 @@ type quantityDoc struct {
 }
 
 type profileDoc struct {
-	ID            primitive.ObjectID `bson:"_id,omitempty"`
-	UserID        primitive.ObjectID `bson:"user_id"`
-	DisplayName   string             `bson:"display_name"`
-	DateOfBirth   string             `bson:"date_of_birth,omitempty"`
-	Sex           string             `bson:"sex,omitempty"`
-	Height        *quantityDoc       `bson:"height,omitempty"`
-	Weight        *quantityDoc       `bson:"weight,omitempty"`
-	ActivityLevel string             `bson:"activity_level,omitempty"`
-	Goal          string             `bson:"goal,omitempty"`
-	Timezone      string             `bson:"timezone"`
-	SchemaVersion int                `bson:"schema_version"`
-	Version       int64              `bson:"version"`
-	CreatedAt     time.Time          `bson:"created_at"`
-	UpdatedAt     time.Time          `bson:"updated_at"`
+	OnboardingComplete bool               `bson:"onboarding_complete"`
+	ID                 primitive.ObjectID `bson:"_id,omitempty"`
+	UserID             primitive.ObjectID `bson:"user_id"`
+	DisplayName        string             `bson:"display_name"`
+	DateOfBirth        string             `bson:"date_of_birth,omitempty"`
+	Sex                string             `bson:"sex,omitempty"`
+	Height             *quantityDoc       `bson:"height,omitempty"`
+	Weight             *quantityDoc       `bson:"weight,omitempty"`
+	ActivityLevel      string             `bson:"activity_level,omitempty"`
+	Goal               string             `bson:"goal,omitempty"`
+	Timezone           string             `bson:"timezone"`
+	SchemaVersion      int                `bson:"schema_version"`
+	Version            int64              `bson:"version"`
+	CreatedAt          time.Time          `bson:"created_at"`
+	UpdatedAt          time.Time          `bson:"updated_at"`
 }
 
 type preferencesDoc struct {
@@ -139,14 +140,21 @@ type referenceSetDoc struct {
 }
 
 type targetValueDoc struct {
-	ReferenceValue   primitive.Decimal128 `bson:"reference_value"`
-	ActiveValue      primitive.Decimal128 `bson:"active_value"`
-	Unit             string               `bson:"unit"`
-	IsManualOverride bool                 `bson:"is_manual_override"`
-	OverrideReason   string               `bson:"override_reason,omitempty"`
+	ReferenceRange      *targetRangeDoc      `bson:"reference_range,omitempty"`
+	OutsideReference    bool                 `bson:"outside_reference,omitempty"`
+	AcknowledgedAt      *time.Time           `bson:"acknowledged_at,omitempty"`
+	AcknowledgementHash string               `bson:"acknowledgement_hash,omitempty"`
+	Provenance          string               `bson:"provenance,omitempty"`
+	ReferenceValue      primitive.Decimal128 `bson:"reference_value"`
+	ActiveValue         primitive.Decimal128 `bson:"active_value"`
+	Unit                string               `bson:"unit"`
+	IsManualOverride    bool                 `bson:"is_manual_override"`
+	OverrideReason      string               `bson:"override_reason,omitempty"`
 }
 
 type targetVersionDoc struct {
+	CalculationPreviewToken  string                    `bson:"calculation_preview_token,omitempty"`
+	InputSnapshot            *planningInputs           `bson:"input_snapshot,omitempty"`
 	ID                       primitive.ObjectID        `bson:"_id,omitempty"`
 	UserID                   primitive.ObjectID        `bson:"user_id"`
 	Status                   string                    `bson:"status"`
@@ -410,6 +418,7 @@ func createIndexes(ctx context.Context, db *mongo.Database) error {
 			{Keys: bson.D{{Key: "user_id", Value: 1}}, Options: options.Index().SetName("user_id_1").SetUnique(true).SetPartialFilterExpression(bson.M{"status": "ACTIVE"})},
 			{Keys: bson.D{{Key: "user_id", Value: 1}}, Options: options.Index().SetName("target_proposed_user").SetUnique(true).SetPartialFilterExpression(bson.M{"status": "PROPOSED"})},
 		},
+		"food_search_usage": {{Keys: bson.D{{Key: "expires_at", Value: 1}}, Options: options.Index().SetExpireAfterSeconds(0)}},
 		"usda_food_cache": {
 			{Keys: bson.D{{Key: "cache_key", Value: 1}}, Options: options.Index().SetUnique(true)},
 			{Keys: bson.D{{Key: "expires_at", Value: 1}}, Options: options.Index().SetExpireAfterSeconds(0)},

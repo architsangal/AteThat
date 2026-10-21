@@ -9,6 +9,7 @@ service AnalysisService {
   rpc NutritionHistory(NutritionHistoryRequest) returns (NutritionHistoryPage);
   rpc FullAnalysis(FullAnalysisRequest) returns (FullAnalysisResponse);
   rpc HealthActionHistory(HealthHistoryRequest) returns (HealthHistoryPage);
+  rpc TextSummary(TextSummaryRequest) returns (TextSummaryResponse);
 }
 
 message NutritionDaySummary {
@@ -45,3 +46,11 @@ message WellnessListRequest { string kind = 1; string from_tracking_day = 2; str
 message WellnessPage { repeated WellnessRecord items = 1; string next_cursor = 2; }
 message WellnessDeleteRequest { string id = 1; uint64 version = 2; }
 message WellnessSettings { string water_target_ml = 1; uint64 version = 2; }
+
+message TextSummaryRequest {
+  string from_tracking_day = 1;
+  string to_tracking_day = 2;
+  string mode = 3; // DAY or RANGE. DAY health uses local calendar bounds; RANGE uses UTC.
+  string nutrient_filter = 4; // Describes the chart only; nutrition text always includes every source nutrient.
+}
+message TextSummaryResponse { string text = 1; string generated_at = 2; bool partial = 3; string context = 4; }

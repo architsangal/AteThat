@@ -22,6 +22,7 @@ const (
 	AnalysisService_NutritionHistory_FullMethodName    = "/atethat.v1.AnalysisService/NutritionHistory"
 	AnalysisService_FullAnalysis_FullMethodName        = "/atethat.v1.AnalysisService/FullAnalysis"
 	AnalysisService_HealthActionHistory_FullMethodName = "/atethat.v1.AnalysisService/HealthActionHistory"
+	AnalysisService_TextSummary_FullMethodName         = "/atethat.v1.AnalysisService/TextSummary"
 )
 
 // AnalysisServiceClient is the client API for AnalysisService service.
@@ -31,6 +32,7 @@ type AnalysisServiceClient interface {
 	NutritionHistory(ctx context.Context, in *NutritionHistoryRequest, opts ...grpc.CallOption) (*NutritionHistoryPage, error)
 	FullAnalysis(ctx context.Context, in *FullAnalysisRequest, opts ...grpc.CallOption) (*FullAnalysisResponse, error)
 	HealthActionHistory(ctx context.Context, in *HealthHistoryRequest, opts ...grpc.CallOption) (*HealthHistoryPage, error)
+	TextSummary(ctx context.Context, in *TextSummaryRequest, opts ...grpc.CallOption) (*TextSummaryResponse, error)
 }
 
 type analysisServiceClient struct {
@@ -68,6 +70,15 @@ func (c *analysisServiceClient) HealthActionHistory(ctx context.Context, in *Hea
 	return out, nil
 }
 
+func (c *analysisServiceClient) TextSummary(ctx context.Context, in *TextSummaryRequest, opts ...grpc.CallOption) (*TextSummaryResponse, error) {
+	out := new(TextSummaryResponse)
+	err := c.cc.Invoke(ctx, AnalysisService_TextSummary_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AnalysisServiceServer is the server API for AnalysisService service.
 // All implementations must embed UnimplementedAnalysisServiceServer
 // for forward compatibility
@@ -75,6 +86,7 @@ type AnalysisServiceServer interface {
 	NutritionHistory(context.Context, *NutritionHistoryRequest) (*NutritionHistoryPage, error)
 	FullAnalysis(context.Context, *FullAnalysisRequest) (*FullAnalysisResponse, error)
 	HealthActionHistory(context.Context, *HealthHistoryRequest) (*HealthHistoryPage, error)
+	TextSummary(context.Context, *TextSummaryRequest) (*TextSummaryResponse, error)
 	mustEmbedUnimplementedAnalysisServiceServer()
 }
 
@@ -90,6 +102,9 @@ func (UnimplementedAnalysisServiceServer) FullAnalysis(context.Context, *FullAna
 }
 func (UnimplementedAnalysisServiceServer) HealthActionHistory(context.Context, *HealthHistoryRequest) (*HealthHistoryPage, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method HealthActionHistory not implemented")
+}
+func (UnimplementedAnalysisServiceServer) TextSummary(context.Context, *TextSummaryRequest) (*TextSummaryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TextSummary not implemented")
 }
 func (UnimplementedAnalysisServiceServer) mustEmbedUnimplementedAnalysisServiceServer() {}
 
@@ -158,6 +173,24 @@ func _AnalysisService_HealthActionHistory_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AnalysisService_TextSummary_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TextSummaryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AnalysisServiceServer).TextSummary(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AnalysisService_TextSummary_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AnalysisServiceServer).TextSummary(ctx, req.(*TextSummaryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AnalysisService_ServiceDesc is the grpc.ServiceDesc for AnalysisService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -176,6 +209,10 @@ var AnalysisService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "HealthActionHistory",
 			Handler:    _AnalysisService_HealthActionHistory_Handler,
+		},
+		{
+			MethodName: "TextSummary",
+			Handler:    _AnalysisService_TextSummary_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -40,7 +40,7 @@ func (s *Server) searchFoods(w http.ResponseWriter, r *http.Request, requestID s
 		limit = uint32(value)
 	}
 	result, err := s.Food.SearchUSDA(s.rpcContext(ctx, pb.FoodService_SearchUSDA_FullMethodName, user.UserID, user.SessionFamily),
-		&pb.SearchUSDARequest{Query: r.URL.Query().Get("q"), FoodState: r.URL.Query().Get("food_state"),
+		&pb.SearchUSDARequest{Source: r.URL.Query().Get("source"), Query: r.URL.Query().Get("q"), FoodState: r.URL.Query().Get("food_state"),
 			Limit: limit, Cursor: r.URL.Query().Get("cursor")})
 	if err != nil {
 		s.rpcProblem(w, requestID, err)
@@ -51,7 +51,8 @@ func (s *Server) searchFoods(w http.ResponseWriter, r *http.Request, requestID s
 		items = append(items, foodJSON(item))
 	}
 	s.json(w, 200, map[string]interface{}{"items": items,
-		"page": map[string]interface{}{"next_cursor": nilIfEmpty(result.NextCursor), "has_more": result.HasMore}})
+		"usage": map[string]interface{}{"usda_remaining": result.UsdaRemaining, "usda_limit": result.UsdaLimit, "catalogue_count": result.CatalogueCount, "matched_count": result.MatchedCount, "local_searches_today": result.LocalSearchesToday, "resets_at": result.ResetsAt},
+		"page":  map[string]interface{}{"next_cursor": nilIfEmpty(result.NextCursor), "has_more": result.HasMore}})
 }
 
 func (s *Server) getProviderFood(w http.ResponseWriter, r *http.Request, requestID string, ctx context.Context, id string) {

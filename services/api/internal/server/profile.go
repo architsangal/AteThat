@@ -13,15 +13,16 @@ type quantityBody struct {
 }
 
 type profilePatchBody struct {
-	Version       uint64        `json:"version"`
-	DisplayName   *string       `json:"display_name"`
-	DateOfBirth   *string       `json:"date_of_birth"`
-	Sex           *string       `json:"sex"`
-	Height        *quantityBody `json:"height"`
-	Weight        *quantityBody `json:"weight"`
-	ActivityLevel *string       `json:"activity_level"`
-	Goal          *string       `json:"goal"`
-	Timezone      *string       `json:"timezone"`
+	OnboardingComplete *bool         `json:"onboarding_complete"`
+	Version            uint64        `json:"version"`
+	DisplayName        *string       `json:"display_name"`
+	DateOfBirth        *string       `json:"date_of_birth"`
+	Sex                *string       `json:"sex"`
+	Height             *quantityBody `json:"height"`
+	Weight             *quantityBody `json:"weight"`
+	ActivityLevel      *string       `json:"activity_level"`
+	Goal               *string       `json:"goal"`
+	Timezone           *string       `json:"timezone"`
 }
 
 func (s *Server) authenticated(r *http.Request, w http.ResponseWriter, requestID string) (principal, bool) {
@@ -57,7 +58,7 @@ func (s *Server) updateProfile(w http.ResponseWriter, r *http.Request, requestID
 		return
 	}
 	req := &pb.UpdateProfileRequest{Version: body.Version, DisplayName: body.DisplayName, DateOfBirth: body.DateOfBirth,
-		Sex: body.Sex, ActivityLevel: body.ActivityLevel, Goal: body.Goal, Timezone: body.Timezone}
+		OnboardingComplete: body.OnboardingComplete, Sex: body.Sex, ActivityLevel: body.ActivityLevel, Goal: body.Goal, Timezone: body.Timezone}
 	if body.Height != nil {
 		req.Height = &pb.DecimalQuantity{Amount: body.Height.Amount, Unit: body.Height.Unit}
 	}
@@ -74,7 +75,7 @@ func (s *Server) updateProfile(w http.ResponseWriter, r *http.Request, requestID
 
 func profileJSON(value *pb.Profile) map[string]interface{} {
 	result := map[string]interface{}{
-		"id": value.Id, "version": value.Version, "display_name": value.DisplayName,
+		"id": value.Id, "version": value.Version, "display_name": value.DisplayName, "onboarding_complete": value.OnboardingComplete,
 		"timezone": value.Timezone, "updated_at": value.UpdatedAt, "has_google_identity": value.HasGoogleIdentity,
 	}
 	if value.DateOfBirth != "" {

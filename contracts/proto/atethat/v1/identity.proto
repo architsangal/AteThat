@@ -109,6 +109,7 @@ message Profile {
   string timezone = 10;
   string updated_at = 11;
   bool has_google_identity = 12;
+  bool onboarding_complete = 13;
 }
 message UpdateProfileRequest {
   uint64 version = 1;
@@ -120,6 +121,7 @@ message UpdateProfileRequest {
   optional string activity_level = 7;
   optional string goal = 8;
   optional string timezone = 9;
+  optional bool onboarding_complete = 10;
 }
 message Preferences {
   string id = 1;

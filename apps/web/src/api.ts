@@ -69,6 +69,9 @@ async function requestJson<T>(path: string, method: 'GET' | 'POST' | 'PUT' | 'PA
   })
   if (response.status === 401 && authenticated) {
     if (!retried) {
+      // Do not reuse the very access token the server just rejected. A different
+      // concurrent request may already have installed a fresh token; preserve it.
+      if (getAccessToken() === token) clearAccessToken()
       await refreshAccessToken()
       return requestJson(path, method, body, true, true, extraHeaders)
     }

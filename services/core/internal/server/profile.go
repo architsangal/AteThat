@@ -21,7 +21,7 @@ var nonnegativeDecimalPattern = regexp.MustCompile(`^[0-9]+(\.[0-9]+)?$`)
 
 func profileResponse(doc profileDoc) *pb.Profile {
 	result := &pb.Profile{Id: doc.ID.Hex(), Version: uint64(doc.Version), DisplayName: doc.DisplayName,
-		DateOfBirth: doc.DateOfBirth, Sex: doc.Sex, ActivityLevel: doc.ActivityLevel, Goal: doc.Goal,
+		OnboardingComplete: doc.OnboardingComplete, DateOfBirth: doc.DateOfBirth, Sex: doc.Sex, ActivityLevel: doc.ActivityLevel, Goal: doc.Goal,
 		Timezone: doc.Timezone, UpdatedAt: doc.UpdatedAt.UTC().Format(time.RFC3339Nano)}
 	if doc.Height != nil {
 		result.Height = &pb.DecimalQuantity{Amount: doc.Height.Amount.String(), Unit: doc.Height.Unit}
@@ -69,6 +69,9 @@ func (s *Server) UpdateProfile(ctx context.Context, req *pb.UpdateProfileRequest
 		return nil, invalid("version is required")
 	}
 	set := bson.M{"updated_at": time.Now().UTC()}
+	if req.OnboardingComplete != nil {
+		set["onboarding_complete"] = req.GetOnboardingComplete()
+	}
 	if req.DisplayName != nil {
 		value := strings.TrimSpace(req.GetDisplayName())
 		if len(value) < 1 || len(value) > 80 {
@@ -86,9 +89,17 @@ func (s *Server) UpdateProfile(ctx context.Context, req *pb.UpdateProfileRequest
 		set["date_of_birth"] = value
 	}
 	if req.Sex != nil {
+		if value := req.GetSex(); value != "" && value != "MALE" && value != "FEMALE" && value != "DECLINED" {
+			return nil, invalid("unsupported equation-specific sex value")
+		}
 		set["sex"] = req.GetSex()
 	}
 	if req.ActivityLevel != nil {
+		switch req.GetActivityLevel() {
+		case "", "SEDENTARY", "LIGHT", "MODERATE", "ACTIVE", "VERY_ACTIVE":
+		default:
+			return nil, invalid("unsupported profile activity level")
+		}
 		set["activity_level"] = req.GetActivityLevel()
 	}
 	if req.Goal != nil {
