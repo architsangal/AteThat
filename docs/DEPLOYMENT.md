@@ -2,11 +2,13 @@
 
 | Field | Value |
 |---|---|
-| Status | Infrastructure provisioned; application deployment pending |
+| Status | Production deployed through Phase 2 / v2.0.0; reconciled 2026-10-16 |
 | Scope | Hosting, domain, routing, TLS, and deployment-cost decisions |
 | Product | AteThat |
 
-## 1. Current deployment decision
+## Phase 1 — deployed infrastructure baseline
+
+### 1. Current deployment decision
 
 The initial host is **Hostinger KVM 2** in the India region. The domain is delegated to Cloudflare, while Hostinger remains the registrar.
 
@@ -20,12 +22,12 @@ The initial host is **Hostinger KVM 2** in the India region. The domain is deleg
 | Reverse proxy | Caddy |
 | Containers | Docker Compose, with one isolated Compose project and private network per application |
 | TLS | Caddy-managed public TLS certificates and automatic HTTP-to-HTTPS redirects; Cloudflare is set to Full (strict) after origin TLS works |
-| Frontend | Cloudflare Pages serves the AteThat static frontend |
-| DNS | Frontend hostname points to Cloudflare Pages; API hostname points to the VM |
+| Frontend | Cloudflare Workers serves the static frontend |
+| DNS | Frontend hostname points to Cloudflare Workers static assets; API hostname points to the VM |
 
 KVM 2 is the selected cost-first starting point for AteThat and several small, low-traffic projects. Increase capacity only after resource monitoring and load testing show that the VM is constrained. KVM 4 remains the vertical-scale option; it is not the initial choice.
 
-### 1.1 Current infrastructure state (2026-10-10)
+### 1.1 Infrastructure state reconciled 2026-10-16
 
 | Item | State |
 |---|---|
@@ -34,12 +36,12 @@ KVM 2 is the selected cost-first starting point for AteThat and several small, l
 | VPS | Hostinger KVM 2, Ubuntu 26.04 LTS, running in India/Mumbai. |
 | Server access | Key-only SSH through non-root user `archit`; root SSH and SSH password authentication are disabled. `sudo -i` retains administrator access. |
 | Firewall | UFW allows only TCP 22, 80, and 443. Fail2ban and automatic security updates are enabled. |
-| Container runtime | Docker Engine and Docker Compose are installed. No AteThat container is deployed yet. |
-| DNS records | Intentionally empty until the API and Pages deployments are ready. Do not add or manage production records in Hostinger while Cloudflare is authoritative. |
+| Container runtime | Docker Engine/Compose run Caddy, API and private Core in `atethat-production`; repository `/srv/atethat`. |
+| DNS records | `atethat.architsangal.in` serves the frontend; `api.atethat.architsangal.in` routes to the VPS/Caddy. Manage authoritative DNS in Cloudflare, not Hostinger. |
 
-The VPS public address is operational infrastructure, not a secret. It must not be hard-coded in application source; it is used only in the Cloudflare `api` DNS record.
+The VPS public address is operational infrastructure, not a secret. It must not be hard-coded in application source; use the product-specific Cloudflare `api.atethat` record in the parent zone, not a generic `api` hostname.
 
-## 2. Cost record
+### 2. Cost record
 
 The Hostinger 24-month KVM 2 checkout price observed during planning was:
 
@@ -52,7 +54,7 @@ The Hostinger 24-month KVM 2 checkout price observed during planning was:
 
 Final checkout pricing, taxes, and promotion eligibility must be checked before purchase.
 
-## 3. Coupon record
+### 3. Coupon record
 
 | Field | Value |
 |---|---|
@@ -63,12 +65,12 @@ Final checkout pricing, taxes, and promotion eligibility must be checked before 
 
 Use one promotion only. Do not assume a coupon changes the published renewal price unless Hostinger's checkout explicitly says so.
 
-## 4. Domain and routing model
+### 4. Domain and routing model
 
-The planned parent domain is `architsangal.in`. Each project has separate public hostnames so projects do not overlap:
+The parent domain is `architsangal.in`. Each project has separate public hostnames so projects do not overlap:
 
 ```text
-atethat.architsangal.in       -> Cloudflare Pages (AteThat frontend)
+atethat.architsangal.in       -> Cloudflare Worker static assets (AteThat frontend)
 api.atethat.architsangal.in   -> Hostinger KVM / Caddy / AteThat API Service
 
 rollercoaster.architsangal.in     -> RollerCoaster frontend (future)
@@ -77,7 +79,7 @@ api.rollercoaster.architsangal.in -> RollerCoaster API (future)
 
 The domain is deployment configuration, not application code. Caddy is the only service listening publicly on ports 80 and 443. It routes each recognized hostname only to its matching project; unknown hostnames are rejected.
 
-## 5. Initial VM layout
+### 5. Initial VM layout
 
 ```text
 Hostinger KVM 2
@@ -91,22 +93,22 @@ Hostinger KVM 2
 
 MongoDB Atlas is external to the VM. The VM must not expose MongoDB port `27017`.
 
-## 6. Pre-deployment checklist
+### 6. Deployment checklist and remaining operational checks
 
 - [x] Purchase the parent domain and keep registrar access secure.
 - [x] Select the India VM region and install Ubuntu 26.04 LTS.
 - [x] Configure key-only SSH, firewall, Fail2ban, Docker, and automatic security updates.
 - [x] Delegate nameservers to Cloudflare.
-- [ ] Create the Cloudflare `api` record for the VPS and the Pages custom hostname for the frontend.
-- [ ] Connect `atethat.architsangal.in` to Cloudflare Pages and configure the public API base URL.
+- [x] Configure `api.atethat` for the VPS and the Worker custom frontend hostname.
+- [x] Connect `atethat.architsangal.in` to the static Worker and configure the public API base URL.
 - [x] Add versioned Caddy, Docker Compose, health-check, and log-rotation configuration to the repository.
-- [ ] Configure Atlas IP access to allow only the VM's outbound address.
-- [ ] Store production secrets outside Git and supply them through protected environment files or a secret manager.
-- [ ] Deploy the containers with the unique `atethat-production` Compose project and private network.
-- [ ] Verify HTTPS, HTTP-to-HTTPS redirect, login, email delivery, food logging, and health checks.
+- [ ] Operational recheck: verify Atlas IP allowlist matches intended production/local access; this reconciliation did not audit the live allowlist.
+- [x] Store production secrets in the ignored VPS environment file; do not copy values into documentation.
+- [x] Deploy containers with the unique `atethat-production` project and private network.
+- [x] Verify public HTTPS, authentication/email, food logging and API/Core health in release checks.
 - [ ] Record baseline CPU, memory, disk, and response-time measurements before adding further projects.
 
-## 7. Production configuration and delivery
+### 7. Production configuration and delivery
 
 The production artifacts are in [`deploy/production`](../deploy/production). They have two non-negotiable properties:
 
@@ -119,14 +121,14 @@ The server must use fresh signing material, a fresh Google OAuth client secret, 
 
 - `dev` is the integration branch.
 - `main` is the production release branch.
-- Production deploys are manual GitHub Actions runs and always deploy `origin/main`. A push to `dev` never deploys production.
-- Merge a reviewed, green `dev` change into `main` before triggering production.
+- Production backend deployment runs automatically on push to `main` and deploys `origin/main`. A push to `dev` does not deploy the production backend.
+- Merge a reviewed, green `dev` change into `main` for automatic production deployment.
 
 ### 7.2 GitHub Actions
 
 `CI` runs on pull requests and pushes to `dev` or `main`. It type-checks/builds the web app, tests both Go modules, and validates the production Compose file.
 
-`Deploy production` is intentionally `workflow_dispatch` only. Its SSH key must be a deployment-only key assigned to a locked-down server user with a forced command. The workflow does not receive an administrator key and cannot provide a branch name or an arbitrary shell command.
+`Deploy production` is triggered by push to `main` (not `workflow_dispatch`). Its SSH key must be a deployment-only key assigned to a locked-down server user with a forced command. The workflow does not receive an administrator key and cannot provide a branch name or an arbitrary shell command.
 
 One-time GitHub repository configuration:
 
@@ -143,7 +145,7 @@ Install [`deploy/production/server/atethat-deploy`](../deploy/production/server/
 
 ### 7.3 DNS and TLS order
 
-1. Create `A  api  →  <VPS public IP>` in Cloudflare and initially set it to **DNS-only**.
+1. Create `A  api.atethat  →  <VPS public IP>` in Cloudflare and initially set it to **DNS-only**.
 2. Put the production `.env` on the VPS and run the first Compose deployment. Caddy then obtains its public certificate.
 3. Confirm `https://api.atethat.architsangal.in/healthz` returns `{"status":"ok"}`.
 4. Set Cloudflare SSL/TLS encryption to **Full (strict)**. Never use Flexible mode.
@@ -152,7 +154,7 @@ Install [`deploy/production/server/atethat-deploy`](../deploy/production/server/
 
 Keep port 22 globally reachable but key-only, as explicitly chosen by the owner. Do not apply an SSH source-IP allow-list without a deliberate change in access policy.
 
-## 8. Scaling triggers
+### 8. Scaling triggers
 
 Keep KVM 2 while it has sufficient measured headroom. Reassess the VM tier when sustained resource use, not account count alone, indicates pressure:
 
@@ -163,7 +165,7 @@ Keep KVM 2 while it has sufficient measured headroom. Reassess the VM tier when 
 
 The architecture uses containers and hostname-based routing so moving from KVM 2 to KVM 4 is a deployment resize/migration, not an application rewrite.
 
-## 9. KVM 2 container resource budget
+### 9. KVM 2 container resource budget
 
 Docker containers have no useful memory ceiling unless one is configured. Every stateful container must therefore have both an application-level limit and a Docker memory limit. The following are starting reservations for an 8 GB KVM 2, not promises about peak usage. Measure and adjust them under representative load.
 
@@ -204,7 +206,7 @@ At idle, the host may appear to have roughly 6-7 GB free after AteThat starts be
 
 The recommended initial shared-platform layout keeps AteThat's MongoDB on Atlas M0 and does not run Redis or RabbitMQ. This leaves the approximately 5.85 GB planned headroom for other small projects. Add a local shared stateful service only when a project needs it, then deduct its budget from that headroom.
 
-## 10. Future scaling and platform choices
+### 10. Future scaling and platform choices
 
 KVM 2 is the deliberate initial choice. Do not commit to KVM 4 based on projected account count alone; select the next step from measured CPU, memory, latency, disk, and isolation needs.
 
@@ -217,7 +219,9 @@ KVM 2 is the deliberate initial choice. Do not commit to KVM 4 based on projecte
 
 Provider selection and future scaling should continue to prefer INR billing and avoid unnecessary foreign-exchange/card-conversion exposure. Any future self-managed MongoDB, Redis, or RabbitMQ service remains private to the VM network. For shared use across the owner's small projects, each service uses separate project credentials and namespace boundaries.
 
-## 11. Initial monitoring, logging, and alerting
+### 11. Initial monitoring, logging, and alerting
+
+The following is a proposed lightweight monitoring model, not an inventory of verified running containers. Release checks verified API/Core health and rotated container logs; UptimeRobot was selected, but this document does not establish that every monitor/tool below is deployed. Recheck before allocating resources or claiming alert coverage.
 
 Use a lightweight hybrid monitoring model. Self-hosted tools provide VM and container visibility; an external monitor detects a full KVM, Docker, network, or reverse-proxy outage that cannot be observed from the failed VM itself.
 
@@ -235,3 +239,21 @@ The initial monitoring budget is approximately 256-512 MB of KVM memory for Upti
 Do not initially deploy Prometheus, Grafana, Loki, Netdata, or self-hosted Sentry. Revisit centralized metrics and retained log search only when the small tooling set cannot answer operational questions; reserve roughly 0.5-1 GB RAM plus retained-log disk capacity when adopting a Grafana/Loki stack.
 
 Application logs must be structured where practical and must not include passwords, tokens, full food details, health notes, body measurements, or complete provider responses.
+
+## Phase 2 — completed deployment
+
+Release [v2.0.0](https://github.com/architsangal/AteThat/releases/tag/v2.0.0) pins production commit `4e649a2a2ca1ba23395f98f415d71ed6d7a6bd03`. API/Core were healthy after [the production deployment](https://github.com/architsangal/AteThat/actions/runs/38879140661); authorized Chrome test-account sanity covered nutrition, recipes, wellness and schedules. No new service/server/provider subscription was required. See [release evidence](PHASE_2_STATUS.md).
+
+Frontend production is the connected Worker `atethat`, built from `main`. Vite configuration is compiled into static assets; runtime bindings are not needed for the frontend. Its API base is `https://api.atethat.architsangal.in/api/v1`. Non-production builds must use `npx wrangler preview` with `previews: {}` in Wrangler; do not rename the connected Worker to `dev-atethat` or use the production deploy command for previews.
+
+CI typechecks/builds web, runs all frontend regressions and Go tests, provisions a disposable MongoDB replica set for Core integration tests, and validates Compose. Phase 2.5 added hosted integration coverage; local HTTP and Chrome checks remain separate release evidence. The backend pipeline rebuilds on the VPS; registry/image-digest deployment remains future hardening. Historical checkout prices/resource budgets above are planning records, not newly verified prices or measured free capacity.
+
+## Phase 3 — setup gates, not deployed infrastructure
+
+The catalogue reuses Atlas with a separate logical food database and least-privilege Core access; no Redis or new VPS. Approve database names, connection limits, measured document/index budget, quota storage and migration before deploying. Add non-secret configuration and tests without exposing database/provider credentials to the browser.
+
+AI/transcription may introduce external provider costs and health-data processing; select providers, consent/retention and spending limits before enabling them. Exports/agent grants require bounded storage/jobs and revocable access. No provider purchase or separate worker is authorized yet. Follow feature → `dev` → `main`, local tests and authorized production sanity for each milestone.
+
+## Phase 4 and later — operational evolution
+
+Broader workers/queues, metrics pipelines, notifications, offline sync and scaling are conditional [platform backlog](PHASE_4_BACKLOG.md). Backup/recovery remains excluded pending explicit approval. Code tags do not roll back MongoDB data, and deployment must not blindly reset data to an older schema.

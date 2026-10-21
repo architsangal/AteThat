@@ -254,8 +254,9 @@ type HealthItem struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id               string          `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Version          uint64          `protobuf:"varint,2,opt,name=version,proto3" json:"version,omitempty"`
+	Id      string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Version uint64 `protobuf:"varint,2,opt,name=version,proto3" json:"version,omitempty"`
+	// MEDICATION, SUPPLEMENT, or TASK. Tasks do not carry dosage fields.
 	Type             string          `protobuf:"bytes,3,opt,name=type,proto3" json:"type,omitempty"`
 	Name             string          `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
 	DosageAmountText string          `protobuf:"bytes,5,opt,name=dosage_amount_text,json=dosageAmountText,proto3" json:"dosage_amount_text,omitempty"`
@@ -405,8 +406,9 @@ type UpsertHealthItemRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id               string          `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Version          uint64          `protobuf:"varint,2,opt,name=version,proto3" json:"version,omitempty"`
+	Id      string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Version uint64 `protobuf:"varint,2,opt,name=version,proto3" json:"version,omitempty"`
+	// MEDICATION, SUPPLEMENT, or TASK. Tasks do not carry dosage fields.
 	Type             string          `protobuf:"bytes,3,opt,name=type,proto3" json:"type,omitempty"`
 	Name             string          `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
 	DosageAmountText string          `protobuf:"bytes,5,opt,name=dosage_amount_text,json=dosageAmountText,proto3" json:"dosage_amount_text,omitempty"`
@@ -1037,7 +1039,8 @@ type RecordOccurrenceRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	OccurrenceId  string `protobuf:"bytes,1,opt,name=occurrence_id,json=occurrenceId,proto3" json:"occurrence_id,omitempty"`
+	OccurrenceId string `protobuf:"bytes,1,opt,name=occurrence_id,json=occurrenceId,proto3" json:"occurrence_id,omitempty"`
+	// TAKEN means completed; the UI calls this "Done" for TASK occurrences.
 	Status        string `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
 	CompletedAt   string `protobuf:"bytes,3,opt,name=completed_at,json=completedAt,proto3" json:"completed_at,omitempty"`
 	RescheduledTo string `protobuf:"bytes,4,opt,name=rescheduled_to,json=rescheduledTo,proto3" json:"rescheduled_to,omitempty"`

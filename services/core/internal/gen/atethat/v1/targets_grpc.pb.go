@@ -19,11 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	TargetService_Calculate_FullMethodName = "/atethat.v1.TargetService/Calculate"
-	TargetService_Current_FullMethodName   = "/atethat.v1.TargetService/Current"
-	TargetService_Accept_FullMethodName    = "/atethat.v1.TargetService/Accept"
-	TargetService_Reject_FullMethodName    = "/atethat.v1.TargetService/Reject"
-	TargetService_History_FullMethodName   = "/atethat.v1.TargetService/History"
+	TargetService_Calculate_FullMethodName         = "/atethat.v1.TargetService/Calculate"
+	TargetService_Current_FullMethodName           = "/atethat.v1.TargetService/Current"
+	TargetService_Accept_FullMethodName            = "/atethat.v1.TargetService/Accept"
+	TargetService_Reject_FullMethodName            = "/atethat.v1.TargetService/Reject"
+	TargetService_History_FullMethodName           = "/atethat.v1.TargetService/History"
+	TargetService_Planning_FullMethodName          = "/atethat.v1.TargetService/Planning"
+	TargetService_SaveCustom_FullMethodName        = "/atethat.v1.TargetService/SaveCustom"
+	TargetService_ResetCalculated_FullMethodName   = "/atethat.v1.TargetService/ResetCalculated"
+	TargetService_ProposeCalculated_FullMethodName = "/atethat.v1.TargetService/ProposeCalculated"
+	TargetService_ReviewCustom_FullMethodName      = "/atethat.v1.TargetService/ReviewCustom"
 )
 
 // TargetServiceClient is the client API for TargetService service.
@@ -35,6 +40,11 @@ type TargetServiceClient interface {
 	Accept(ctx context.Context, in *AcceptTargetRequest, opts ...grpc.CallOption) (*TargetVersion, error)
 	Reject(ctx context.Context, in *TargetVersionRequest, opts ...grpc.CallOption) (*Empty, error)
 	History(ctx context.Context, in *TargetHistoryRequest, opts ...grpc.CallOption) (*TargetHistoryPage, error)
+	Planning(ctx context.Context, in *TargetPlanningRequest, opts ...grpc.CallOption) (*TargetPlanning, error)
+	SaveCustom(ctx context.Context, in *SaveCustomTargetsRequest, opts ...grpc.CallOption) (*TargetVersion, error)
+	ResetCalculated(ctx context.Context, in *ResetCalculatedTargetsRequest, opts ...grpc.CallOption) (*TargetVersion, error)
+	ProposeCalculated(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*TargetVersion, error)
+	ReviewCustom(ctx context.Context, in *SaveCustomTargetsRequest, opts ...grpc.CallOption) (*CustomTargetsReview, error)
 }
 
 type targetServiceClient struct {
@@ -90,6 +100,51 @@ func (c *targetServiceClient) History(ctx context.Context, in *TargetHistoryRequ
 	return out, nil
 }
 
+func (c *targetServiceClient) Planning(ctx context.Context, in *TargetPlanningRequest, opts ...grpc.CallOption) (*TargetPlanning, error) {
+	out := new(TargetPlanning)
+	err := c.cc.Invoke(ctx, TargetService_Planning_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *targetServiceClient) SaveCustom(ctx context.Context, in *SaveCustomTargetsRequest, opts ...grpc.CallOption) (*TargetVersion, error) {
+	out := new(TargetVersion)
+	err := c.cc.Invoke(ctx, TargetService_SaveCustom_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *targetServiceClient) ResetCalculated(ctx context.Context, in *ResetCalculatedTargetsRequest, opts ...grpc.CallOption) (*TargetVersion, error) {
+	out := new(TargetVersion)
+	err := c.cc.Invoke(ctx, TargetService_ResetCalculated_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *targetServiceClient) ProposeCalculated(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*TargetVersion, error) {
+	out := new(TargetVersion)
+	err := c.cc.Invoke(ctx, TargetService_ProposeCalculated_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *targetServiceClient) ReviewCustom(ctx context.Context, in *SaveCustomTargetsRequest, opts ...grpc.CallOption) (*CustomTargetsReview, error) {
+	out := new(CustomTargetsReview)
+	err := c.cc.Invoke(ctx, TargetService_ReviewCustom_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TargetServiceServer is the server API for TargetService service.
 // All implementations must embed UnimplementedTargetServiceServer
 // for forward compatibility
@@ -99,6 +154,11 @@ type TargetServiceServer interface {
 	Accept(context.Context, *AcceptTargetRequest) (*TargetVersion, error)
 	Reject(context.Context, *TargetVersionRequest) (*Empty, error)
 	History(context.Context, *TargetHistoryRequest) (*TargetHistoryPage, error)
+	Planning(context.Context, *TargetPlanningRequest) (*TargetPlanning, error)
+	SaveCustom(context.Context, *SaveCustomTargetsRequest) (*TargetVersion, error)
+	ResetCalculated(context.Context, *ResetCalculatedTargetsRequest) (*TargetVersion, error)
+	ProposeCalculated(context.Context, *Empty) (*TargetVersion, error)
+	ReviewCustom(context.Context, *SaveCustomTargetsRequest) (*CustomTargetsReview, error)
 	mustEmbedUnimplementedTargetServiceServer()
 }
 
@@ -120,6 +180,21 @@ func (UnimplementedTargetServiceServer) Reject(context.Context, *TargetVersionRe
 }
 func (UnimplementedTargetServiceServer) History(context.Context, *TargetHistoryRequest) (*TargetHistoryPage, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method History not implemented")
+}
+func (UnimplementedTargetServiceServer) Planning(context.Context, *TargetPlanningRequest) (*TargetPlanning, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Planning not implemented")
+}
+func (UnimplementedTargetServiceServer) SaveCustom(context.Context, *SaveCustomTargetsRequest) (*TargetVersion, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SaveCustom not implemented")
+}
+func (UnimplementedTargetServiceServer) ResetCalculated(context.Context, *ResetCalculatedTargetsRequest) (*TargetVersion, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ResetCalculated not implemented")
+}
+func (UnimplementedTargetServiceServer) ProposeCalculated(context.Context, *Empty) (*TargetVersion, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ProposeCalculated not implemented")
+}
+func (UnimplementedTargetServiceServer) ReviewCustom(context.Context, *SaveCustomTargetsRequest) (*CustomTargetsReview, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReviewCustom not implemented")
 }
 func (UnimplementedTargetServiceServer) mustEmbedUnimplementedTargetServiceServer() {}
 
@@ -224,6 +299,96 @@ func _TargetService_History_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TargetService_Planning_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TargetPlanningRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TargetServiceServer).Planning(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TargetService_Planning_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TargetServiceServer).Planning(ctx, req.(*TargetPlanningRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TargetService_SaveCustom_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SaveCustomTargetsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TargetServiceServer).SaveCustom(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TargetService_SaveCustom_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TargetServiceServer).SaveCustom(ctx, req.(*SaveCustomTargetsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TargetService_ResetCalculated_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResetCalculatedTargetsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TargetServiceServer).ResetCalculated(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TargetService_ResetCalculated_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TargetServiceServer).ResetCalculated(ctx, req.(*ResetCalculatedTargetsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TargetService_ProposeCalculated_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TargetServiceServer).ProposeCalculated(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TargetService_ProposeCalculated_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TargetServiceServer).ProposeCalculated(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TargetService_ReviewCustom_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SaveCustomTargetsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TargetServiceServer).ReviewCustom(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TargetService_ReviewCustom_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TargetServiceServer).ReviewCustom(ctx, req.(*SaveCustomTargetsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TargetService_ServiceDesc is the grpc.ServiceDesc for TargetService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -250,6 +415,26 @@ var TargetService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "History",
 			Handler:    _TargetService_History_Handler,
+		},
+		{
+			MethodName: "Planning",
+			Handler:    _TargetService_Planning_Handler,
+		},
+		{
+			MethodName: "SaveCustom",
+			Handler:    _TargetService_SaveCustom_Handler,
+		},
+		{
+			MethodName: "ResetCalculated",
+			Handler:    _TargetService_ResetCalculated_Handler,
+		},
+		{
+			MethodName: "ProposeCalculated",
+			Handler:    _TargetService_ProposeCalculated_Handler,
+		},
+		{
+			MethodName: "ReviewCustom",
+			Handler:    _TargetService_ReviewCustom_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

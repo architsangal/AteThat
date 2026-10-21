@@ -20,6 +20,144 @@ tags:
 security:
   - bearerAuth: []
 paths:
+  /nutrition/targets/proposal:
+    post:
+      tags: [NutritionTargets]
+      operationId: proposeCalculatedTargets
+      summary: Idempotent initial calculated proposal; never replaces accepted targets
+      responses:
+        '200':
+          description: Current profile-bound PROPOSED or previously REJECTED proposal
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TargetVersion' }
+        default: { $ref: '#/components/responses/Problem' }
+  /nutrition/targets/custom/review:
+    post:
+      tags: [NutritionTargets]
+      operationId: reviewCustomTargets
+      summary: Read-only applicable adult range warnings and signed confirmation token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SaveCustomTargetsRequest' }
+      responses:
+        '200':
+          description: Only new or changed outside-reference confirmations; no target writes
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CustomTargetsReview' }
+        default: { $ref: '#/components/responses/Problem' }
+  /nutrition/targets/planning:
+    get:
+      tags: [NutritionTargets]
+      operationId: getTargetPlanningPolicy
+      summary: Effective profile inputs, calculated-default preview and explicit assumptions
+      responses:
+        '200':
+          description: Owner-specific calculated defaults, preview fingerprint and unavailable reasons
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TargetPlanning' }
+        default: { $ref: '#/components/responses/Problem' }
+    post:
+      tags: [NutritionTargets]
+      operationId: calculateSelectedMacroCalories
+      summary: Exact 4/4/9 arithmetic only; does not save or recalculate food energy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [macros]
+              additionalProperties: false
+              properties:
+                macros:
+                  type: object
+                  required: [PROTEIN, CARBOHYDRATE, FAT]
+                  additionalProperties: false
+                  properties:
+                    PROTEIN: { $ref: '#/components/schemas/Decimal' }
+                    CARBOHYDRATE: { $ref: '#/components/schemas/Decimal' }
+                    FAT: { $ref: '#/components/schemas/Decimal' }
+      responses:
+        '200':
+          description: Policy plus exact macro_calories
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TargetPlanning' }
+        default: { $ref: '#/components/responses/Problem' }
+  /nutrition/targets/reset:
+    post:
+      tags: [NutritionTargets]
+      operationId: resetCalculatedNutritionTargets
+      summary: Confirm a calculated-default preview as a new accepted revision
+      description: Server recomputes from owner profile within the transaction and verifies the preview fingerprint, profile version and active target ID/revision. Replaces all five nutrition targets only; water, measurements and food logs are unchanged. Missing age/sex or unsupported adult scope cannot use this calculation. Stale previews fail without writes.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [expected_active_id, expected_revision, profile_version, preview_token, adult_scope_confirmed]
+              properties:
+                expected_active_id: { type: string }
+                expected_revision: { type: integer, minimum: 0 }
+                profile_version: { type: integer, minimum: 1 }
+                preview_token: { type: string, minLength: 64, maxLength: 64 }
+                adult_scope_confirmed: { type: boolean, enum: [true] }
+      responses:
+        '201':
+          description: New calculated target revision; previous active revision is superseded
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TargetVersion' }
+        default: { $ref: '#/components/responses/Problem' }
+  /nutrition/targets/custom:
+    post:
+      tags: [NutritionTargets]
+      operationId: saveSelectedNutritionTargets
+      summary: Atomic new accepted revision changing only selected fields
+      description: Requires matching current target ID/revision and profile version. Initial manual sets require all five values. Energy must be positive, other fields nonnegative; canonical decimal strings at most 32 characters and Decimal128-representable. Does not update water, profile, or logs. Point FDA references are metadata, not invented ranges.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SaveCustomTargetsRequest' }
+      responses:
+        '201':
+          description: New accepted target revision
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TargetVersion' }
+        default: { $ref: '#/components/responses/Problem' }
+  /text-summary:
+    get:
+      operationId: getFactualTextSummary
+      summary: Owner-only deterministic factual health and nutrition text; never persisted or sent to AI
+      description: At most 366 inclusive days. All source pages are read up to explicit 10,000-row bounds. DAY health uses local calendar bounds and RANGE uses UTC bounds, independently of nutrition Tracking Days. Unavailable/compacted/unknown data are explicitly labelled. Names and configured dose are included; identity fields, free notes and instructions are excluded.
+      parameters:
+        - { name: from, in: query, required: true, schema: { type: string, format: date } }
+        - { name: to, in: query, required: true, schema: { type: string, format: date } }
+        - { name: mode, in: query, required: true, schema: { type: string, enum: [DAY, RANGE] } }
+        - { name: nutrient, in: query, schema: { type: string, maxLength: 80 } }
+      responses:
+        '200':
+          description: Factual text with explicit context and partial-data flag
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [text, context, generated_at, partial]
+                properties:
+                  text: { type: string }
+                  context: { type: string }
+                  generated_at: { $ref: '#/components/schemas/UtcInstant' }
+                  partial: { type: boolean }
+        default: { $ref: '#/components/responses/Problem' }
   /auth/register:
     post:
       tags: [Identity]
@@ -382,15 +520,16 @@ paths:
     get:
       tags: [Foods]
       operationId: searchUSDAFoods
-      summary: Search USDA FoodData Central, including only known provider values
+      summary: Search local foods, explicitly discover USDA foods, or read account usage
       parameters:
-        - { name: q, in: query, required: true, schema: { type: string, minLength: 2, maxLength: 100 } }
+        - { name: source, in: query, description: LOCAL searches imported foods without quota; USDA (default for compatibility) consumes one of 10 daily searches; STATUS returns usage without requiring q. Reset is midnight UTC., schema: { type: string, enum: [LOCAL, USDA, STATUS] } }
+        - { name: q, in: query, description: Required except for STATUS., schema: { type: string, minLength: 2, maxLength: 100 } }
         - { name: food_state, in: query, schema: { type: string, enum: [RAW, COOKED, PREPARED, UNKNOWN] } }
         - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 50 } }
         - { name: cursor, in: query, schema: { type: string } }
       responses:
         '200':
-          description: Paginated USDA results; provider failures yield 503
+          description: Paginated results and authenticated account usage. USDA exhaustion yields 429; provider failures yield 503 and refund the reservation.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/FoodSearchPage' }
@@ -543,8 +682,18 @@ components:
         source_url: { type: string, format: uri }
     FoodSearchPage:
       type: object
-      required: [items, page]
+      required: [items, page, usage]
       properties:
+        usage:
+          type: object
+          required: [usda_remaining, usda_limit, catalogue_count, matched_count, local_searches_today, resets_at]
+          properties:
+            usda_remaining: { type: integer, minimum: 0, maximum: 10 }
+            usda_limit: { type: integer, enum: [10] }
+            catalogue_count: { type: integer, minimum: 0 }
+            matched_count: { type: integer, minimum: 0 }
+            local_searches_today: { type: integer, minimum: 0 }
+            resets_at: { type: string, format: date-time }
         items:
           type: array
           items: { $ref: '#/components/schemas/FoodResult' }
@@ -561,6 +710,81 @@ components:
       properties:
         profile_version: { type: integer, minimum: 1 }
         effective_from_tracking_day: { type: string, format: date }
+    SaveCustomTargetsRequest:
+      type: object
+      additionalProperties: false
+      required: [expected_active_id, expected_revision, profile_version, changes]
+      properties:
+        expected_active_id: { type: string }
+        expected_revision: { type: integer, minimum: 0 }
+        profile_version: { type: integer, minimum: 1 }
+        acknowledgement_token: { type: string, description: Signed ten-minute confirmation bound to exact owner, values, references and versions }
+        energy_provenance: { type: string, enum: [CUSTOM, MACRO_DERIVED] }
+        changes:
+          type: object
+          minProperties: 1
+          maxProperties: 5
+          additionalProperties:
+            type: object
+            required: [active_value]
+            properties:
+              active_value: { $ref: '#/components/schemas/Decimal' }
+              override_reason: { type: string, maxLength: 200 }
+    TargetReferenceRange:
+      type: object
+      nullable: true
+      properties:
+        minimum: { type: string }
+        maximum: { type: string }
+        energy_basis: { type: string }
+        source_url: { type: string, format: uri }
+        reference_revision: { type: string }
+    CustomTargetWarning:
+      type: object
+      properties:
+        nutrient: { type: string }
+        selected_value: { type: string }
+        unit: { type: string }
+        reference_range: { $ref: '#/components/schemas/TargetReferenceRange' }
+    CustomTargetsReview:
+      type: object
+      properties:
+        warnings: { type: array, nullable: true, items: { $ref: '#/components/schemas/CustomTargetWarning' } }
+        acknowledgement_token: { type: string }
+    TargetInputs:
+      type: object
+      properties:
+        height_cm: { type: string }
+        weight_kg: { type: string }
+        activity: { type: string }
+        assumed_height: { type: boolean }
+        assumed_weight: { type: boolean }
+        assumed_activity: { type: boolean }
+        age: { type: integer, minimum: 0 }
+        sex: { type: string }
+        profile_saved_at: { type: string }
+    TargetPlanning:
+      type: object
+      properties:
+        inputs: { $ref: '#/components/schemas/TargetInputs' }
+        profile_version: { type: integer }
+        policy_version: { type: string }
+        personalized_enabled: { type: boolean }
+        pending_decisions: { type: array, nullable: true, items: { type: string } }
+        missing_inputs: { type: array, nullable: true, items: { type: string } }
+        macro_calories: { type: string }
+        rounding_tolerance_kcal: { type: string }
+        explanation: { type: string }
+        calculated_defaults:
+          type: object
+          nullable: true
+          additionalProperties: { $ref: '#/components/schemas/Decimal' }
+        energy_equation: { type: string }
+        protein_rate: { type: string }
+        activity_category: { type: string }
+        reset_preview_token: { type: string }
+        calculation_unavailable_reason: { type: string }
+        calculated_warnings: { type: array, nullable: true, items: { $ref: '#/components/schemas/CustomTargetWarning' } }
     TargetValue:
       type: object
       additionalProperties: false
@@ -570,6 +794,10 @@ components:
         active_value: { $ref: '#/components/schemas/Decimal' }
         unit: { type: string }
         is_manual_override: { type: boolean }
+        provenance: { type: string }
+        reference_range: { $ref: '#/components/schemas/TargetReferenceRange' }
+        outside_reference: { type: boolean }
+        acknowledged_at: { type: string }
         override_reason: { type: string }
     TargetVersion:
       type: object
@@ -595,12 +823,13 @@ components:
             information_url: { type: string, format: uri }
         calculation_version: { type: string }
         effective_from_tracking_day: { type: string, format: date }
-        target_basis: { type: string, enum: [GENERAL_BENCHMARK] }
+        target_basis: { type: string, enum: [GENERAL_BENCHMARK, PERSONALIZED_ESTIMATE] }
         targets:
           type: object
           additionalProperties: { $ref: '#/components/schemas/TargetValue' }
         created_at: { $ref: '#/components/schemas/UtcInstant' }
         reviewed_at: { $ref: '#/components/schemas/UtcInstant' }
+        input_snapshot: { allOf: [{ $ref: '#/components/schemas/TargetInputs' }], nullable: true }
     TargetSelection:
       type: object
       required: [active, proposed]
@@ -612,6 +841,7 @@ components:
       additionalProperties: false
       required: [effective_from_tracking_day, overrides]
       properties:
+        adult_scope_confirmed: { type: boolean, description: Required true for calculated proposal acceptance }
         effective_from_tracking_day: { type: string, format: date }
         overrides:
           type: object
@@ -725,6 +955,7 @@ components:
       required: [id, version, display_name, timezone, updated_at]
       properties:
         id: { $ref: '#/components/schemas/ObjectId' }
+        onboarding_complete: { type: boolean, description: Completing or skipping the welcome guide persists per account. }
         version: { type: integer, minimum: 1 }
         display_name: { type: string, minLength: 1, maxLength: 80 }
         date_of_birth: { type: string, format: date, nullable: true }
@@ -740,6 +971,7 @@ components:
       additionalProperties: false
       required: [version]
       properties:
+        onboarding_complete: { type: boolean, description: Completing or skipping the welcome guide persists per account. }
         version: { type: integer, minimum: 1 }
         display_name: { type: string, minLength: 1, maxLength: 80 }
         date_of_birth: { type: string, format: date, nullable: true }

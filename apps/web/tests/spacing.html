@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AteThat spacing regression fixtures</title>
+  <link rel="stylesheet" href="/src/features/phase-two.css" />
+  <link rel="stylesheet" href="/src/styles.css" />
+  <link rel="stylesheet" href="/src/features/phase-2.1.css" />
+  <link rel="stylesheet" href="/src/features/spacing.css" />
+</head>
+<body>
+  <!-- Local visual regression fixture only. No API, login or account writes.
+       Open /tests/spacing.html in Vite at desktop and mobile widths. -->
+  <main class="content">
+    <div class="app-page-enter">
+      <header class="page-head"><div><span class="eyebrow">Layout regression fixtures</span><h1>Consistent feedback spacing</h1><p>Success, errors, empty notices, cards and forms share the same spacing rules.</p></div><button type="button" class="button button-outline" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'">Switch theme</button></header>
+      <div class="page-notice"></div>
+      <div class="targets-layout single-panel"><section class="panel"><div class="panel-top"><h2>Current tracking targets</h2></div><p class="muted">Synthetic layout example; no personal records are used.</p><button type="button" class="button button-outline">Review a new version</button></section></div>
+      <p class="form-message form-success" role="status">Your tracking targets are active. These remain user-selected benchmarks, not personalized medical advice.</p>
+      <details class="panel target-history"><summary>Previous targets</summary><p>Previous accepted versions.</p></details>
+      <p class="form-message form-error" role="alert">Add a reason for your adjusted tracking values.</p>
+      <section class="panel section-panel"><div class="panel-top"><h2>Feedback inside a card</h2></div><p class="form-message form-error" role="alert">Enter a reason with at least 3 characters, excluding leading and trailing spaces.</p><form class="auth-form"><label>Reason for correction<input name="reason" placeholder="Incorrect amount" /></label><p class="form-message form-success" role="status">The form's grid owns the space around this message.</p><button class="button button-primary" type="button">Review correction</button></form></section>
+      <section class="panel"><p class="form-message form-success" role="status">A message alone in a card keeps the normal card padding without extra edge margins.</p></section>
+      <div class="settings-grid"><section class="panel"><div class="panel-top"><h2>Settings card</h2></div><p class="muted">Nested grid columns retain their own spacing.</p></section><section class="panel"><div class="panel-top"><h2>Another card</h2></div><p class="muted">Both cards use the shared inset.</p></section></div>
+    </div>
+  </main>
+</body>
+</html>

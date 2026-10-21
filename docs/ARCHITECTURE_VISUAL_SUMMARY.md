@@ -3,18 +3,20 @@
 | Field | Value |
 |---|---|
 | Purpose | Visual companion to the system, database, and deployment designs |
-| Scope | Phase 1 architecture and the agreed deployment direction |
+| Scope | Released Phases 1–2 and proposed Phase 3/4 boundaries; reconciled 2026-10-16 |
 | Source of truth | `3. SYSTEM_DESIGN.md`, `4. DATABASE_DESIGN.md`, and `DEPLOYMENT.md` |
 
 This document shows the important boundaries, request flows, data passed between layers, and database storage model. It summarizes rather than replaces the source design documents.
 
-## 1. Complete system and deployment view
+## Phase 1 — released architecture views
+
+### 1. Complete system and deployment view
 
 ```mermaid
 flowchart LR
     User[User browser]
     DNS[DNS<br/>architsangal.in]
-    Pages[Cloudflare Pages<br/>React frontend static files]
+    Worker[Cloudflare Workers static assets<br/>React frontend static files]
     Edge[Caddy on Hostinger KVM<br/>public ports 80 and 443]
     API[Go API Service<br/>REST /api/v1]
     Core[Go Core Service<br/>private gRPC]
@@ -23,7 +25,7 @@ flowchart LR
     SMTP[Gmail SMTP]
     Google[Google OAuth / OIDC]
 
-    User -->|HTTPS frontend hostname| DNS --> Pages
+    User -->|HTTPS frontend hostname| DNS --> Worker
     User -->|HTTPS API hostname| DNS --> Edge
     Edge -->|API hostname| API
     API -->|authenticated gRPC request| Core
@@ -35,7 +37,7 @@ flowchart LR
     classDef public fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
     classDef private fill:#dcfce7,stroke:#16a34a,color:#14532d
     classDef external fill:#fef3c7,stroke:#d97706,color:#78350f
-    class User,DNS,Pages,Edge,API public
+    class User,DNS,Worker,Edge,API public
     class Core private
     class DB,USDA,SMTP,Google external
 ```
@@ -44,7 +46,7 @@ flowchart LR
 
 | Location | Accessible from the internet? | What it handles |
 |---|---|---|
-| Cloudflare Pages | Yes | TLS static frontend delivery |
+| Cloudflare Workers static assets | Yes | TLS static frontend delivery |
 | Caddy | Yes | API TLS, HTTP-to-HTTPS redirect, hostname routing |
 | API Service | Yes, through Caddy | REST input validation, rate limits, authentication, HTTP-to-gRPC translation |
 | Core Service | No | Domain rules, persistence, USDA access, email sending |
@@ -52,7 +54,7 @@ flowchart LR
 
 The browser never receives database credentials, USDA credentials, Gmail credentials, or Core Service access.
 
-## 2. What crosses each application boundary
+### 2. What crosses each application boundary
 
 ```mermaid
 flowchart TB
@@ -82,7 +84,7 @@ flowchart TB
 | Dashboard/history | Date range, cursor/page size | User ID from access token; Tracking Day calculations | Reads only; no client-supplied ownership is trusted |
 | Health action | Item/schedule/event input and timestamp | User ID, schedule interpretation, UTC normalization | Health item, schedule version, or occurrence event |
 
-## 3. Authentication and account recovery
+### 3. Authentication and account recovery
 
 ```mermaid
 sequenceDiagram
@@ -109,7 +111,7 @@ Never stored or logged: raw password, raw refresh token, raw email-verification 
 database URI, Gmail app password, USDA key, or token-signing key.
 ```
 
-## 4. Food logging: preview to immutable history
+### 4. Food logging: preview to immutable history
 
 ```mermaid
 sequenceDiagram
@@ -141,7 +143,7 @@ sequenceDiagram
 
 The confirmation transaction is all-or-nothing. A group may contain many food items; it never creates a partially confirmed meal.
 
-## 5. Food-log data shape and ownership
+### 5. Food-log data shape and ownership
 
 ```mermaid
 flowchart TB
@@ -150,7 +152,7 @@ flowchart TB
     Group[food_log_groups<br/>one confirmed meal/log action]
     Item[food_logs<br/>one immutable snapshot per food item]
     Target[nutrition_target_versions]
-    Cache[provider_cache<br/>USDA cache with TTL]
+    Cache[usda_food_cache<br/>USDA cache with TTL]
 
     User -->|user_id| Preview
     User -->|user_id| Group
@@ -172,11 +174,11 @@ flowchart TB
 | `food_log_groups` | `user_id`, Tracking Day, logged UTC time, status, item count, aggregate final nutrition, revision | Represents one user confirmation action, including a multi-food meal |
 | `food_logs` | `user_id`, group ID, food source/name snapshot, quantity, provider/final nutrition snapshots, timestamps | Preserves each food item as historical evidence |
 | `food_log_previews` | User ID, chosen items, calculated totals, expiry | Lets the user review totals before persistence |
-| `provider_cache` | USDA cache key, normalized food/search payload, fetched/expiry timestamps | Reduces repeated provider calls; never becomes permanent history |
+| `usda_food_cache` | USDA cache key, raw response bytes and expiry (24 hours for search/detail) | Reduces repeated provider calls; never becomes permanent history |
 
 All user-owned collections carry `user_id`, and Core Service queries bind it from the authenticated session—not from a request-body field.
 
-## 6. Other stored user data
+### 6. Other stored user data
 
 ```mermaid
 erDiagram
@@ -203,7 +205,7 @@ erDiagram
 | Custom foods and meals | Reusable user-owned definitions; changing them does not rewrite confirmed food history |
 | Health items | Definitions, schedule versions, and recorded events remain distinct from food logs |
 
-## 7. Detailed-history compaction
+### 7. Detailed-history compaction
 
 > This is an agreed Phase 1 retention rule and is represented in the database design.
 
@@ -231,7 +233,7 @@ After 90 days: daily totals remain available, but exact food-item history is no 
 
 Daily summaries are sufficient for weekly and monthly calculations; a permanent monthly copy is not required unless later performance measurements justify a materialized rollup. Compacted days are read-only because their item-level evidence no longer exists.
 
-## 8. Database deployment portability
+### 8. Database deployment portability
 
 ```mermaid
 flowchart LR
@@ -252,7 +254,7 @@ flowchart LR
 
 Both database targets use the same collections, indexes, and transaction behavior. If local MongoDB is adopted, it must be authenticated, private to Docker networking, persist to a volume, and run as a single-node replica set.
 
-## 9. Monitoring, logging, and alerting view
+### 9. Monitoring, logging, and alerting view
 
 ```mermaid
 flowchart LR
@@ -260,10 +262,10 @@ flowchart LR
     UR[UptimeRobot Free<br/>external uptime check]
     KVM[Hostinger KVM]
     Caddy[Caddy / public URLs]
-    Kuma[Uptime Kuma<br/>endpoint and internal health]
-    Beszel[Beszel<br/>host and container metrics]
+    Kuma["Uptime Kuma (proposed)<br/>endpoint and internal health"]
+    Beszel["Beszel (proposed)<br/>host and container metrics"]
     Docker[Docker JSON logs<br/>rotated]
-    Dozzle[Dozzle<br/>private live-log viewer]
+    Dozzle["Dozzle (proposed)<br/>private live-log viewer"]
     HC[Healthchecks.io<br/>scheduled-job heartbeats]
     Alert[Approved notification channel]
 
@@ -285,7 +287,7 @@ flowchart LR
 
 An external uptime monitor is essential because KVM-local monitoring cannot report an outage when the entire VM, Docker daemon, or network path is unavailable.
 
-## 10. Capacity and future scaling choices
+### 10. Capacity and future scaling choices
 
 ```mermaid
 flowchart TD
@@ -308,3 +310,19 @@ flowchart TD
 ```
 
 KVM 2 is the current cost-first deployment choice. Redis and RabbitMQ are optional future components, not initial AteThat dependencies.
+
+## Phase 2 — released additions
+
+The same browser → API → Core → Atlas path handles expanded nutrition/recipes, `wellness_records`/`wellness_settings`, advanced schedule versions and adherence. Recipes extend owned meals; confirmed snapshots stay independent of future definition edits. No new service or Redis was introduced. See [Phase 2 implementation](PHASE_2_IMPLEMENTATION.md).
+
+The monitoring tools in the baseline diagrams are design options, not a verified deployment inventory. Public API/Core health and container log rotation were verified; check actual configuration before claiming alert coverage.
+
+## Phase 3 — proposed flow
+
+Normal search → Core → shared local food catalogue plus current user's private foods. Explicit USDA discovery → Core atomic per-user allowance + global upstream budget → bounded provider results → normalized catalogue import. Detail completeness, storage admission and manual cleanup are enforced independently of the 24-hour disposable cache.
+
+Assisted label/photo/text/voice input → structured proposal → normal preview/review/confirmation. Exports and external-agent/MCP access → authorized Core services, scoped/revocable grants and minimum agent audit; never direct database access. No new components are deployed by this diagram. See [Phase 3 backlog](PHASE_3_BACKLOG.md).
+
+## Phase 4 and later — conditional platform
+
+Durable outbox/worker, broader audit/analytics, notifications, offline/PWA and scaling are separate [platform decisions](PHASE_4_BACKLOG.md). Minimum agent audit remains part of Phase 3. Barcode is removed; recovery and regional data providers need separate approval.

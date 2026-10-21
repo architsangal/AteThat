@@ -81,11 +81,46 @@ func TestCompactedHistoryErrorIsNotTokenError(t *testing.T) {
 	}
 }
 
+func TestTargetConfirmationIsNotAnAuthenticationTokenError(t *testing.T) {
+	s := &Server{}
+	w := httptest.NewRecorder()
+	s.rpcProblem(w, "test-request", status.Error(codes.FailedPrecondition, "Review and confirm the exact outside-reference targets before saving."))
+	if w.Code != 409 || !strings.Contains(w.Body.String(), "TARGET_CONFIRMATION_REQUIRED") || strings.Contains(w.Body.String(), "TOKEN_EXPIRED") {
+		t.Fatal(w.Code, w.Body.String())
+	}
+}
+
 func TestGoogleCompletionDeletionDoesNotRequireSessionOrCookie(t *testing.T) {
 	path, setSession, clearSession, valid := googleCompletionRedirect(&pb.CompleteGoogleSignInResponse{
 		Operation: "REQUEST_DELETION", ReturnTo: "/cancel-deletion",
 	})
 	if !valid || path != "/cancel-deletion?requested=1" || setSession || !clearSession {
 		t.Fatalf("unexpected deletion completion plan: path=%q set=%t clear=%t valid=%t", path, setSession, clearSession, valid)
+	}
+}
+
+func TestSearchAllowanceExhaustionIsActionable(t *testing.T) {
+	recorder := httptest.NewRecorder()
+	(&Server{}).rpcProblem(recorder, "test", status.Error(codes.ResourceExhausted, "allowance exhausted"))
+	if recorder.Code != http.StatusTooManyRequests || !strings.Contains(recorder.Body.String(), "USDA_SEARCH_LIMIT") || !strings.Contains(recorder.Body.String(), "local database") {
+		t.Fatalf("quota exhaustion was hidden: %d %s", recorder.Code, recorder.Body.String())
+	}
+}
+
+func TestUSDAProviderLimitDoesNotMasqueradeAsAccountLimit(t *testing.T) {
+	for _, test := range []struct {
+		message string
+		code    string
+		text    string
+	}{
+		{"USDA_DEMO_RATE_LIMITED", "USDA_PROVIDER_RATE_LIMITED", "shared demo connection"},
+		{"USDA_PROVIDER_RATE_LIMITED", "USDA_PROVIDER_RATE_LIMITED", "daily AteThat allowance"},
+		{"USDA_PROVIDER_AUTH_FAILED", "USDA_CONFIGURATION", "API credentials"},
+	} {
+		recorder := httptest.NewRecorder()
+		(&Server{}).rpcProblem(recorder, "test", status.Error(codes.Unavailable, test.message))
+		if recorder.Code != 503 || !strings.Contains(recorder.Body.String(), test.code) || !strings.Contains(recorder.Body.String(), test.text) {
+			t.Fatalf("provider failure was hidden: %d %s", recorder.Code, recorder.Body.String())
+		}
 	}
 }

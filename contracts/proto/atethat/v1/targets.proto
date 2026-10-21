@@ -11,6 +11,11 @@ service TargetService {
   rpc Accept(AcceptTargetRequest) returns (TargetVersion);
   rpc Reject(TargetVersionRequest) returns (Empty);
   rpc History(TargetHistoryRequest) returns (TargetHistoryPage);
+  rpc Planning(TargetPlanningRequest) returns (TargetPlanning);
+  rpc SaveCustom(SaveCustomTargetsRequest) returns (TargetVersion);
+  rpc ResetCalculated(ResetCalculatedTargetsRequest) returns (TargetVersion);
+  rpc ProposeCalculated(Empty) returns (TargetVersion);
+  rpc ReviewCustom(SaveCustomTargetsRequest) returns (CustomTargetsReview);
 }
 
 message CalculateTargetRequest {
@@ -29,6 +34,27 @@ message TargetValue {
   string unit = 3;
   bool is_manual_override = 4;
   string override_reason = 5;
+  string provenance = 6;
+  TargetReferenceRange reference_range = 7;
+  bool outside_reference = 8;
+  string acknowledged_at = 9;
+}
+message TargetReferenceRange {
+  string minimum = 1;
+  string maximum = 2;
+  string energy_basis = 3;
+  string source_url = 4;
+  string reference_revision = 5;
+}
+message CustomTargetWarning {
+  string nutrient = 1;
+  string selected_value = 2;
+  string unit = 3;
+  TargetReferenceRange reference_range = 4;
+}
+message CustomTargetsReview {
+  repeated CustomTargetWarning warnings = 1;
+  string acknowledgement_token = 2;
 }
 message TargetVersion {
   string id = 1;
@@ -44,6 +70,7 @@ message TargetVersion {
   string target_basis = 11;
   string created_at = 12;
   string reviewed_at = 13;
+  TargetInputs input_snapshot = 14;
 }
 message TargetSelection {
   TargetVersion active = 1;
@@ -57,6 +84,7 @@ message AcceptTargetRequest {
   string version_id = 1;
   string effective_from_tracking_day = 2;
   map<string, TargetOverride> overrides = 3;
+  bool adult_scope_confirmed = 4;
 }
 message TargetVersionRequest { string version_id = 1; }
 message TargetHistoryRequest {
@@ -67,4 +95,50 @@ message TargetHistoryPage {
   repeated TargetVersion items = 1;
   string next_cursor = 2;
   bool has_more = 3;
+}
+
+message TargetInputs {
+  string height_cm = 1;
+  string weight_kg = 2;
+  string activity = 3;
+  bool assumed_height = 4;
+  bool assumed_weight = 5;
+  bool assumed_activity = 6;
+  string sex = 7;
+  uint32 age = 8;
+  string profile_saved_at = 9;
+}
+message TargetPlanningRequest { map<string, string> macros = 1; }
+message TargetPlanning {
+  TargetInputs inputs = 1;
+  uint64 profile_version = 2;
+  string policy_version = 3;
+  bool personalized_enabled = 4;
+  repeated string pending_decisions = 5;
+  repeated string missing_inputs = 6;
+  string macro_calories = 7;
+  string rounding_tolerance_kcal = 8;
+  string explanation = 9;
+  map<string, string> calculated_defaults = 10;
+  string energy_equation = 11;
+  string protein_rate = 12;
+  string activity_category = 13;
+  string reset_preview_token = 14;
+  string calculation_unavailable_reason = 15;
+  repeated CustomTargetWarning calculated_warnings = 16;
+}
+message ResetCalculatedTargetsRequest {
+  string expected_active_id = 1;
+  uint64 expected_revision = 2;
+  uint64 profile_version = 3;
+  string preview_token = 4;
+  bool adult_scope_confirmed = 5;
+}
+message SaveCustomTargetsRequest {
+  string expected_active_id = 1;
+  uint64 expected_revision = 2;
+  uint64 profile_version = 3;
+  map<string, TargetOverride> changes = 4;
+  string energy_provenance = 5;
+  string acknowledgement_token = 6;
 }
