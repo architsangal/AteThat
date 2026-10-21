@@ -30,6 +30,7 @@ message ScheduleHistoryPage { repeated HealthSchedule items = 1; uint64 next_bef
 message HealthItem {
   string id = 1;
   uint64 version = 2;
+  // MEDICATION, SUPPLEMENT, or TASK. Tasks do not carry dosage fields.
   string type = 3;
   string name = 4;
   string dosage_amount_text = 5;
@@ -47,6 +48,7 @@ message HealthItem {
 message UpsertHealthItemRequest {
   string id = 1;
   uint64 version = 2;
+  // MEDICATION, SUPPLEMENT, or TASK. Tasks do not carry dosage fields.
   string type = 3;
   string name = 4;
   string dosage_amount_text = 5;
@@ -81,6 +83,7 @@ message ListOccurrencesRequest { string from = 1; string to = 2; uint32 limit = 
 message OccurrencePage { repeated HealthOccurrence items = 1; string next_cursor = 2; bool has_more = 3; }
 message RecordOccurrenceRequest {
   string occurrence_id = 1;
+  // TAKEN means completed; the UI calls this "Done" for TASK occurrences.
   string status = 2;
   string completed_at = 3;
   string rescheduled_to = 4;

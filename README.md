@@ -42,9 +42,17 @@ USDA uses `DEMO_KEY` by default. Set `USDA_API_KEY` in `deploy/local/.env` to us
 
 Expanded nutrient analysis/recipes, water/weight/activity logging, optional personal water goal, advanced monthly/multi-time/versioned schedules, DOB month/year picker and supporting fixes are deployed. See [release status and verification](docs/PHASE_2_STATUS.md) and [v2.0.0](https://github.com/architsangal/AteThat/releases/tag/v2.0.0). A release tag preserves code, not database recovery.
 
+## Phase 2.1 — locally verified
+
+[Everyday UX improvements](docs/PHASE_2_1_STATUS.md) cover the 22-item audit, with local browser and regression validation. Release/deployment is pending.
+
+## Phase 2.5 — release candidate
+
+Settings supports independent targets, explicit macro-calorie refresh, effective input assumptions, activity-based adult calculated defaults, reviewed reset with revision history, and a user-facing formula guide. Factual Text Summary remains deterministic, not AI. Initial calculated proposals and durable outside-reference confirmations are included. See the [release verification and promotion record](docs/PHASE_2_5_RELEASE.md) for actual deployment status. See [implementation status](docs/PHASE_2_5_STATUS.md).
+
 ## Phase 3 — planned
 
-Local-first MongoDB food catalogue, explicit USDA discovery capped at 10 searches/user/day, bounded storage and manual cleanup are agreed next-phase work. Original AI label/photo/text/voice assistance, CSV/JSON exports and scoped external-agent/MCP capabilities remain planned, with provider/privacy/cost decisions open. See [Phase 3 backlog](docs/PHASE_3_BACKLOG.md).
+The local catalogue and explicit 10-search/user/UTC-day USDA allowance now have a local Phase 2.1 implementation. Provider-wide budget/cooldown, measured storage limits, freshness and maintenance remain planned. Original AI label/photo/text/voice assistance, CSV/JSON exports and scoped external-agent/MCP capabilities remain planned, with provider/privacy/cost decisions open. See [Phase 3 backlog](docs/PHASE_3_BACKLOG.md).
 
 ## Phase 4 and later — conditional
 

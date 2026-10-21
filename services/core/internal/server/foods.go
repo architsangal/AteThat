@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -49,11 +50,8 @@ func (s *Server) usdaJSON(ctx context.Context, cacheKey, endpoint string) ([]byt
 		return nil, status.Error(codes.Unavailable, "USDA food provider unavailable")
 	}
 	defer response.Body.Close()
-	if response.StatusCode == http.StatusNotFound {
-		return nil, status.Error(codes.NotFound, "USDA food not found")
-	}
-	if response.StatusCode != http.StatusOK {
-		return nil, status.Error(codes.Unavailable, "USDA food provider unavailable")
+	if err := usdaHTTPError(response.StatusCode, s.Cfg.USDAAPIKey == "DEMO_KEY"); err != nil {
+		return nil, err
 	}
 	data, err := io.ReadAll(io.LimitReader(response.Body, 3<<20))
 	if err != nil || len(data) == 0 || !json.Valid(data) {
@@ -82,8 +80,16 @@ type foodCursor struct {
 }
 
 func (s *Server) SearchUSDA(ctx context.Context, req *pb.SearchUSDARequest) (*pb.FoodSearchPage, error) {
-	if _, err := Principal(ctx); err != nil {
-		return nil, err
+	userID, authErr := Principal(ctx)
+	if authErr != nil {
+		return nil, authErr
+	}
+	source := strings.ToUpper(req.Source)
+	if source == "STATUS" {
+		return s.foodSearchStats(ctx, userID.Hex(), &pb.FoodSearchPage{})
+	}
+	if source != "" && source != "USDA" && source != "LOCAL" {
+		return nil, invalid("unsupported search source")
 	}
 	query := strings.Join(strings.Fields(strings.TrimSpace(req.Query)), " ")
 	if len(query) < 2 || len(query) > 100 || req.Limit == 0 || req.Limit > 50 {
@@ -92,6 +98,9 @@ func (s *Server) SearchUSDA(ctx context.Context, req *pb.SearchUSDARequest) (*pb
 	state := strings.ToUpper(req.FoodState)
 	if state != "" && state != "RAW" && state != "COOKED" && state != "PREPARED" && state != "UNKNOWN" {
 		return nil, invalid("unsupported food state")
+	}
+	if source == "LOCAL" {
+		return s.searchCatalogue(ctx, userID.Hex(), query, state, req)
 	}
 	queryHash := sha256.Sum256([]byte(strings.ToLower(query) + "|" + state + "|" + strconv.FormatUint(uint64(req.Limit), 10)))
 	queryKey := hex.EncodeToString(queryHash[:])[:24]
@@ -107,6 +116,27 @@ func (s *Server) SearchUSDA(ctx context.Context, req *pb.SearchUSDARequest) (*pb
 		}
 		page = cursor.Page
 	}
+	usageID := userID.Hex() + ":" + time.Now().UTC().Format("2006-01-02")
+	// The primary key and conditional increment serialize simultaneous requests.
+	var reservation searchUsage
+	err := s.DB.Collection("food_search_usage").FindOneAndUpdate(ctx,
+		bson.M{"_id": usageID, "usda": bson.M{"$lt": 10}},
+		bson.M{"$inc": bson.M{"usda": 1}, "$setOnInsert": bson.M{"expires_at": time.Now().UTC().Add(48 * time.Hour)}},
+		options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)).Decode(&reservation)
+	if mongo.IsDuplicateKeyError(err) || err == mongo.ErrNoDocuments {
+		return nil, status.Error(codes.ResourceExhausted, "Your 10 daily USDA searches have been used. Search the local database or try again after midnight UTC.")
+	}
+	if err != nil {
+		return nil, status.Error(codes.Unavailable, "Search allowance unavailable")
+	}
+	success := false
+	defer func() {
+		if !success {
+			refundCtx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+			defer cancel()
+			_, _ = s.DB.Collection("food_search_usage").UpdateOne(refundCtx, bson.M{"_id": usageID}, bson.M{"$inc": bson.M{"usda": -1}})
+		}
+	}()
 	search := query
 	if state == "RAW" || state == "COOKED" {
 		search += " " + strings.ToLower(state)
@@ -131,6 +161,18 @@ func (s *Server) SearchUSDA(ctx context.Context, req *pb.SearchUSDARequest) (*pb
 		encoded, _ := json.Marshal(foodCursor{Version: 1, Query: queryKey, Page: page + 1})
 		result.NextCursor = base64.RawURLEncoding.EncodeToString(encoded)
 	}
+	for _, item := range items {
+		_, err := s.Client.Database(s.Cfg.Database+"_foods").Collection("foods").UpdateOne(ctx, bson.M{"_id": item.ID}, bson.M{"$set": bson.M{"food": usdaFoodPB(item, "UNKNOWN"), "name": item.Name, "fetched_at": time.Now().UTC()}}, options.Update().SetUpsert(true))
+		if err != nil {
+			return nil, status.Error(codes.Unavailable, "Could not update local food database")
+		}
+	}
+	result.MatchedCount = uint64(total)
+	result, err = s.foodSearchStats(ctx, userID.Hex(), result)
+	if err != nil {
+		return nil, err
+	}
+	success = true
 	return result, nil
 }
 
@@ -160,4 +202,93 @@ func (s *Server) GetUSDAFood(ctx context.Context, req *pb.GetUSDAFoodRequest) (*
 		return nil, status.Error(codes.Unavailable, "USDA food provider returned invalid data")
 	}
 	return usdaFoodPB(food, "UNKNOWN"), nil
+}
+
+type searchUsage struct {
+	USDA  int64 `bson:"usda"`
+	Local int64 `bson:"local"`
+}
+
+func (s *Server) foodSearchStats(ctx context.Context, user string, result *pb.FoodSearchPage) (*pb.FoodSearchPage, error) {
+	now := time.Now().UTC()
+	var usage searchUsage
+	err := s.DB.Collection("food_search_usage").FindOne(ctx, bson.M{"_id": user + ":" + now.Format("2006-01-02")}).Decode(&usage)
+	if err != nil && err != mongo.ErrNoDocuments {
+		return nil, internal()
+	}
+	count, err := s.Client.Database(s.Cfg.Database+"_foods").Collection("foods").CountDocuments(ctx, bson.M{})
+	if err != nil {
+		return nil, internal()
+	}
+	result.UsdaLimit = 10
+	result.UsdaRemaining = uint32(max(int64(0), 10-usage.USDA))
+	result.LocalSearchesToday = uint64(max(int64(0), usage.Local))
+	result.CatalogueCount = uint64(count)
+	result.ResetsAt = time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, time.UTC).Format(time.RFC3339)
+	return result, nil
+}
+func (s *Server) searchCatalogue(ctx context.Context, user, query, state string, req *pb.SearchUSDARequest) (*pb.FoodSearchPage, error) {
+	filter := bson.M{"name": bson.M{"$regex": regexp.QuoteMeta(query), "$options": "i"}}
+	if state != "" && state != "UNKNOWN" {
+		filter["$and"] = bson.A{bson.M{"name": bson.M{"$regex": regexp.QuoteMeta(strings.ToLower(state)), "$options": "i"}}}
+	}
+	offset := int64(0)
+	if req.Cursor != "" {
+		n, err := strconv.ParseInt(req.Cursor, 10, 64)
+		if err != nil || n < 0 || n > 100000 {
+			return nil, invalid("invalid local cursor")
+		}
+		offset = n
+	}
+	total, err := s.Client.Database(s.Cfg.Database+"_foods").Collection("foods").CountDocuments(ctx, filter)
+	if err != nil {
+		return nil, internal()
+	}
+	cursor, err := s.Client.Database(s.Cfg.Database+"_foods").Collection("foods").Find(ctx, filter, options.Find().SetSort(bson.D{{Key: "name", Value: 1}, {Key: "_id", Value: 1}}).SetSkip(offset).SetLimit(int64(req.Limit)))
+	if err != nil {
+		return nil, internal()
+	}
+	defer cursor.Close(ctx)
+	result := &pb.FoodSearchPage{Items: []*pb.FoodResult{}, MatchedCount: uint64(total)}
+	for cursor.Next(ctx) {
+		var doc struct {
+			Food *pb.FoodResult `bson:"food"`
+		}
+		if err := cursor.Decode(&doc); err != nil {
+			return nil, internal()
+		}
+		result.Items = append(result.Items, doc.Food)
+	}
+	if cursor.Err() != nil {
+		return nil, internal()
+	}
+	result.HasMore = offset+int64(len(result.Items)) < total
+	if result.HasMore {
+		result.NextCursor = strconv.FormatInt(offset+int64(len(result.Items)), 10)
+	}
+	_, err = s.DB.Collection("food_search_usage").UpdateOne(ctx, bson.M{"_id": user + ":" + time.Now().UTC().Format("2006-01-02")}, bson.M{"$inc": bson.M{"local": 1}, "$setOnInsert": bson.M{"usda": 0, "expires_at": time.Now().UTC().Add(48 * time.Hour)}}, options.Update().SetUpsert(true))
+	if err != nil {
+		return nil, internal()
+	}
+	return s.foodSearchStats(ctx, user, result)
+}
+
+// Keep the provider's shared/IP limit distinct from the account's daily allowance.
+// Only stable classifications cross RPC; never include the request URL or API key.
+func usdaHTTPError(code int, demo bool) error {
+	switch code {
+	case http.StatusOK:
+		return nil
+	case http.StatusNotFound:
+		return status.Error(codes.NotFound, "USDA food not found")
+	case http.StatusTooManyRequests:
+		if demo {
+			return status.Error(codes.Unavailable, "USDA_DEMO_RATE_LIMITED")
+		}
+		return status.Error(codes.Unavailable, "USDA_PROVIDER_RATE_LIMITED")
+	case http.StatusUnauthorized, http.StatusForbidden:
+		return status.Error(codes.Unavailable, "USDA_PROVIDER_AUTH_FAILED")
+	default:
+		return status.Error(codes.Unavailable, "USDA food provider unavailable")
+	}
 }

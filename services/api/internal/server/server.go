@@ -158,6 +158,18 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		s.updatePreferences(w, r, requestID, ctx)
 	case path == "/tracking-day/current" && r.Method == http.MethodGet:
 		s.getCurrentTrackingDay(w, r, requestID, ctx)
+	case path == "/nutrition/targets/planning" && (r.Method == http.MethodGet || r.Method == http.MethodPost):
+		s.targetPlanning(w, r, requestID, ctx)
+	case path == "/nutrition/targets/custom" && r.Method == http.MethodPost:
+		s.saveCustomTargets(w, r, requestID, ctx)
+	case path == "/nutrition/targets/custom/review" && r.Method == http.MethodPost:
+		s.saveCustomTargets(w, r, requestID, ctx)
+	case path == "/nutrition/targets/proposal" && r.Method == http.MethodPost:
+		s.proposeCalculatedTargets(w, r, requestID, ctx)
+	case path == "/nutrition/targets/reset" && r.Method == http.MethodPost:
+		s.resetCalculatedTargets(w, r, requestID, ctx)
+	case path == "/text-summary" && r.Method == http.MethodGet:
+		s.textSummary(w, r, requestID, ctx)
 	case path == "/nutrition/targets/calculate" && r.Method == http.MethodPost:
 		s.calculateTargets(w, r, requestID, ctx)
 	case path == "/nutrition/targets" && r.Method == http.MethodGet:
@@ -379,6 +391,21 @@ func (s *Server) problem(w http.ResponseWriter, requestID string, httpCode int, 
 func (s *Server) rpcProblem(w http.ResponseWriter, requestID string, err error) {
 	code := status.Code(err)
 	switch code {
+	case codes.ResourceExhausted:
+		s.problem(w, requestID, 429, "USDA_SEARCH_LIMIT", "Your daily USDA search allowance is used. Search the local database or try again after midnight UTC.")
+	case codes.Unavailable:
+		switch status.Convert(err).Message() {
+		case "USDA_DEMO_RATE_LIMITED":
+			s.problem(w, requestID, 503, "USDA_PROVIDER_RATE_LIMITED", "USDA has temporarily rate-limited the shared demo connection. This is separate from your daily AteThat allowance. Search the local database or try USDA again later.")
+		case "USDA_PROVIDER_RATE_LIMITED":
+			s.problem(w, requestID, 503, "USDA_PROVIDER_RATE_LIMITED", "USDA has temporarily rate-limited the server connection. This is separate from your daily AteThat allowance. Search the local database or try USDA again later.")
+		case "USDA_PROVIDER_AUTH_FAILED":
+			s.problem(w, requestID, 503, "USDA_CONFIGURATION", "USDA rejected the server's API credentials. You can still search the local database.")
+		case "USDA food provider unavailable", "USDA food provider returned invalid data":
+			s.problem(w, requestID, 503, "USDA_UNAVAILABLE", "USDA search is temporarily unavailable. You can still search the local database or try again later.")
+		default:
+			s.problem(w, requestID, 503, "CORE_UNAVAILABLE", "Service temporarily unavailable")
+		}
 	case codes.InvalidArgument:
 		s.problem(w, requestID, 422, "VALIDATION_FAILED", "One or more fields are invalid")
 	case codes.Unauthenticated:
@@ -397,6 +424,10 @@ func (s *Server) rpcProblem(w http.ResponseWriter, requestID string, err error) 
 			s.problem(w, requestID, 409, "HISTORY_COMPACTED", "Detailed history is no longer available for this range; use complete daily summaries")
 		} else if strings.Contains(message, "confirmed group") {
 			s.problem(w, requestID, 409, "PRECONDITION_FAILED", "The food group is no longer available for correction")
+		} else if strings.Contains(message, "outside-reference") {
+			s.problem(w, requestID, 409, "TARGET_CONFIRMATION_REQUIRED", "Review and confirm the exact outside-reference targets before saving. If the review expired, review it again.")
+		} else if strings.Contains(message, "targets") {
+			s.problem(w, requestID, 409, "TARGET_REVIEW_REQUIRED", "Targets need a fresh review. Reload your current targets before trying again.")
 		} else {
 			s.problem(w, requestID, 410, "TOKEN_EXPIRED", "Token expired or already used")
 		}

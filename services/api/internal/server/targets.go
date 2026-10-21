@@ -38,7 +38,7 @@ func targetJSON(value *pb.TargetVersion) interface{} {
 	for key, target := range value.Targets {
 		items[key] = map[string]interface{}{"reference_value": target.ReferenceValue,
 			"active_value": target.ActiveValue, "unit": target.Unit,
-			"is_manual_override": target.IsManualOverride, "override_reason": target.OverrideReason}
+			"is_manual_override": target.IsManualOverride, "override_reason": target.OverrideReason, "provenance": target.Provenance, "reference_range": target.ReferenceRange, "outside_reference": target.OutsideReference, "acknowledged_at": target.AcknowledgedAt}
 	}
 	return map[string]interface{}{
 		"id": value.Id, "revision": value.Revision, "status": value.Status,
@@ -51,6 +51,7 @@ func targetJSON(value *pb.TargetVersion) interface{} {
 		"effective_from_tracking_day": value.EffectiveFromTrackingDay,
 		"target_basis":                value.TargetBasis, "targets": items,
 		"created_at": value.CreatedAt, "reviewed_at": value.ReviewedAt,
+		"input_snapshot": value.InputSnapshot,
 	}
 }
 
@@ -78,6 +79,7 @@ func (s *Server) acceptTargets(w http.ResponseWriter, r *http.Request, requestID
 			ActiveValue    string `json:"active_value"`
 			OverrideReason string `json:"override_reason"`
 		} `json:"overrides"`
+		AdultScopeConfirmed bool `json:"adult_scope_confirmed"`
 	}
 	if err := decodeJSON(w, r, &body); err != nil {
 		s.problem(w, requestID, 400, "INVALID_REQUEST", "Invalid JSON request")
@@ -88,7 +90,7 @@ func (s *Server) acceptTargets(w http.ResponseWriter, r *http.Request, requestID
 		overrides[key] = &pb.TargetOverride{ActiveValue: value.ActiveValue, OverrideReason: value.OverrideReason}
 	}
 	result, err := s.Target.Accept(s.rpcContext(ctx, pb.TargetService_Accept_FullMethodName, user.UserID, user.SessionFamily),
-		&pb.AcceptTargetRequest{VersionId: id, EffectiveFromTrackingDay: body.EffectiveFromTrackingDay, Overrides: overrides})
+		&pb.AcceptTargetRequest{VersionId: id, EffectiveFromTrackingDay: body.EffectiveFromTrackingDay, Overrides: overrides, AdultScopeConfirmed: body.AdultScopeConfirmed})
 	if err != nil {
 		s.rpcProblem(w, requestID, err)
 		return

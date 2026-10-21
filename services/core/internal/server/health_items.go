@@ -32,8 +32,11 @@ func scheduleFromRequest(userID, itemID primitive.ObjectID, version int64, req *
 }
 
 func validateHealthItem(req *pb.UpsertHealthItemRequest) error {
-	if req.Type != "MEDICATION" && req.Type != "SUPPLEMENT" {
-		return invalid("type must be medication or supplement")
+	if req.Type != "MEDICATION" && req.Type != "SUPPLEMENT" && req.Type != "TASK" {
+		return invalid("type must be medication, supplement or task")
+	}
+	if req.Type == "TASK" && (req.DosageAmountText != "" || req.DosageUnitText != "") {
+		return invalid("tasks do not have dosage fields; use instructions instead")
 	}
 	if len(strings.TrimSpace(req.Name)) < 2 || len(req.Name) > 120 || len(req.DosageAmountText) > 80 ||
 		len(req.DosageUnitText) > 80 || len(req.Instructions) > 500 || len(req.Notes) > 1000 {

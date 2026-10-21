@@ -162,6 +162,7 @@ message UsedFood {
 message UsedFoodPage { repeated UsedFood items = 1; string next_cursor = 2; bool has_more = 3; }
 
 message SearchUSDARequest {
+  string source = 5; // USDA (explicit discovery), LOCAL, or STATUS
   string query = 1;
   string food_state = 2;
   uint32 limit = 3;
@@ -188,6 +189,12 @@ message FoodResult {
 }
 
 message FoodSearchPage {
+  uint32 usda_remaining = 4;
+  uint32 usda_limit = 5;
+  uint64 catalogue_count = 6;
+  uint64 matched_count = 7;
+  uint64 local_searches_today = 8;
+  string resets_at = 9;
   repeated FoodResult items = 1;
   string next_cursor = 2;
   bool has_more = 3;

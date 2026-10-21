@@ -22,7 +22,7 @@ jobs:
       - run: npm run typecheck:web
       - run: npm run build:web
       - name: Frontend regression tests
-        run: node --test apps/web/src/features/nutrition/model.test.mjs apps/web/src/features/wellness/schedule-model.test.mjs
+        run: node --experimental-strip-types --test apps/web/src/features/*.test.mjs apps/web/src/features/nutrition/model.test.mjs apps/web/src/features/wellness/schedule-model.test.mjs
 
   go:
     name: Go tests
@@ -35,8 +35,23 @@ jobs:
       - name: Test API
         working-directory: services/api
         run: go test ./...
+      - name: Start disposable MongoDB replica set
+        run: |
+          docker run -d --name test-mongo -p 27017:27017 mongo:7 --replSet rs0 --bind_ip_all
+          for attempt in $(seq 1 30); do
+            if docker exec test-mongo mongosh --quiet --eval 'db.adminCommand({ping:1})'; then break; fi
+            sleep 1
+          done
+          docker exec test-mongo mongosh --quiet --eval 'rs.initiate({_id:"rs0",members:[{_id:0,host:"localhost:27017"}]})'
+          for attempt in $(seq 1 30); do
+            if docker exec test-mongo mongosh --quiet --eval 'if (!db.hello().isWritablePrimary) quit(1)'; then exit 0; fi
+            sleep 1
+          done
+          exit 1
       - name: Test Core
         working-directory: services/core
+        env:
+          ATETHAT_TEST_MONGO_URI: mongodb://localhost:27017/?replicaSet=rs0&directConnection=true
         run: go test ./...
 
   production-config:

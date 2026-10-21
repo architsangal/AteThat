@@ -140,7 +140,7 @@ func Accept(proposal Version, effectiveDay string, overrides map[string]Override
 	}
 	for key, override := range overrides {
 		target, exists := accepted.Targets[key]
-		if !exists || !validAmount(override.ActiveValue) || strings.TrimSpace(override.OverrideReason) == "" || len(override.OverrideReason) > 200 {
+		if !exists || !ValidSelectedAmount(key, override.ActiveValue) || strings.TrimSpace(override.OverrideReason) == "" || len(override.OverrideReason) > 200 {
 			return Version{}, fmt.Errorf("invalid override for %q", key)
 		}
 		target.ActiveValue = override.ActiveValue

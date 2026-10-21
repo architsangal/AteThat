@@ -10,7 +10,13 @@ Release `v1.0.0` established ownership, Core-only persistence, attributed nutrit
 
 Release `v2.0.0` added recipes, richer analysis, wellness and advanced schedules. AI/voice/agents were excluded from Phase 2, not cancelled from the original Phase 3 roadmap. Barcode was removed entirely.
 
-## Phase 3 — planned work
+## Local implementation update — 20 October 2026
+
+The owner subsequently requested real local/USDA controls and account counters during Phase 2.1 refinement. That subset is now implemented locally: separate logical catalogue database, public FDC-ID upserts, default local search (private custom foods remain in a separate tab), explicit 10-per-account UTC-day discovery, atomic reservations/refunds, status/matching counts and UI in logging/recipes. See [Phase 2.1 status](PHASE_2_1_STATUS.md).
+
+This is a partial implementation of section A, not completion of Phase 3. Catalogue records are retained independently of the existing 24-hour raw response cache. Provider-wide budgets/cooldowns, measured storage-budget enforcement, fuller provenance/serving fields and automated freshness/maintenance still need implementation. The historical proposals below retain their context; where they describe a pending daily-boundary/accounting decision, the local implementation currently uses midnight UTC, successful-empty counting and failed-provider refunds.
+
+## Phase 3 — remaining planned work
 
 ### A. Agreed addition: local-first food catalogue
 
