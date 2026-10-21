@@ -29,6 +29,8 @@ The v1.0.0 and v2.0.0 releases remain historical code checkpoints. This release 
 - Activity/protein mapping is explicitly an application approximation, not medical advice. Unknown age/sex is not invented. Water remains optional and independent; logged weight does not become profile weight.
 - Catalogue maintenance/storage operations, broader provider budgets, and the separately approved Phase 3 roadmap remain separate. No barcode, AI, notification, offline/PWA or data-recovery feature is added here.
 
+Additional Chrome session checks: sign out and sign in as a different disposable account showed a fresh factual summary with no previous draft. Expiring the shared disposable session while another tab had an edited summary redirected that tab to sign-in and removed the private draft. Session restoration succeeds on the configured `http://localhost:5173` origin; using an unconfigured port correctly fails origin-protected refresh.
+
 ## Promotion record
 
-Candidate prepared locally. Actual PR, deployment and GitHub release evidence will be recorded after protected promotion and production checks; this document does not claim an unperformed deployment.
+Feature PR: [#19 — Phase 2.5](https://github.com/architsangal/AteThat/pull/19), targeting `dev`. CI provisions MongoDB integration tests and all 31 web regressions. Production promotion and v2.5.0 publication follow only after protected checks. Actual deployment evidence is included in the GitHub release notes, which are published after production verification.

@@ -246,7 +246,7 @@ Release [v2.0.0](https://github.com/architsangal/AteThat/releases/tag/v2.0.0) pi
 
 Frontend production is the connected Worker `atethat`, built from `main`. Vite configuration is compiled into static assets; runtime bindings are not needed for the frontend. Its API base is `https://api.atethat.architsangal.in/api/v1`. Non-production builds must use `npx wrangler preview` with `previews: {}` in Wrangler; do not rename the connected Worker to `dev-atethat` or use the production deploy command for previews.
 
-CI currently typechecks/builds web, runs focused model and Go tests, and validates Compose. Mongo-backed integration is a local verification requirement, not currently provisioned in hosted CI. The backend pipeline rebuilds on the VPS; registry/image-digest deployment remains future hardening. Historical checkout prices/resource budgets above are planning records, not newly verified prices or measured free capacity.
+CI typechecks/builds web, runs all frontend regressions and Go tests, provisions a disposable MongoDB replica set for Core integration tests, and validates Compose. Phase 2.5 added hosted integration coverage; local HTTP and Chrome checks remain separate release evidence. The backend pipeline rebuilds on the VPS; registry/image-digest deployment remains future hardening. Historical checkout prices/resource budgets above are planning records, not newly verified prices or measured free capacity.
 
 ## Phase 3 — setup gates, not deployed infrastructure
 
