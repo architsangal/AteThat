@@ -11,21 +11,36 @@ const states=Object.keys(labels) as (keyof typeof labels)[]
 
 export function HealthItemChart({item,days,percent}:{item:AnalysisItem;days:DailyHealth[];percent:boolean}) {
   const chartId=useId()
+  const chartHost=useRef<HTMLDivElement>(null)
+  const [availableWidth,setAvailableWidth]=useState(680)
   const totals=days.reduce((sum,day)=>({done:sum.done+day.done,missed:sum.missed+day.missed,skipped:sum.skipped+day.skipped,active:sum.active+day.active,due:sum.due+day.due,dueDone:sum.dueDone+day.dueDone}),{done:0,missed:0,skipped:0,active:0,due:0,dueDone:0})
   const scheduled=totals.done+totals.missed+totals.skipped+totals.active
   const max=percent?100:Math.max(1,...days.map(day=>day.done+day.missed+day.skipped+day.active))
-  const width=Math.max(320,days.length*20+70),step=(width-70)/days.length
+  const hasSchedule=scheduled>0
+  useEffect(()=>{
+    const host=chartHost.current
+    if(!host)return
+    const observer=new ResizeObserver(entries=>{
+      const size=entries[0]?.contentRect.width
+      if(size)setAvailableWidth(Math.floor(size))
+    })
+    observer.observe(host)
+    return()=>observer.disconnect()
+  },[hasSchedule])
+  // Draw in actual CSS pixels instead of stretching a narrow SVG viewBox.
+  // Long ranges overflow horizontally, but glyphs and bars keep their proportions.
+  const width=Math.max(320,availableWidth,days.length*20+70),step=(width-70)/days.length
   const ticks=new Set([0,Math.floor((days.length-1)/2),days.length-1])
   return <article className="panel health-analysis-card" aria-labelledby={chartId}>
     <div className="panel-top"><div><span className="eyebrow">{item.type==='TASK'?'Task':item.type==='MEDICATION'?'Medication':'Supplement'}{!item.active?' · Paused item':''}</span><h3 id={chartId}>{item.name}</h3></div><div className="health-completion"><strong>{totals.due?`${Math.round(100*totals.dueDone/totals.due)}%`:'—'}</strong><span>of due occurrences completed</span></div></div>
     <div className="health-analysis-counts">{states.map(state=><span key={state}><i className={'health-dot health-bar-'+state}/>{labels[state]} <strong>{totals[state]}</strong></span>)}</div>
-    {!scheduled?<p className="occurrence-empty">No scheduled occurrences for this item in the selected range. This is not a missed day.</p>:<figure className="health-analysis-figure"><div className="health-chart-scroll" tabIndex={0} role="region" aria-label={`${item.name} chart, scroll horizontally for longer ranges`}><svg style={{minWidth:width}} preserveAspectRatio="none" viewBox={`0 0 ${width} 215`} role="img" aria-label={`${item.name}: daily ${percent?'completion percentage':'occurrence status counts'}. Exact values follow in the daily table.`}>
+    {!scheduled?<p className="occurrence-empty">No scheduled occurrences for this item in the selected range. This is not a missed day.</p>:<figure className="health-analysis-figure"><div ref={chartHost} className="health-chart-scroll" tabIndex={0} role="region" aria-label={`${item.name} chart, scroll horizontally for longer ranges`}><svg width={width} height={215} viewBox={`0 0 ${width} 215`} role="img" aria-label={`${item.name}: daily ${percent?'completion percentage':'occurrence status counts'}. Exact values follow in the daily table.`}>
       {[0,.5,1].map(ratio=><g key={ratio}><line x1="44" x2={width-18} y1={170-ratio*140} y2={170-ratio*140} className="chart-grid"/><text x="5" y={174-ratio*140}>{Number((ratio*max).toFixed(1))}{percent?'%':''}</text></g>)}
       {days.map((day,index)=>{
         let height=0
         const x=44+index*step+step*.15,barWidth=Math.max(3,step*.7)
-        if(percent){const value=day.due?100*day.dueDone/day.due:null;return <g key={day.day}>{value!==null&&<rect x={x} y={170-value/max*140} width={barWidth} height={Math.max(1,value/max*140)} className="health-bar-done"><title>{day.day}: {value.toFixed(1)}% · {day.dueDone}/{day.due} due completed</title></rect>}{ticks.has(index)&&<text x={x} y="198">{day.day.slice(5)}</text>}</g>}
-        return <g key={day.day}>{states.map(state=>{const size=day[state]/max*140;height+=size;return size>0&&<rect key={state} x={x} y={170-height} width={barWidth} height={size} className={'health-bar-'+state}><title>{day.day}: {labels[state]} {day[state]}</title></rect>})}{ticks.has(index)&&<text x={x} y="198">{day.day.slice(5)}</text>}</g>
+        if(percent){const value=day.due?100*day.dueDone/day.due:null;return <g key={day.day}>{value!==null&&<rect x={x} y={170-value/max*140} width={barWidth} height={Math.max(1,value/max*140)} className="health-bar-done"><title>{day.day}: {value.toFixed(1)}% · {day.dueDone}/{day.due} due completed</title></rect>}{ticks.has(index)&&<text x={x+barWidth/2} y="198" textAnchor="middle">{day.day.slice(5)}</text>}</g>}
+        return <g key={day.day}>{states.map(state=>{const size=day[state]/max*140;height+=size;return size>0&&<rect key={state} x={x} y={170-height} width={barWidth} height={size} className={'health-bar-'+state}><title>{day.day}: {labels[state]} {day[state]}</title></rect>})}{ticks.has(index)&&<text x={x+barWidth/2} y="198" textAnchor="middle">{day.day.slice(5)}</text>}</g>
       })}
     </svg></div><figcaption>{percent?'Daily completion uses due occurrences only; days with no due occurrences have no percentage.':'Daily scheduled occurrence counts, not a medical assessment. Blank dates have no scheduled occurrences.'} Scroll horizontally for long ranges; exact values are below.</figcaption></figure>}
     <p className="muted">{totals.dueDone} of {totals.due} due occurrences completed · {scheduled} scheduled in this range. Future occurrences are excluded from the completion percentage.</p>

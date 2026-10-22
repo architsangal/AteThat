@@ -31,7 +31,7 @@
 .health-bar-active { fill: #8298ae; background: #8298ae; }
 .health-analysis-figure { margin: 0; min-width: 0; }
 .health-chart-scroll { overflow-x: auto; padding: 8px 6px; background: var(--surface-alt, var(--surface)); border: 1px solid var(--border); border-radius: 12px; }
-.health-chart-scroll svg { display: block; width: 100%; height: 215px; max-width: none; }
+.health-chart-scroll svg { display: block; height: 215px; max-width: none; }
 .health-chart-scroll text { fill: var(--text-muted); font-size: 11px; }
 .health-analysis-figure figcaption { color: var(--text-muted); font-size: .75rem; line-height: 1.7; margin-top: 12px; }
 .health-analysis-card > p { margin: 0; font-size: .8rem; line-height: 1.7; }
