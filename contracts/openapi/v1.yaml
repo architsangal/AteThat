@@ -1060,7 +1060,7 @@ components:
     Preferences:
       type: object
       additionalProperties: false
-      required: [id, version, daily_reset_time, unit_system, dashboard_nutrients]
+      required: [id, version, daily_reset_time, unit_system, dashboard_nutrients, analysis_health_item_ids]
       properties:
         id: { $ref: '#/components/schemas/ObjectId' }
         version: { type: integer, minimum: 1 }
@@ -1069,6 +1069,12 @@ components:
         dashboard_nutrients:
           type: array
           items: { type: string, pattern: '^[A-Z][A-Z_]*$' }
+        analysis_health_item_ids:
+          type: array
+          maxItems: 12
+          uniqueItems: true
+          description: Owner-selected health items charted in Analysis. Empty means no charts; paused items may be selected.
+          items: { $ref: '#/components/schemas/ObjectId' }
     TrackingDayContext:
       type: object
       additionalProperties: false
@@ -1090,6 +1096,12 @@ components:
         dashboard_nutrients:
           type: array
           items: { type: string, pattern: '^[A-Z][A-Z_]*$' }
+        analysis_health_item_ids:
+          type: array
+          maxItems: 12
+          uniqueItems: true
+          description: Replaces only this selection, including intentional empty lists; IDs must belong to the authenticated account. Omission preserves it. Uses the shared preferences version for conflict detection.
+          items: { $ref: '#/components/schemas/ObjectId' }
     FieldError:
       type: object
       required: [field, code, message]

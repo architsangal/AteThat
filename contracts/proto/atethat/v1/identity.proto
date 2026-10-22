@@ -129,6 +129,7 @@ message Preferences {
   string daily_reset_time = 3;
   string unit_system = 4;
   repeated string dashboard_nutrients = 5;
+  repeated string analysis_health_item_ids = 6;
 }
 message UpdatePreferencesRequest {
   uint64 version = 1;
@@ -136,7 +137,9 @@ message UpdatePreferencesRequest {
   optional string unit_system = 3;
   // Set when supplied, even for an intentionally empty list.
   NutrientKeys dashboard_nutrients = 4;
+  HealthItemSelection analysis_health_items = 5;
 }
+message HealthItemSelection { repeated string ids = 1; }
 message NutrientKeys { repeated string values = 1; }
 message TrackingDayContext {
   string tracking_day = 1;
