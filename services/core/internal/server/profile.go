@@ -45,7 +45,7 @@ func (s *Server) profileWithIdentityState(ctx context.Context, userID primitive.
 
 func preferencesResponse(doc preferencesDoc) *pb.Preferences {
 	return &pb.Preferences{Id: doc.ID.Hex(), Version: uint64(doc.Version), DailyResetTime: doc.DailyResetTime,
-		UnitSystem: doc.UnitSystem, DashboardNutrients: doc.DashboardNutrients}
+		UnitSystem: doc.UnitSystem, DashboardNutrients: doc.DashboardNutrients, AnalysisHealthItemIds: doc.AnalysisHealthItemIDs}
 }
 
 func (s *Server) GetProfile(ctx context.Context, _ *pb.Empty) (*pb.Profile, error) {
@@ -211,6 +211,27 @@ func (s *Server) UpdatePreferences(ctx context.Context, req *pb.UpdatePreference
 			return nil, invalid("too many dashboard nutrients")
 		}
 		set["dashboard_nutrients"] = req.DashboardNutrients.Values
+	}
+	if req.AnalysisHealthItems != nil {
+		ids := req.AnalysisHealthItems.Ids
+		if len(ids) > 12 {
+			return nil, invalid("choose up to 12 health items for analysis")
+		}
+		seen := map[string]bool{}
+		for _, raw := range ids {
+			id, parseErr := primitive.ObjectIDFromHex(raw)
+			if parseErr != nil || id.Hex() != raw || seen[raw] {
+				return nil, invalid("invalid or duplicate analysis health item")
+			}
+			seen[raw] = true
+			if err := s.DB.Collection("health_items").FindOne(ctx, bson.M{"_id": id, "user_id": userID}).Err(); err != nil {
+				if err == mongo.ErrNoDocuments {
+					return nil, invalid("choose health items from your own account")
+				}
+				return nil, internal()
+			}
+		}
+		set["analysis_health_item_ids"] = ids
 	}
 	var doc preferencesDoc
 	err = s.DB.Collection("user_preferences").FindOneAndUpdate(ctx,

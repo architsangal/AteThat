@@ -111,15 +111,16 @@ type profileDoc struct {
 }
 
 type preferencesDoc struct {
-	ID                 primitive.ObjectID `bson:"_id,omitempty"`
-	UserID             primitive.ObjectID `bson:"user_id"`
-	DailyResetTime     string             `bson:"daily_reset_time"`
-	UnitSystem         string             `bson:"unit_system"`
-	DashboardNutrients []string           `bson:"dashboard_nutrients"`
-	SchemaVersion      int                `bson:"schema_version"`
-	Version            int64              `bson:"version"`
-	CreatedAt          time.Time          `bson:"created_at"`
-	UpdatedAt          time.Time          `bson:"updated_at"`
+	ID                    primitive.ObjectID `bson:"_id,omitempty"`
+	UserID                primitive.ObjectID `bson:"user_id"`
+	DailyResetTime        string             `bson:"daily_reset_time"`
+	UnitSystem            string             `bson:"unit_system"`
+	DashboardNutrients    []string           `bson:"dashboard_nutrients"`
+	AnalysisHealthItemIDs []string           `bson:"analysis_health_item_ids"`
+	SchemaVersion         int                `bson:"schema_version"`
+	Version               int64              `bson:"version"`
+	CreatedAt             time.Time          `bson:"created_at"`
+	UpdatedAt             time.Time          `bson:"updated_at"`
 }
 
 type referenceValueDoc struct {
