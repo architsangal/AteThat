@@ -1,0 +1,54 @@
+.app-time-input { min-width: 0; display: grid; gap: 7px; flex: 1; }
+.app-time-segments { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border: 1px solid var(--border-strong); border-radius: 12px; background: var(--surface-alt, var(--surface)); }
+.app-time-segments > label { flex: 1; min-width: 0; margin: 0; }
+.app-time-segments select { width: 100%; min-width: 0; min-height: 40px; padding: 8px 30px 8px 12px; font-variant-numeric: tabular-nums; }
+.app-time-segments > span { font-size: 1.1rem; color: var(--text-muted); }
+.app-time-segments small { font-size: .72rem; color: var(--text-muted); white-space: nowrap; }
+.time-row { align-items: flex-end; }
+.time-row > .quiet-link { flex: 0 0 auto; margin-bottom: 10px; }
+.app-datetime-field { display: grid; gap: 18px; }
+.health-occurrences { display: grid; gap: 20px; margin-bottom: 24px; }
+.health-occurrences .panel-top, .health-occurrences h2, .health-occurrences .panel-top p { margin: 0; }
+.health-occurrences .panel-top p { margin-top: 8px; }
+.occurrence-filters { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr) auto; align-items: end; gap: 16px; padding: 18px; border-radius: 14px; border: 1px solid var(--border); background: var(--surface-alt, var(--surface)); }
+.occurrence-range-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.occurrence-range-caption, .occurrence-help { margin: 0; color: var(--text-muted); font-size: .8rem; line-height: 1.6; }
+.occurrence-tabs { display: flex; flex-wrap: wrap; gap: 8px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+.occurrence-tabs [role=tab] { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 44px; padding: 9px 14px; color: var(--text-muted); background: transparent; border: 1px solid var(--border-strong); border-radius: 11px; font-size: .85rem; font-weight: 600; }
+.occurrence-tabs [role=tab] span { min-width: 22px; padding: 2px 6px; border-radius: 6px; background: var(--surface); font-size: .74rem; font-variant-numeric: tabular-nums; }
+.occurrence-tabs [role=tab][aria-selected=true] { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
+.occurrence-tabs [role=tab][aria-selected=true] span { background: var(--on-primary); color: var(--primary); }
+.occurrence-card { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 18px; padding: 20px 0; border-bottom: 1px solid var(--border); }
+.occurrence-card:first-child { padding-top: 0; }
+.occurrence-description { min-width: 0; flex: 1 1 240px; }
+.occurrence-title { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.occurrence-title h3 { margin: 0; overflow-wrap: anywhere; }
+.occurrence-description p { margin: 9px 0 5px; color: var(--text-muted); font-size: .85rem; }
+.occurrence-description small { color: var(--text-muted); font-size: .75rem; }
+.occurrence-status { display: inline-flex; padding: 4px 9px; border: 1px solid var(--border-strong); border-radius: 7px; font-size: .72rem; font-weight: 700; text-transform: capitalize; }
+.occurrence-status-taken { background: var(--success-bg, var(--surface)); color: var(--accent); }
+.occurrence-status-missed { color: var(--danger, var(--text)); }
+.occurrence-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.occurrence-actions summary { cursor: pointer; padding: 10px 0; color: var(--accent); font-size: .8rem; }
+.occurrence-secondary { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--border); border-radius: 10px; }
+.occurrence-secondary button { text-align: left; }
+.occurrence-empty { padding: 28px 16px; text-align: center; background: var(--surface-alt, var(--surface)); border: 1px dashed var(--border-strong); border-radius: 14px; }
+.occurrence-empty h3 { margin: 0 0 10px; font-size: 1rem; }
+.occurrence-empty p { margin: 0; color: var(--text-muted); font-size: .85rem; }
+.health-routines { margin-block: 24px; }
+.health-routines > summary, .health-audit > summary { cursor: pointer; padding-block: 8px; font-weight: 650; }
+.health-routines-content { margin-top: 20px; }
+.health-routines-content h2 { margin-top: 0; }
+.health-audit { margin-top: 24px; }
+.flow-dialog .app-calendar-shared { margin: 0; }
+@media(max-width:900px) { .occurrence-filters { grid-template-columns: repeat(2,minmax(0,1fr)); } .occurrence-range-actions { grid-column: 1/-1; } }
+@media(max-width:600px) {
+  .occurrence-filters { grid-template-columns: minmax(0,1fr); padding: 14px; gap: 14px; }
+  .occurrence-range-actions .button { flex: 1; padding-inline: 10px; }
+  .occurrence-tabs { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; }
+  .occurrence-tabs [role=tab] { padding: 9px 5px; gap: 5px; font-size: .75rem; }
+  .occurrence-tabs [role=tab] span { min-width: 18px; padding: 2px 4px; }
+  .app-time-segments { padding: 6px 8px; gap: 6px; }
+  .app-time-segments select { padding-inline-start: 8px; }
+  .app-time-segments small { font-size: .65rem; }
+}

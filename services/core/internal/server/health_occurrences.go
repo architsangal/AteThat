@@ -15,6 +15,7 @@ import (
 	"github.com/architsangal/AteThat/services/core/internal/health"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -33,10 +34,12 @@ type occurrenceCursor struct {
 }
 
 func occurrenceBefore(left, right *pb.HealthOccurrence) bool {
-	if left.ScheduledAt == right.ScheduledAt {
+	leftAt, _ := time.Parse(time.RFC3339Nano, left.ScheduledAt)
+	rightAt, _ := time.Parse(time.RFC3339Nano, right.ScheduledAt)
+	if leftAt.Equal(rightAt) {
 		return left.OccurrenceId < right.OccurrenceId
 	}
-	return left.ScheduledAt < right.ScheduledAt
+	return leftAt.Before(rightAt)
 }
 
 // occurrencePageHeap is a max-heap. Its root is the latest candidate retained
@@ -103,11 +106,27 @@ func scheduleDomain(doc healthScheduleDoc) health.Schedule {
 
 func eventOnOccurrence(item *pb.HealthOccurrence, event healthEventDoc) {
 	item.Status = event.Status
+	item.EventVersion = event.Version
+	if event.RescheduledTo != nil {
+		item.OriginalScheduledAt = event.ScheduledAt.UTC().Format(time.RFC3339Nano)
+		item.RescheduledTo = event.RescheduledTo.UTC().Format(time.RFC3339Nano)
+		item.ScheduledAt = item.RescheduledTo
+		if zone, err := time.LoadLocation(event.Timezone); err == nil {
+			local := event.RescheduledTo.In(zone)
+			item.ScheduledLocalDate = local.Format("2006-01-02")
+			item.ScheduledLocalTime = local.Format("15:04")
+		}
+	}
+	// RESCHEDULED is an old stored action, not an effective lifecycle state.
+	if item.Status == "RESCHEDULED" || item.Status == "SCHEDULED" {
+		item.Status = "SCHEDULED"
+		at, _ := time.Parse(time.RFC3339Nano, item.ScheduledAt)
+		if at.Before(time.Now().UTC()) {
+			item.Status = "MISSED"
+		}
+	}
 	if event.CompletedAt != nil {
 		item.CompletedAt = event.CompletedAt.UTC().Format(time.RFC3339Nano)
-	}
-	if event.RescheduledTo != nil {
-		item.RescheduledTo = event.RescheduledTo.UTC().Format(time.RFC3339Nano)
 	}
 	item.Notes = event.Notes
 }
@@ -129,11 +148,44 @@ func (s *Server) ListOccurrences(ctx context.Context, req *pb.ListOccurrencesReq
 			return nil, invalid("invalid occurrence cursor")
 		}
 	}
+	eventCursor, err := s.DB.Collection("health_item_events").Find(ctx, bson.M{"user_id": userID, "$or": bson.A{
+		bson.M{"scheduled_at_utc": bson.M{"$gte": from.UTC(), "$lt": to.UTC()}},
+		bson.M{"rescheduled_to_utc": bson.M{"$gte": from.UTC(), "$lt": to.UTC()}},
+	}})
+	if err != nil {
+		return nil, internal()
+	}
+	defer eventCursor.Close(ctx)
+	eventsByID := map[string]healthEventDoc{}
+	movedByItem := map[primitive.ObjectID][]healthEventDoc{}
+	for eventCursor.Next(ctx) {
+		var event healthEventDoc
+		if eventCursor.Decode(&event) != nil {
+			return nil, internal()
+		}
+		eventsByID[event.OccurrenceID] = event
+		if event.RescheduledTo != nil && !event.ScheduledAt.Before(from) && event.ScheduledAt.Before(to) {
+			continue
+		}
+		if event.RescheduledTo != nil {
+			movedByItem[event.HealthItemID] = append(movedByItem[event.HealthItemID], event)
+		}
+	}
+	if eventCursor.Err() != nil {
+		return nil, internal()
+	}
 	pageSize := int(req.Limit)
 	selected := occurrencePageHeap{}
 	heap.Init(&selected)
 	addCandidate := func(candidate *pb.HealthOccurrence) {
-		if req.Cursor != "" && (candidate.ScheduledAt < cursor.At || (candidate.ScheduledAt == cursor.At && candidate.OccurrenceId <= cursor.ID)) {
+		if event, ok := eventsByID[candidate.OccurrenceId]; ok {
+			eventOnOccurrence(candidate, event)
+		}
+		at, parseErr := time.Parse(time.RFC3339Nano, candidate.ScheduledAt)
+		if parseErr != nil || at.Before(from) || !at.Before(to) {
+			return
+		}
+		if req.Cursor != "" && !occurrenceBefore(&pb.HealthOccurrence{ScheduledAt: cursor.At, OccurrenceId: cursor.ID}, candidate) {
 			return
 		}
 		if selected.Len() < pageSize+1 {
@@ -178,6 +230,9 @@ func (s *Server) ListOccurrences(ctx context.Context, req *pb.ListOccurrencesReq
 				addCandidate(s.occurrenceFromSchedule(item, schedule, occurrence))
 			}
 		}
+		for _, event := range movedByItem[item.ID] {
+			addCandidate(&pb.HealthOccurrence{OccurrenceId: event.OccurrenceID, HealthItemId: item.ID.Hex(), ScheduleVersion: uint64(event.ScheduleVersion), Name: item.Name, Type: item.Type, ScheduledAt: event.ScheduledAt.UTC().Format(time.RFC3339Nano), ScheduledLocalDate: event.LocalDate, ScheduledLocalTime: event.LocalTime, Timezone: event.Timezone})
+		}
 		if schedules.Err() != nil {
 			schedules.Close(ctx)
 			return nil, internal()
@@ -194,33 +249,7 @@ func (s *Server) ListOccurrences(ctx context.Context, req *pb.ListOccurrencesReq
 	if page.HasMore {
 		page.Items = page.Items[:pageSize]
 	}
-	if len(page.Items) > 0 {
-		ids := make([]string, 0, len(page.Items))
-		for _, item := range page.Items {
-			ids = append(ids, item.OccurrenceId)
-		}
-		events, findErr := s.DB.Collection("health_item_events").Find(ctx, bson.M{"user_id": userID, "occurrence_id": bson.M{"$in": ids}})
-		if findErr != nil {
-			return nil, internal()
-		}
-		defer events.Close(ctx)
-		byID := map[string]healthEventDoc{}
-		for events.Next(ctx) {
-			var event healthEventDoc
-			if events.Decode(&event) != nil {
-				return nil, internal()
-			}
-			byID[event.OccurrenceID] = event
-		}
-		if events.Err() != nil {
-			return nil, internal()
-		}
-		for _, item := range page.Items {
-			if event, ok := byID[item.OccurrenceId]; ok {
-				eventOnOccurrence(item, event)
-			}
-		}
-	}
+
 	if page.HasMore {
 		last := page.Items[len(page.Items)-1]
 		data, _ := json.Marshal(occurrenceCursor{At: last.ScheduledAt, ID: last.OccurrenceId, From: req.From, To: req.To})
@@ -285,8 +314,8 @@ func (s *Server) RecordOccurrence(ctx context.Context, req *pb.RecordOccurrenceR
 	}
 	if req.Status == "RESCHEDULED" {
 		value, err := time.Parse(time.RFC3339Nano, req.RescheduledTo)
-		if err != nil || !value.After(at) {
-			return nil, invalid("rescheduled_to must be later than scheduled time")
+		if err != nil || !value.After(time.Now().UTC()) {
+			return nil, invalid("rescheduled_to must be in the future")
 		}
 		value = value.UTC()
 		rescheduled = &value
@@ -294,17 +323,51 @@ func (s *Server) RecordOccurrence(ctx context.Context, req *pb.RecordOccurrenceR
 		return nil, invalid("rescheduled_to is only for RESCHEDULED")
 	}
 	now := time.Now().UTC()
-	set := bson.M{"status": req.Status, "notes": req.Notes, "updated_at": now,
-		"completed_at_utc": completed, "rescheduled_to_utc": rescheduled}
-	var event healthEventDoc
-	err = s.DB.Collection("health_item_events").FindOneAndUpdate(ctx,
-		bson.M{"user_id": userID, "occurrence_id": req.OccurrenceId},
-		bson.M{"$set": set, "$setOnInsert": bson.M{"user_id": userID, "health_item_id": itemID,
-			"schedule_version": identity.Version, "occurrence_id": req.OccurrenceId, "scheduled_at_utc": at.UTC(),
-			"scheduled_local_date": found.ScheduledLocalDate, "scheduled_local_time": found.ScheduledLocalTime,
-			"timezone": found.Timezone, "created_at": now}},
-		options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)).Decode(&event)
+	session, err := s.Client.StartSession()
 	if err != nil {
+		return nil, internal()
+	}
+	defer session.EndSession(ctx)
+	var event healthEventDoc
+	_, err = session.WithTransaction(ctx, func(sc mongo.SessionContext) (interface{}, error) {
+		var previous healthEventDoc
+		filter := bson.M{"user_id": userID, "occurrence_id": req.OccurrenceId}
+		e := s.DB.Collection("health_item_events").FindOne(sc, filter).Decode(&previous)
+		if e != nil && e != mongo.ErrNoDocuments {
+			return nil, e
+		}
+		if req.ExpectedEventVersion != nil && *req.ExpectedEventVersion != previous.Version {
+			return nil, status.Error(codes.Aborted, "Occurrence changed; reload before recording an action.")
+		}
+		if req.Status == "RESCHEDULED" && previous.Status == "TAKEN" {
+			return nil, invalid("completed occurrences cannot be rescheduled")
+		}
+		event = healthEventDoc{ID: previous.ID, UserID: userID, HealthItemID: itemID, ScheduleVersion: identity.Version, OccurrenceID: req.OccurrenceId, ScheduledAt: at.UTC(), LocalDate: found.ScheduledLocalDate, LocalTime: found.ScheduledLocalTime, Timezone: found.Timezone, Status: req.Status, CompletedAt: completed, RescheduledTo: previous.RescheduledTo, Notes: req.Notes, CreatedAt: previous.CreatedAt, UpdatedAt: now, Version: previous.Version + 1}
+		if event.CreatedAt.IsZero() {
+			event.CreatedAt = now
+		}
+		if event.ID.IsZero() {
+			event.ID = primitive.NewObjectID()
+		}
+		if req.Status == "RESCHEDULED" {
+			event.RescheduledTo = rescheduled
+			event.Status = "SCHEDULED"
+		}
+		// Snapshot every successful transition atomically, including legacy state,
+		// so moving or completing an occurrence never erases its former values.
+		if _, e = s.DB.Collection("health_item_event_history").InsertOne(sc, bson.M{"user_id": userID, "occurrence_id": req.OccurrenceId, "version": event.Version, "action": req.Status, "before": previous, "after": event, "changed_at": now}); e != nil {
+			return nil, e
+		}
+		_, e = s.DB.Collection("health_item_events").ReplaceOne(sc, filter, event, options.Replace().SetUpsert(true))
+		return nil, e
+	})
+	if err != nil {
+		if mongo.IsDuplicateKeyError(err) {
+			return nil, status.Error(codes.Aborted, "Occurrence changed; reload before recording an action.")
+		}
+		if status.Code(err) != codes.Unknown {
+			return nil, err
+		}
 		return nil, internal()
 	}
 	eventOnOccurrence(found, event)

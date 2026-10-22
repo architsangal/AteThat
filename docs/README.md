@@ -1,10 +1,6 @@
 # AteThat documentation and phase roadmap
 
-## Phase 2.5 — local work, policy-gated
-
-See [engineering requirements](PHASE_2_5_ENGINEERING_REQUIREMENTS.md) and [implementation status](PHASE_2_5_STATUS.md). Independent Settings targets, owner-approved assumed inputs, explanation page and factual Text Summary are implemented locally. Activity-based calculated defaults and previewed reset are now implemented locally; this does not change the Phase 2 production release status. Age/sex are not invented, and water is excluded.
-
-Reconciled: 2026-10-16. Owner scope decisions override historical proposals. Release tags are code checkpoints, not database backups or a recovery guarantee.
+Reconciled: 2026-10-22. Owner scope decisions override historical proposals. Release tags are code checkpoints, not database backups or a recovery guarantee.
 
 ## Phase 1 — complete
 
@@ -16,13 +12,17 @@ Reconciled: 2026-10-16. Owner scope decisions override historical proposals. Rel
 
 Barcode scanning was removed, not postponed. Additional Indian-food providers were not selected. Notifications, offline/PWA, AI and backup/recovery implementation were excluded from Phase 2. These decisions supersede the original PDF Phase 2 acceptance list.
 
-## Phase 2.1 — local UX verification
+## Phase 2.1 — included in v2.5.0
 
-[Everyday UX improvements and audit traceability](PHASE_2_1_STATUS.md) are implemented and tested locally. This is not yet a published release.
+[Everyday UX improvements and audit traceability](PHASE_2_1_STATUS.md) were incorporated into the v2.5.0 release; that document retains the earlier local verification history.
 
-## Phase 2.5 — release candidate
+## Phase 2.5 — released as v2.5.0
 
 Independent/custom nutrition targets, reviewed calculated proposals/reset and collapsed editable Text Summary. See the [release verification and promotion record](PHASE_2_5_RELEASE.md) and [implementation history](PHASE_2_5_STATUS.md).
+
+## Phase 2.6 — task lifecycle and date/time controls
+
+See [scope and verification](PHASE_2_6_RELEASE.md): Active/Done/Missed/All occurrence tabs, today/account-calendar ranges, effective one-off rescheduling and shared date/time controls. Published release notes record actual deployment evidence.
 
 ## Phase 3 — remaining roadmap
 

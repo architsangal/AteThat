@@ -20,6 +20,61 @@ tags:
 security:
   - bearerAuth: []
 paths:
+  /health-items/occurrences:
+    get:
+      tags: [Health]
+      operationId: listHealthOccurrences
+      summary: Owner-scoped effective scheduled occurrences, including moved occurrences
+      description: Range is UTC and end-exclusive, at most 32 elapsed days. UI converts up to 31 account calendar days, allowing DST. Apply effective moved dates and event state before sorting/pagination. Stable signed occurrence identity is retained across moves.
+      parameters:
+        - { name: from, in: query, required: true, schema: { type: string, format: date-time } }
+        - { name: to, in: query, required: true, schema: { type: string, format: date-time } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100 } }
+        - { name: cursor, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: Effective occurrences
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/HealthOccurrence' } }
+                  page:
+                    type: object
+                    properties:
+                      next_cursor: { type: string, nullable: true }
+                      has_more: { type: boolean }
+        default: { $ref: '#/components/responses/Problem' }
+  /health-items/occurrences/{id}:
+    put:
+      tags: [Health]
+      operationId: recordHealthOccurrence
+      summary: Record completion, deliberate skip or a future one-off move
+      description: RESCHEDULED is an action returning SCHEDULED, not a terminal lifecycle state. A move cannot target the past or a completed occurrence. Completion/skip retain a prior moved date. Audit snapshot and current state are written transactionally. Send expected_event_version for stale-action protection (omission retained for older clients); conflicts are 409.
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, maxLength: 512 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [status]
+              properties:
+                status: { type: string, enum: [TAKEN, SKIPPED, RESCHEDULED] }
+                completed_at: { type: string, format: date-time, description: Required only for TAKEN }
+                rescheduled_to: { type: string, format: date-time, description: Required only for RESCHEDULED; future instant }
+                expected_event_version: { type: integer, minimum: 0 }
+                notes: { type: string, maxLength: 1000 }
+      responses:
+        '200':
+          description: Updated effective occurrence
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HealthOccurrence' }
+        default: { $ref: '#/components/responses/Problem' }
   /nutrition/targets/proposal:
     post:
       tags: [NutritionTargets]
@@ -751,6 +806,27 @@ components:
       properties:
         warnings: { type: array, nullable: true, items: { $ref: '#/components/schemas/CustomTargetWarning' } }
         acknowledgement_token: { type: string }
+    HealthOccurrence:
+      type: object
+      properties:
+        occurrence_id: { type: string }
+        health_item_id: { type: string }
+        schedule_version: { type: integer }
+        name: { type: string }
+        type: { type: string, enum: [TASK, MEDICATION, SUPPLEMENT] }
+        scheduled_at: { type: string, format: date-time, description: Effective UTC scheduled instant }
+        original_scheduled_at: { type: string, format: date-time, nullable: true }
+        event_version: { type: integer, minimum: 0 }
+        status: { type: string, enum: [SCHEDULED, MISSED, TAKEN, SKIPPED] }
+        completed_at: { type: string, format: date-time, nullable: true }
+        rescheduled_to: { type: string, format: date-time, nullable: true }
+        notes: { type: string }
+        scheduled_local:
+          type: object
+          properties:
+            date: { type: string, format: date }
+            time: { type: string }
+            timezone: { type: string }
     TargetInputs:
       type: object
       properties:

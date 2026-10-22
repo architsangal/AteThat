@@ -195,7 +195,7 @@ func healthOccurrenceJSON(item *pb.HealthOccurrence) interface{} {
 	return map[string]interface{}{"occurrence_id": item.OccurrenceId, "health_item_id": item.HealthItemId,
 		"schedule_version": item.ScheduleVersion, "name": item.Name, "type": item.Type, "scheduled_at": item.ScheduledAt,
 		"scheduled_local": map[string]string{"date": item.ScheduledLocalDate, "time": item.ScheduledLocalTime, "timezone": item.Timezone},
-		"status":          item.Status, "completed_at": nilIfEmpty(item.CompletedAt), "rescheduled_to": nilIfEmpty(item.RescheduledTo), "notes": item.Notes}
+		"status":          item.Status, "completed_at": nilIfEmpty(item.CompletedAt), "rescheduled_to": nilIfEmpty(item.RescheduledTo), "notes": item.Notes, "event_version": item.EventVersion, "original_scheduled_at": nilIfEmpty(item.OriginalScheduledAt)}
 }
 
 func (s *Server) listHealthOccurrences(w http.ResponseWriter, r *http.Request, requestID string, ctx context.Context) {
@@ -231,17 +231,18 @@ func (s *Server) recordHealthOccurrence(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 	var body struct {
-		Status        string `json:"status"`
-		CompletedAt   string `json:"completed_at"`
-		RescheduledTo string `json:"rescheduled_to"`
-		Notes         string `json:"notes"`
+		Status               string  `json:"status"`
+		CompletedAt          string  `json:"completed_at"`
+		RescheduledTo        string  `json:"rescheduled_to"`
+		Notes                string  `json:"notes"`
+		ExpectedEventVersion *uint64 `json:"expected_event_version"`
 	}
 	if decodeJSON(w, r, &body) != nil {
 		s.problem(w, requestID, 400, "INVALID_REQUEST", "Invalid JSON request")
 		return
 	}
 	item, err := s.Health.RecordOccurrence(s.rpcContext(ctx, pb.HealthService_RecordOccurrence_FullMethodName, user.UserID, user.SessionFamily),
-		&pb.RecordOccurrenceRequest{OccurrenceId: id, Status: body.Status, CompletedAt: body.CompletedAt, RescheduledTo: body.RescheduledTo, Notes: body.Notes})
+		&pb.RecordOccurrenceRequest{OccurrenceId: id, Status: body.Status, CompletedAt: body.CompletedAt, RescheduledTo: body.RescheduledTo, Notes: body.Notes, ExpectedEventVersion: body.ExpectedEventVersion})
 	if err != nil {
 		s.rpcProblem(w, requestID, err)
 		return
