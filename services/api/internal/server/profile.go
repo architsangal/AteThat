@@ -100,10 +100,11 @@ func profileJSON(value *pb.Profile) map[string]interface{} {
 }
 
 type preferencesPatchBody struct {
-	Version            uint64    `json:"version"`
-	DailyResetTime     *string   `json:"daily_reset_time"`
-	UnitSystem         *string   `json:"unit_system"`
-	DashboardNutrients *[]string `json:"dashboard_nutrients"`
+	Version               uint64    `json:"version"`
+	DailyResetTime        *string   `json:"daily_reset_time"`
+	UnitSystem            *string   `json:"unit_system"`
+	DashboardNutrients    *[]string `json:"dashboard_nutrients"`
+	AnalysisHealthItemIDs *[]string `json:"analysis_health_item_ids"`
 }
 
 func (s *Server) getPreferences(w http.ResponseWriter, r *http.Request, requestID string, ctx context.Context) {
@@ -133,6 +134,9 @@ func (s *Server) updatePreferences(w http.ResponseWriter, r *http.Request, reque
 	if body.DashboardNutrients != nil {
 		req.DashboardNutrients = &pb.NutrientKeys{Values: *body.DashboardNutrients}
 	}
+	if body.AnalysisHealthItemIDs != nil {
+		req.AnalysisHealthItems = &pb.HealthItemSelection{Ids: *body.AnalysisHealthItemIDs}
+	}
 	result, err := s.Profile.UpdatePreferences(s.rpcContext(ctx, pb.ProfileService_UpdatePreferences_FullMethodName, userID.UserID, userID.SessionFamily), req)
 	if err != nil {
 		s.rpcProblem(w, requestID, err)
@@ -143,7 +147,8 @@ func (s *Server) updatePreferences(w http.ResponseWriter, r *http.Request, reque
 
 func preferencesJSON(value *pb.Preferences) map[string]interface{} {
 	return map[string]interface{}{"id": value.Id, "version": value.Version, "daily_reset_time": value.DailyResetTime,
-		"unit_system": value.UnitSystem, "dashboard_nutrients": value.DashboardNutrients}
+		"unit_system": value.UnitSystem, "dashboard_nutrients": value.DashboardNutrients,
+		"analysis_health_item_ids": append([]string{}, value.AnalysisHealthItemIds...)}
 }
 
 func (s *Server) getCurrentTrackingDay(w http.ResponseWriter, r *http.Request, requestID string, ctx context.Context) {

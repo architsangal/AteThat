@@ -25,3 +25,8 @@ test('done tasks have no reschedule action and do not leak into the active tab',
  assert(render('TAKEN').includes('Brush teeth'))
  assert(!render('TAKEN').includes('>Reschedule<'))
 })
+test('pending tasks expose Reschedule directly without a one-option More actions disclosure',()=>{
+ const row={occurrence_id:'test',name:'Brush teeth',type:'TASK',status:'SKIPPED',scheduled_at:'2026-10-22T08:00:00Z',scheduled_local:{date:'2026-10-22',time:'08:00',timezone:'UTC'}}
+ const html=renderToStaticMarkup(React.createElement(HealthOccurrenceResults,{rows:[row],tab:'MISSED',busy:false,onAction:()=>{},onReschedule:()=>{}}))
+ assert(html.includes('>Reschedule<'));assert(!html.includes('More actions'));assert(!html.includes('<details'))
+})

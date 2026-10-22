@@ -1,5 +1,7 @@
 # AteThat documentation and phase roadmap
 
+[Next-release fixes](NEXT_RELEASE_FIXES.md) collects pending UX changes to address together before the next release.
+
 Reconciled: 2026-10-22. Owner scope decisions override historical proposals. Release tags are code checkpoints, not database backups or a recovery guarantee.
 
 ## Phase 1 — complete
@@ -23,6 +25,10 @@ Independent/custom nutrition targets, reviewed calculated proposals/reset and co
 ## Phase 2.6 — task lifecycle and date/time controls
 
 See [scope and verification](PHASE_2_6_RELEASE.md): Active/Done/Missed/All occurrence tabs, today/account-calendar ranges, effective one-off rescheduling and shared date/time controls. Published release notes record actual deployment evidence.
+
+## Phase 2.7 — combined analysis
+
+[Combined nutrition/health analysis and the direct Reschedule fix](PHASE_2_7_RELEASE.md) are bundled for this release. Published release notes establish deployment status.
 
 ## Phase 3 — remaining roadmap
 
