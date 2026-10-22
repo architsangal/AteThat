@@ -367,6 +367,7 @@ type healthScheduleDoc struct {
 }
 
 type healthEventDoc struct {
+	Version         uint64             `bson:"version"`
 	ID              primitive.ObjectID `bson:"_id,omitempty"`
 	UserID          primitive.ObjectID `bson:"user_id"`
 	HealthItemID    primitive.ObjectID `bson:"health_item_id"`
@@ -468,6 +469,10 @@ func createIndexes(ctx context.Context, db *mongo.Database) error {
 		"health_item_events": {
 			{Keys: bson.D{{Key: "user_id", Value: 1}, {Key: "occurrence_id", Value: 1}}, Options: options.Index().SetUnique(true)},
 			{Keys: bson.D{{Key: "user_id", Value: 1}, {Key: "scheduled_at_utc", Value: -1}}},
+			{Keys: bson.D{{Key: "user_id", Value: 1}, {Key: "rescheduled_to_utc", Value: 1}}},
+		},
+		"health_item_event_history": {
+			{Keys: bson.D{{Key: "user_id", Value: 1}, {Key: "occurrence_id", Value: 1}, {Key: "version", Value: 1}}, Options: options.Index().SetUnique(true)},
 		},
 	}
 	for collection, indexes := range models {

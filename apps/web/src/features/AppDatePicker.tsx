@@ -18,8 +18,8 @@ function isoLocalDate(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
 
-type PickerProps = { label: string; value: string; name?: string; onChange: (value: string) => void; className?: string; describedBy?: string; min?: string; max?: string }
-export function AppDatePicker({ label, value, name, onChange, className = '', describedBy, min, max }: PickerProps) {
+type PickerProps = { label: string; value: string; name?: string; onChange: (value: string) => void; className?: string; describedBy?: string; min?: string; max?: string; clearable?: boolean }
+export function AppDatePicker({ label, value, name, onChange, className = '', describedBy, min, max, clearable=false }: PickerProps) {
   const context = useContext(DatePickerContext)
   if (!context) throw new Error('AppDatePicker must be rendered inside DatePickerProvider.')
   const pickerId = 'date-' + useId(), labelId = pickerId + '-label'
@@ -77,7 +77,7 @@ export function AppDatePicker({ label, value, name, onChange, className = '', de
       </div>
       <div className="calendar-weekdays" aria-hidden="true">{['Su','Mo','Tu','We','Th','Fr','Sa'].map(day => <span key={day}>{day}</span>)}</div>
       <div className="calendar-days">{days.map((date,index) => date ? <button type="button" key={isoLocalDate(date)} className={'calendar-day '+(isoLocalDate(date) === value ? 'calendar-day-selected ' : '')+(isoLocalDate(date) === isoLocalDate(new Date()) ? 'calendar-day-today' : '')} aria-label={date.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})} aria-pressed={isoLocalDate(date) === value} disabled={!allowed(isoLocalDate(date))} onClick={() => choose(isoLocalDate(date))}>{date.getDate()}</button> : <span key={'blank-'+index} aria-hidden="true" />)}</div>
-      <div className="calendar-footer"><button className="quiet-link" type="button" disabled={!allowed(isoLocalDate(new Date()))} onClick={() => choose(isoLocalDate(new Date()))}>Today</button><button className="quiet-link" type="button" onClick={close}>Close calendar</button></div>
-    </div>,document.body)}
+      <div className="calendar-footer">{clearable&&value&&<button className="quiet-link" type="button" onClick={()=>{onChange('');close()}}>Clear date</button>}<button className="quiet-link" type="button" disabled={!allowed(isoLocalDate(new Date()))} onClick={() => choose(isoLocalDate(new Date()))}>Today</button><button className="quiet-link" type="button" onClick={close}>Close calendar</button></div>
+    </div>,root.current?.closest('dialog') || document.body)}
   </div>
 }

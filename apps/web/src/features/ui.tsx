@@ -2,6 +2,8 @@ import { createPortal } from 'react-dom'
 import { createContext, useContext, useEffect, useId, useRef, useState, type FormHTMLAttributes, type ReactNode } from 'react'
 import { display, label, type Nutrition } from './nutrition/model'
 import { isTextTooShort } from './form-validation'
+import { AppTimeInput } from './AppTimeInput'
+import { AppDatePicker } from './AppDatePicker'
 
 export function Loading({ children = 'Loading…' }: { children?: ReactNode }) {
   return <p className="loading-state" role="status">{children}</p>
@@ -20,7 +22,7 @@ export function Modal({ title, children, onClose, busy = false, initialFocus = '
     if (initialFocus === 'heading') {
       dialog.querySelector<HTMLElement>('h2')?.focus({preventScroll:true})
       dialog.scrollTop = 0
-    } else dialog.querySelector<HTMLInputElement>('input:not([disabled]), select:not([disabled]), textarea:not([disabled])')?.focus()
+    } else dialog.querySelector<HTMLElement>('input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled])')?.focus()
     return () => { dialog.close(); document.body.style.overflow = previousOverflow }
   }, [])
   return createPortal(<dialog ref={ref} className="flow-dialog" aria-labelledby={titleId} onCancel={event => { event.preventDefault(); if (!busy) onClose() }}>
@@ -41,7 +43,7 @@ export function NutritionSummary({ values }: { values: Nutrition }) {
 
 export function ScheduleTimes({ value, onChange }: { value: string[]; onChange: (times: string[]) => void }) {
   return <div className="schedule-times"><span>Scheduled times</span>{value.map((time, index) => <div className="time-row" key={index}>
-    <label><span className="sr-only">Time {index + 1}</span><input type="time" name="schedule_time" required value={time} onInput={event => { const next = event.currentTarget.value; onChange(value.map((entry, i) => i === index ? next : entry)) }} onChange={event => { const next = event.currentTarget.value; onChange(value.map((entry, i) => i === index ? next : entry)) }} /></label>
+    <AppTimeInput label={`Time ${index+1}`} name="schedule_time" value={time} onChange={next=>onChange(value.map((entry,i)=>i===index?next:entry))}/>
     {value.length > 1 && <button className="quiet-link" type="button" aria-label={`Remove time ${index + 1}`} onClick={() => onChange(value.filter((_, i) => i !== index))}>Remove</button>}
   </div>)}<button className="quiet-link" type="button" disabled={value.length >= 24} onClick={() => onChange([...value, ''])}>Add another time</button></div>
 }
@@ -79,6 +81,10 @@ export function Form({ children, onSubmit, ...props }: FormHTMLAttributes<HTMLFo
 }
 
 type DialogField = { name: string; label: string; value?: string; type?: string; min?: string; max?: string; step?: string; optional?: boolean; minLength?: number; validationMessage?: string }
+function DateTimeField({field}:{field:DialogField}) {
+  const [date,setDate]=useState(field.value?.slice(0,10)||''),[time,setTime]=useState(field.value?.slice(11,16)||'')
+  return <div className="app-datetime-field" role="group" aria-label={field.label}><input type="hidden" name={field.name} value={date&&time?`${date}T${time}`:''}/><AppDatePicker label="New date" value={date} onChange={setDate}/><AppTimeInput label="New time" value={time} onChange={setTime} required={!field.optional}/></div>
+}
 type DialogSpec = { title: string; description?: string; fields?: DialogField[]; action?: string; resolve: (value: Record<string,string> | null) => void }
 const DialogContext = createContext<{
   prompt: (title: string, value?: string) => Promise<string | null>;
@@ -97,7 +103,7 @@ export function DialogProvider({children}: {children: ReactNode}) {
   }}>{children}{spec && <Modal title={spec.title} onClose={() => close(null)}>
     {spec.description && <p className="muted">{spec.description}</p>}
     <Form className="auth-form" onSubmit={event => { event.preventDefault(); close(Object.fromEntries(new FormData(event.currentTarget).entries()) as Record<string,string>) }}>
-      {spec.fields?.map((field,index) => <label key={field.name}>{field.label}<input name={field.name} type={field.type || 'text'} defaultValue={field.value || ''} required={!field.optional} min={field.min} max={field.max} step={field.step} minLength={field.minLength} data-validation-message={field.validationMessage} autoFocus={index === 0} /></label>)}
+      {spec.fields?.map((field,index) => field.type==='datetime-local'?<DateTimeField key={field.name} field={field}/>:<label key={field.name}>{field.label}<input name={field.name} type={field.type || 'text'} defaultValue={field.value || ''} required={!field.optional} min={field.min} max={field.max} step={field.step} minLength={field.minLength} data-validation-message={field.validationMessage} autoFocus={index === 0} /></label>)}
       <div className="dialog-actions"><button type="button" className="button button-outline" onClick={() => close(null)}>Cancel</button><button className="button button-primary" type="submit">{spec.action || 'Continue'}</button></div>
     </Form>
   </Modal>}</DialogContext.Provider>
