@@ -59,3 +59,12 @@ test('shared timeline precedes nutrition, health analysis precedes summary, and 
  assert(source.indexOf('<HealthItemAnalysis')<source.indexOf('<TextSummary'))
  assert(source.includes("'Explore'"));assert(!source.includes('Explore nutrition'));assert(source.includes('Dates changed.'))
 })
+test('charts measure their panel and retain pixel-proportional labels rather than stretching the SVG',async()=>{
+ const source=await readFile(new URL('./HealthItemAnalysis.tsx',import.meta.url),'utf8')
+ assert(source.includes('new ResizeObserver'))
+ assert(source.includes('width={width} height={215} viewBox='))
+ assert(!source.includes('preserveAspectRatio="none"'))
+ assert.equal((source.match(/x=\{x\+barWidth\/2\} y="198" textAnchor="middle"/g)||[]).length,2)
+ const css=await readFile(new URL('./health-analysis.css',import.meta.url),'utf8')
+ assert(!css.includes('.health-chart-scroll svg { display: block; width: 100%;'))
+})

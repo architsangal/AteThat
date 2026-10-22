@@ -15,7 +15,7 @@
 
 ## Verification
 
-- 46 frontend regression tests and the TypeScript/Vite production build passed locally.
+- 47 frontend regression tests and the TypeScript/Vite production build passed locally, including a proportional-chart layout regression. Chart drawing measures the available panel width; labels are never stretched with a non-uniform SVG transform.
 - Full API and Core suites passed with an isolated MongoDB 7 replica set, including ownership, version conflicts, selection persistence and clearing without modifying schedules.
 - Model tests cover reset boundaries, DST fallback, item identity, duplicates, effective rescheduling, future exclusions, full pagination and 366-day chunking.
 - Chrome local checks covered picker save/reload, 7/90-day Explore, both chart modes, daily values and 390px mobile layout. Disposable local QA records were used; production records were not changed during local testing.
