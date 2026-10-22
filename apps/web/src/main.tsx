@@ -5,6 +5,7 @@ import App from './App'
 import './styles.css'
 import './features/phase-2.1.css'
 import './features/spacing.css'
+import './features/health-ui.css'
 
 const router = createBrowserRouter([{ path: '*', element: <App /> }])
 ReactDOM.createRoot(document.getElementById('root')!).render(

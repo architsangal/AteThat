@@ -46,7 +46,11 @@ Expanded nutrient analysis/recipes, water/weight/activity logging, optional pers
 
 [Everyday UX improvements](docs/PHASE_2_1_STATUS.md) cover the 22-item audit, with local browser and regression validation. Release/deployment is pending.
 
-## Phase 2.5 — release candidate
+## Phase 2.6 — task and date/time UX
+
+Four task-occurrence tabs, today/account-calendar ranges, proper one-off rescheduling and shared date/time controls. See [release scope and verification](docs/PHASE_2_6_RELEASE.md). Actual deployment evidence is in the published GitHub release notes.
+
+## Phase 2.5 — released as v2.5.0
 
 Settings supports independent targets, explicit macro-calorie refresh, effective input assumptions, activity-based adult calculated defaults, reviewed reset with revision history, and a user-facing formula guide. Factual Text Summary remains deterministic, not AI. Initial calculated proposals and durable outside-reference confirmations are included. See the [release verification and promotion record](docs/PHASE_2_5_RELEASE.md) for actual deployment status. See [implementation status](docs/PHASE_2_5_STATUS.md).
 

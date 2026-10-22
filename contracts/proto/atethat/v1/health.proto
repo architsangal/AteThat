@@ -78,6 +78,8 @@ message HealthOccurrence {
   string completed_at = 11;
   string rescheduled_to = 12;
   string notes = 13;
+  uint64 event_version = 14;
+  string original_scheduled_at = 15;
 }
 message ListOccurrencesRequest { string from = 1; string to = 2; uint32 limit = 3; string cursor = 4; }
 message OccurrencePage { repeated HealthOccurrence items = 1; string next_cursor = 2; bool has_more = 3; }
@@ -88,4 +90,5 @@ message RecordOccurrenceRequest {
   string completed_at = 3;
   string rescheduled_to = 4;
   string notes = 5;
+  optional uint64 expected_event_version = 6;
 }

@@ -377,6 +377,9 @@ func (s *Server) TextSummary(ctx context.Context, r *pb.TextSummaryRequest) (*pb
 					dose = "current configured dose: " + summaryInline(item.DosageAmountText) + " " + summaryInline(item.DosageUnitText) + " (not actual dose taken)"
 				}
 				line("%s %s: %s; %s; scheduled %s (%s %s %s); recorded completion %s; rescheduled to %s; occurrence %s.", o.Type, summaryInline(o.Name), state, dose, o.ScheduledAt, o.ScheduledLocalDate, o.ScheduledLocalTime, o.Timezone, summaryOrUnknown(o.CompletedAt), summaryOrUnknown(o.RescheduledTo), o.OccurrenceId)
+				if o.OriginalScheduledAt != "" {
+					line("  Originally scheduled %s; this selection uses the new effective scheduled time.", o.OriginalScheduledAt)
+				}
 			}
 			if !healthOK || !rows.HasMore {
 				break

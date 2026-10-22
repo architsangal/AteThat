@@ -24,6 +24,9 @@ import { RecipesPage } from './features/recipes/RecipesPage'
 import { WellnessPage, WellnessOverview } from './features/wellness/WellnessPage'
 import { ScheduleEditor, type SchedulableItem } from './features/wellness/ScheduleEditor'
 import { HealthAdherence } from './features/wellness/HealthAdherence'
+import { HealthOccurrences } from './features/HealthOccurrences'
+import { calendarDay, type HealthOccurrence } from './features/health-occurrences'
+import { AppTimeInput } from './features/AppTimeInput'
 import { DialogProvider, Loading, Modal, MonthDays, NutritionSummary, ScheduleTimes } from './features/ui'
 import { rankFoods, type SearchUsage } from './features/food-search'
 import './features/phase-two.css'
@@ -898,20 +901,19 @@ function SavedMealsManager() {
 }
 
 type HealthItem = { id: string; version: number; type: string; name: string; dosage: { amount_text: string; unit_text: string }; instructions: string; notes: string; start_date: string; active: boolean; schedule: { timezone: string; recurrence: { frequency: string; interval: number; weekdays: string[]; local_times: string[] }; effective_from_date: string } }
-type HealthOccurrence = { occurrence_id: string; name: string; type: string; status: string; scheduled_at: string; scheduled_local: { date: string; time: string; timezone: string } }
 function HealthPage() {
   const dialogs = useDialogs()
   const [scheduleEditor, setScheduleEditor] = useState<SchedulableItem | null>(null)
   const [items, setItems] = useState<HealthItem[]>([])
-  const [occurrences, setOccurrences] = useState<HealthOccurrence[]>([])
+  const [occurrenceRevision, setOccurrenceRevision] = useState(0)
   const [timezone, setTimezone] = useState('')
   const [creating, setCreating] = useState(false)
   const [itemType, setItemType] = useState('SUPPLEMENT')
   const [loading, setLoading] = useState(true)
-  const [occurrencesLoading, setOccurrencesLoading] = useState(true)
   const [times, setTimes] = useState(['08:00'])
   const [monthDays, setMonthDays] = useState([1])
-  const [day, setDay] = useState(new Date().toISOString().slice(0, 10))
+  const day = calendarDay(timezone || 'UTC')
+  const [startDate,setStartDate] = useState(''),[endDate,setEndDate] = useState('')
   const [frequency, setFrequency] = useState('DAILY')
   const [weekdays, setWeekdays] = useState<string[]>([])
   const [error, setError] = useState('')
@@ -922,23 +924,18 @@ function HealthPage() {
     do { const query=new URLSearchParams({limit:'50',...(cursor?{cursor}:{})});const page:Page<HealthItem>=await getAuthenticatedJson(`/health-items?${query}`);result.push(...page.items);cursor=page.page.next_cursor } while(cursor)
     setItems(result)
   }
-  async function reloadOccurrences(selectedDay: string) {
-    const from = new Date(`${selectedDay}T00:00:00Z`)
-    const to = new Date(from.getTime() + 7 * 24 * 60 * 60 * 1000)
-    const result:HealthOccurrence[]=[];let cursor:string|null=null
-    do { const params=new URLSearchParams({from:from.toISOString(),to:to.toISOString(),limit:'100',...(cursor?{cursor}:{})});const page:Page<HealthOccurrence>=await getAuthenticatedJson(`/health-items/occurrences?${params}`);result.push(...page.items);cursor=page.page.next_cursor } while(cursor)
-    setOccurrences(result)
-  }
+  function reloadOccurrences() { setOccurrenceRevision(value=>value+1) }
   useEffect(() => {
     getAuthenticatedJson<{ timezone: string }>('/profile').then(profile => setTimezone(profile.timezone)).catch(() => setError('Could not load your schedule timezone. Please reload before adding an item.'))
     reloadItems().catch(cause => setError(cause instanceof Error ? cause.message : 'Could not load health items.')).finally(() => setLoading(false))
   }, [])
-  useEffect(() => { setOccurrencesLoading(true); reloadOccurrences(day).catch(cause => setError(cause instanceof Error ? cause.message : 'Could not load occurrences.')).finally(() => setOccurrencesLoading(false)) }, [day])
   async function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setBusy(true); setError(''); setMessage('')
     const form = event.currentTarget
     const values = Object.fromEntries(new FormData(form))
     const localTimes = new FormData(form).getAll('schedule_time').map(String)
+    if (new Set(localTimes).size !== localTimes.length) { setError('Each scheduled time must be different.'); setBusy(false); return }
+    if (!startDate || (endDate && endDate < startDate)) { setError('Choose a start date and an end date on or after it.'); setBusy(false); return }
     if (!timezone || !localTimes.length || localTimes.some(time => !/^\d{2}:\d{2}$/.test(time)) || (frequency === 'MONTHLY' && !monthDays.length) || (frequency === 'WEEKLY' && !weekdays.length)) { setError('Choose a valid time and the days for your schedule.'); setBusy(false); return }
     try {
       await postAuthenticatedJson('/health-items', { type: values.type, name: values.name,
@@ -948,16 +945,16 @@ function HealthPage() {
           weekdays: frequency === 'WEEKLY' ? weekdays : [], local_times: localTimes, month_days:frequency==='MONTHLY'?monthDays:[] },
           effective_from_date: values.start_date, effective_to_date:values.end_date||'' } })
       form.reset(); setCreating(false); setWeekdays([]); setTimes(['08:00']); setFrequency('DAILY'); setMessage('Health item saved. Times shown below use its schedule timezone.')
-      await Promise.all([reloadItems(), reloadOccurrences(day)])
+      await Promise.all([reloadItems(), reloadOccurrences()])
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not save health item.') }
     finally { setBusy(false) }
   }
   async function action(occurrence: HealthOccurrence, status: 'TAKEN' | 'SKIPPED') {
     setBusy(true); setError('')
     try {
-      await putAuthenticatedJson(`/health-items/occurrences/${occurrence.occurrence_id}`, { status,
+      await putAuthenticatedJson(`/health-items/occurrences/${occurrence.occurrence_id}`, { status, expected_event_version:occurrence.event_version||0,
         ...(status === 'TAKEN' ? { completed_at: new Date().toISOString() } : {}), notes: '' })
-      await reloadOccurrences(day)
+      await reloadOccurrences()
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not record action.') }
     finally { setBusy(false) }
   }
@@ -966,7 +963,7 @@ function HealthPage() {
     setBusy(true); setError('')
     try {
       await postAuthenticatedJson(`/health-items/${item.id}/deactivate`, { version: item.version, end_date: day })
-      await Promise.all([reloadItems(), reloadOccurrences(day)])
+      await Promise.all([reloadItems(), reloadOccurrences()])
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not deactivate item.') }
     finally { setBusy(false) }
   }
@@ -978,7 +975,7 @@ function HealthPage() {
     try {
       await patchAuthenticatedJson(`/health-items/${item.id}`, { version: item.version, type: item.type, name,
         dosage: item.dosage, instructions: item.instructions, notes: item.notes, start_date: item.start_date })
-      await Promise.all([reloadItems(), reloadOccurrences(day)])
+      await Promise.all([reloadItems(), reloadOccurrences()])
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not update health item.') }
     finally { setBusy(false) }
   }
@@ -988,19 +985,22 @@ function HealthPage() {
     const values = await dialogs.fields('Reschedule occurrence', [{name:'time',label:'New date and time',type:'datetime-local',value:local}], `Time is shown in your device timezone (${Intl.DateTimeFormat().resolvedOptions().timeZone}).`, 'Reschedule')
     if (!values) return
     const target = new Date(values.time).toISOString()
+    if (Date.parse(target)<=Date.now()) {setError('Choose a future date and time when rescheduling an unfinished occurrence.');return}
     setBusy(true); setError('')
     try {
-      await putAuthenticatedJson(`/health-items/occurrences/${occurrence.occurrence_id}`, { status: 'RESCHEDULED', rescheduled_to: target, notes: '' })
-      await reloadOccurrences(day)
+      await putAuthenticatedJson(`/health-items/occurrences/${occurrence.occurrence_id}`, { status: 'RESCHEDULED', rescheduled_to: target, expected_event_version:occurrence.event_version||0, notes: '' })
+      setMessage('Occurrence rescheduled and active at the new time. Select that date to view it. Its previous values remain in history.')
+      await reloadOccurrences()
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not reschedule occurrence.') }
     finally { setBusy(false) }
   }
-  return <><PageHead eyebrow="Your routine" title="Health items" description="Your medication, supplement and everyday task routine." action={<button className="button button-primary" disabled={!timezone} onClick={() => { setItemType('SUPPLEMENT'); setError(''); setCreating(true) }}>Add health item</button>} />
+  return <><PageHead eyebrow="Your routine" title="Health items" description="Your medication, supplement and everyday task routine." action={<button className="button button-primary" disabled={!timezone} onClick={() => { setItemType('SUPPLEMENT'); setStartDate(day); setEndDate(''); setError(''); setCreating(true) }}>Add health item</button>} />
     {error && <p className="form-message form-error" role="alert">{error}</p>}{message && <p className="form-message form-success" role="status">{message}</p>}
-    <div className="collection-layout"><section className="panel"><h2>Your items</h2>{loading ? <Loading>Loading your items…</Loading> : !error && items.length === 0 && <EmptyState icon={HeartPulse} title="No health items yet" text="Create an item with a schedule to see occurrences." />}{items.map(item => <article className="food-result" key={item.id}><div><h3>{item.name}</h3><p>{item.type.toLowerCase()}{item.type !== 'TASK' && (item.dosage.amount_text || item.dosage.unit_text) && <> · {item.dosage.amount_text} {item.dosage.unit_text}</>} · {item.schedule.recurrence.frequency === 'PAUSED' ? 'Schedule paused' : `${foodLabel(item.schedule.recurrence.frequency)} schedule`} · {item.schedule.timezone}</p><p>{item.active ? 'Item enabled' : 'Item disabled'}</p></div><details className="secondary-details"><summary>Manage {item.name}</summary><div className="secondary-actions"><button className="quiet-link" disabled={busy || !item.active} onClick={() => void editItem(item, false)}>Rename</button><button className="quiet-link" disabled={busy} onClick={() => void editItem(item, true)}>Schedule & history</button>{item.active && <button className="quiet-link" disabled={busy} onClick={() => void deactivate(item)}>Disable item</button>}</div></details></article>)}</section></div>{creating && <Modal title="Add a health item" busy={busy} onClose={() => setCreating(false)}>{error && <p className="form-message form-error" role="alert">{error}</p>}<Form className="custom-food-form health-form" onSubmit={create}><label>Type<select name="type" value={itemType} onChange={event => setItemType(event.target.value)}><option value="SUPPLEMENT">Supplement</option><option value="MEDICATION">Medication</option><option value="TASK">Task</option></select></label><label>Name<input name="name" minLength={2} maxLength={120} placeholder={itemType === 'TASK' ? 'For example, brush teeth or apply solution' : undefined} required /></label>{itemType !== 'TASK' && <div className="custom-food-base"><label>Amount<input name="dosage_amount" maxLength={80} placeholder="1" /></label><label>Unit<input name="dosage_unit" maxLength={80} placeholder="tablet" /></label></div>}<label>Instructions (your own words)<input name="instructions" maxLength={500} /></label><label>Notes<input name="notes" maxLength={1000} /></label><label>Start date<input name="start_date" type="date" defaultValue={day} required /></label><label>Frequency<select value={frequency} onChange={event => setFrequency(event.target.value)}><option value="DAILY">Daily</option><option value="WEEKLY">Weekly</option><option value="MONTHLY">Monthly</option></select></label>{frequency === 'WEEKLY' && <div className="weekday-list">{['MON','TUE','WED','THU','FRI','SAT','SUN'].map(value => <label key={value}><input type="checkbox" checked={weekdays.includes(value)} onChange={() => setWeekdays(previous => previous.includes(value) ? previous.filter(day => day !== value) : [...previous, value])} />{value}</label>)}</div>}{frequency==='MONTHLY' && <MonthDays value={monthDays} onChange={setMonthDays} />}<ScheduleTimes value={times} onChange={setTimes} /><details><summary>Advanced schedule options</summary><div className="health-schedule-advanced"><label>Repeat every {frequency === 'WEEKLY' ? 'weeks' : frequency === 'MONTHLY' ? 'months' : 'days'}<input name="interval" type="number" min="1" max="365" defaultValue="1" /></label><label>Last schedule date (optional)<input name="end_date" type="date" /></label></div></details><p className="muted">Schedule timezone: {timezone}. Change your account timezone in Settings before adding an item if needed.</p><button className="button button-primary" disabled={busy} type="submit">Save item</button></Form></Modal>}
-    <section className="panel health-occurrences"><div className="panel-top"><h2>Scheduled occurrences</h2><label>Week starting (UTC) <input type="date" value={day} onChange={event => setDay(event.target.value)} /></label></div>{occurrencesLoading ? <Loading>Loading this week…</Loading> : !error && occurrences.length === 0 && <p className="muted">No occurrences in this seven-day window.</p>}{occurrences.map(occurrence => <article className="food-result" key={occurrence.occurrence_id}><div><h3>{occurrence.name}</h3><p>{occurrence.scheduled_local.date} at {occurrence.scheduled_local.time} ({occurrence.scheduled_local.timezone}) · {healthStatusLabel(occurrence.status, occurrence.type)}</p></div><div className="history-actions"><button className="button button-outline button-small" type="button" disabled={busy} onClick={() => action(occurrence, 'TAKEN')}>{occurrence.type === 'TASK' ? 'Done' : 'Taken'}</button><button className="quiet-link" type="button" disabled={busy} onClick={() => action(occurrence, 'SKIPPED')}>Skipped</button><details><summary>More</summary><button className="quiet-link" disabled={busy} onClick={() => void reschedule(occurrence)}>Reschedule</button></details></div></article>)}</section>
-    {scheduleEditor && <ScheduleEditor key={scheduleEditor.id} item={scheduleEditor} onClose={() => setScheduleEditor(null)} onSaved={async () => { await Promise.all([reloadItems(), reloadOccurrences(day)]); setMessage('Schedule version saved. Past recorded events are preserved.') }} />}
-    <HealthAdherence revision={`${message}:${occurrences.map(row => row.status).join(',')}`} />
+    {timezone ? <HealthOccurrences key={timezone} timezone={timezone} revision={occurrenceRevision} busy={busy} onAction={action} onReschedule={reschedule}/> : <Loading>Loading your timezone…</Loading>}
+    <details className="health-routines panel"><summary>Manage health items · {items.length}</summary><div className="health-routines-content"><h2>Your routines</h2>{loading ? <Loading>Loading your items…</Loading> : !error && items.length === 0 && <EmptyState icon={HeartPulse} title="No health items yet" text="Create an item with a schedule to see occurrences." />}{items.map(item => <article className="food-result" key={item.id}><div><h3>{item.name}</h3><p>{item.type.toLowerCase()}{item.type !== 'TASK' && (item.dosage.amount_text || item.dosage.unit_text) && <> · {item.dosage.amount_text} {item.dosage.unit_text}</>} · {item.schedule.recurrence.frequency === 'PAUSED' ? 'Schedule paused' : `${foodLabel(item.schedule.recurrence.frequency)} schedule`} · {item.schedule.timezone}</p><p>{item.active ? 'Item enabled' : 'Item disabled'}</p></div><details className="secondary-details"><summary>Manage {item.name}</summary><div className="secondary-actions"><button className="quiet-link" disabled={busy || !item.active} onClick={() => void editItem(item, false)}>Rename</button><button className="quiet-link" disabled={busy} onClick={() => void editItem(item, true)}>Schedule & history</button>{item.active && <button className="quiet-link" disabled={busy} onClick={() => void deactivate(item)}>Disable item</button>}</div></details></article>)}</div></details>{creating && <Modal title="Add a health item" busy={busy} onClose={() => setCreating(false)}>{error && <p className="form-message form-error" role="alert">{error}</p>}<Form className="custom-food-form health-form" onSubmit={create}><label>Type<select name="type" value={itemType} onChange={event => setItemType(event.target.value)}><option value="SUPPLEMENT">Supplement</option><option value="MEDICATION">Medication</option><option value="TASK">Task</option></select></label><label>Name<input name="name" minLength={2} maxLength={120} placeholder={itemType === 'TASK' ? 'For example, brush teeth or apply solution' : undefined} required /></label>{itemType !== 'TASK' && <div className="custom-food-base"><label>Amount<input name="dosage_amount" maxLength={80} placeholder="1" /></label><label>Unit<input name="dosage_unit" maxLength={80} placeholder="tablet" /></label></div>}<label>Instructions (your own words)<input name="instructions" maxLength={500} /></label><label>Notes<input name="notes" maxLength={1000} /></label><AppDatePicker label="Start date" name="start_date" value={startDate} onChange={setStartDate}/><label>Frequency<select value={frequency} onChange={event => setFrequency(event.target.value)}><option value="DAILY">Daily</option><option value="WEEKLY">Weekly</option><option value="MONTHLY">Monthly</option></select></label>{frequency === 'WEEKLY' && <div className="weekday-list">{['MON','TUE','WED','THU','FRI','SAT','SUN'].map(value => <label key={value}><input type="checkbox" checked={weekdays.includes(value)} onChange={() => setWeekdays(previous => previous.includes(value) ? previous.filter(day => day !== value) : [...previous, value])} />{value}</label>)}</div>}{frequency==='MONTHLY' && <MonthDays value={monthDays} onChange={setMonthDays} />}<ScheduleTimes value={times} onChange={setTimes} /><details><summary>Advanced schedule options</summary><div className="health-schedule-advanced"><label>Repeat every {frequency === 'WEEKLY' ? 'weeks' : frequency === 'MONTHLY' ? 'months' : 'days'}<input name="interval" type="number" min="1" max="365" defaultValue="1" /></label><AppDatePicker label="Last schedule date (optional)" name="end_date" value={endDate} min={startDate} onChange={setEndDate} clearable/></div></details><p className="muted">Schedule timezone: {timezone}. Change your account timezone in Settings before adding an item if needed.</p><button className="button button-primary" disabled={busy} type="submit">Save item</button></Form></Modal>}
+
+    {scheduleEditor && <ScheduleEditor key={scheduleEditor.id} item={scheduleEditor} onClose={() => setScheduleEditor(null)} onSaved={async () => { await Promise.all([reloadItems(), reloadOccurrences()]); setMessage('Schedule version saved. Past recorded events are preserved.') }} />}
+    <details className="health-audit"><summary>Completion statistics & audit history</summary><HealthAdherence revision={`${occurrenceRevision}`} /></details>
   </>
 }
 
@@ -1176,7 +1176,7 @@ function Settings() {
         {saveError && <p className="form-message form-error" role="alert">{saveError}</p>}{saveMessage && <p className="form-message form-success" role="status">{saveMessage}</p>}
       </section>
       <section className="panel"><div className="panel-top"><h2>Appearance</h2><Sun size={19} /></div><p className="muted">Choose a theme or follow your device setting.</p><div className="theme-options">{(['light', 'dark', 'system'] as const).map(option => <button key={option} type="button" className={`theme-option ${theme === option ? 'theme-option-selected' : ''}`} onClick={() => setTheme(option)}><span>{option === 'light' ? <Sun size={20} /> : option === 'dark' ? <Moon size={20} /> : <Settings2 size={20} />}{option[0].toUpperCase() + option.slice(1)}</span>{theme === option && <Check size={18} />}</button>)}</div></section>
-      <section className="panel"><div className="panel-top"><h2>Daily preferences</h2><CalendarDays size={19} /></div><p className="muted">Your nutrition day starts at the local reset time below. Changing it affects future records only.</p>{preferences ? <Form key={preferences.version} className="auth-form" onSubmit={savePreferences}><label>Daily reset time<input name="daily_reset_time" type="time" required defaultValue={preferences.daily_reset_time} /></label><label>Unit system<select name="unit_system" defaultValue={preferences.unit_system}><option value="METRIC">Metric</option><option value="IMPERIAL">Imperial</option></select></label><button className="button button-primary" type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save preferences'}</button></Form> : <p className="muted">Loading preferences…</p>}{trackingDay && <p className="tracking-day-note">Current Tracking Day: <strong>{trackingDay.tracking_day}</strong> · {trackingDay.timezone} · resets at {trackingDay.daily_reset_time}</p>}</section>
+      <section className="panel"><div className="panel-top"><h2>Daily preferences</h2><CalendarDays size={19} /></div><p className="muted">Your nutrition day starts at the local reset time below. Changing it affects future records only.</p>{preferences ? <Form key={preferences.version} className="auth-form" onSubmit={savePreferences}><AppTimeInput label="Daily reset time" name="daily_reset_time" value={preferences.daily_reset_time} onChange={value=>setPreferences({...preferences,daily_reset_time:value})}/><label>Unit system<select name="unit_system" defaultValue={preferences.unit_system}><option value="METRIC">Metric</option><option value="IMPERIAL">Imperial</option></select></label><button className="button button-primary" type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save preferences'}</button></Form> : <p className="muted">Loading preferences…</p>}{trackingDay && <p className="tracking-day-note">Current Tracking Day: <strong>{trackingDay.tracking_day}</strong> · {trackingDay.timezone} · resets at {trackingDay.daily_reset_time}</p>}</section>
       {import.meta.env.VITE_GOOGLE_SIGNIN_ENABLED === 'true' && <section className="panel"><div className="panel-top"><h2>Sign-in methods</h2><LockKeyhole size={19} /></div><div className="sign-in-methods-content">{profile?.has_google_identity ? <><p className="muted">Your Google account is linked. You can use Google to sign in to this AteThat account.</p><p className="form-message form-success">Google account linked</p></> : <><p className="muted">Use the same Google email address as this AteThat account. A different Google email will be rejected.</p>{googleLinkError && <p className="form-message form-error" role="alert">{googleLinkError}</p>}{googleLinkMessage && <p className="form-message form-success" role="status">{googleLinkMessage}</p>}<button className="button button-outline" type="button" onClick={linkGoogle}><GoogleMark /> Link Google account</button></>}</div></section>}
       <section className="panel"><div className="panel-top"><h2>Delete account</h2><LockKeyhole size={19} /></div><p className="muted">Requesting deletion signs you out everywhere. Your records are permanently removed after 30 days unless you cancel with fresh verification.</p><Form className="auth-form" onSubmit={requestDeletion}><label>Current password<input name="password" type="password" autoComplete="current-password" required /></label><button className="button button-outline" type="submit" disabled={saving}>Request deletion</button></Form>{import.meta.env.VITE_GOOGLE_SIGNIN_ENABLED === 'true' && <button className="quiet-link" type="button" disabled={saving} onClick={() => void requestGoogleDeletion()}>Request deletion with Google verification</button>}</section>
     </div>
@@ -1215,7 +1215,7 @@ function NotFound() {
 }
 
 export default function App() {
-  return <ThemeProvider><DialogProvider><DatePickerProvider><FoodDraftProvider><RoutePosition /><Routes>
+  return <ThemeProvider><DatePickerProvider><DialogProvider><FoodDraftProvider><RoutePosition /><Routes>
     <Route path="/" element={<RedirectIfAuthenticated><Landing /></RedirectIfAuthenticated>} />
     <Route path="/terms" element={<TermsPage />} />
     <Route path="/login" element={<RedirectIfAuthenticated><AuthPage mode="login" /></RedirectIfAuthenticated>} />
@@ -1239,5 +1239,5 @@ export default function App() {
     <Route path="/app/welcome" element={<AppShell><Welcome /></AppShell>} />
     <Route path="/app/settings" element={<AppShell><Settings /></AppShell>} />
     <Route path="*" element={<NotFound />} />
-  </Routes></FoodDraftProvider></DatePickerProvider></DialogProvider></ThemeProvider>
+  </Routes></FoodDraftProvider></DialogProvider></DatePickerProvider></ThemeProvider>
 }
