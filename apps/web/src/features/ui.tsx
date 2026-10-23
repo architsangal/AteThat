@@ -42,10 +42,10 @@ export function NutritionSummary({ values }: { values: Nutrition }) {
 }
 
 export function ScheduleTimes({ value, onChange }: { value: string[]; onChange: (times: string[]) => void }) {
-  return <div className="schedule-times"><span>Scheduled times</span>{value.map((time, index) => <div className="time-row" key={index}>
+  return <div className="schedule-times"><span>Times on each scheduled day</span><p className="schedule-times-help">Add one time for each occurrence. For twice a day, add two different times, such as 08:00 and 20:00.</p>{value.map((time, index) => <div className="time-row" key={index}>
     <AppTimeInput label={`Time ${index+1}`} name="schedule_time" value={time} onChange={next=>onChange(value.map((entry,i)=>i===index?next:entry))}/>
     {value.length > 1 && <button className="quiet-link" type="button" aria-label={`Remove time ${index + 1}`} onClick={() => onChange(value.filter((_, i) => i !== index))}>Remove</button>}
-  </div>)}<button className="quiet-link" type="button" disabled={value.length >= 24} onClick={() => onChange([...value, ''])}>Add another time</button></div>
+  </div>)}<button className="quiet-link" type="button" disabled={value.length >= 24} onClick={() => onChange([...value, ''])}>Add another time on the same day</button></div>
 }
 
 export function MonthDays({ value, onChange }: { value: number[]; onChange: (days: number[]) => void }) {

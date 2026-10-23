@@ -28,6 +28,8 @@ See [scope and verification](PHASE_2_6_RELEASE.md): Active/Done/Missed/All occur
 
 ## Phase 2.7 — combined analysis
 
+[v2.7.1 patch](RELEASE_2_7_1.md) improves schedule wording and app-wide scrollbar consistency without changing recurrence logic or storage.
+
 [Combined nutrition/health analysis and the direct Reschedule fix](PHASE_2_7_RELEASE.md) are bundled for this release. Published release notes establish deployment status.
 
 ## Phase 3 — remaining roadmap
