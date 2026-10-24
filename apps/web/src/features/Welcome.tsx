@@ -37,13 +37,13 @@ export function Welcome() {
     catch(cause) {setError(cause instanceof Error?cause.message:'Could not finish setup.')} finally {setBusy(false)}
   }
   const daily=[
-    ['Log food','Open Log food → search the local database → Add → Review → Log food. Use Search USDA to find a new food; your remaining daily allowance is shown there.'],
+    ['Log food','Open Log food → search AteThat foods → Add → Review → Log food. Use Search USDA to find a new food; your remaining daily allowance is shown there.'],
     ['Make it yours','In Selected foods, edit the amount. Open More options to save a favourite, define a household portion, or edit nutrition for that entry.'],
     ['Find your favourites','In Log food, open Recent, favourites & saved portions. Reuse a food or portion without repeating a search.'],
     ['Check your history','Open History to browse a tracking day, see meal details, correct an amount with a review, or remove a meal.'],
   ]
   const more=[
-    ['Foods & meals','Create a private custom food with nutrition values, or save several selected foods as a reusable meal.'],
+    ['Food Library','Create a private custom food with nutrition values, or save several selected foods as a reusable meal.'],
     ['Recipes','Create a recipe from ingredients, set the batch yield, review its nutrition, then log a whole or fractional serving.'],
     ['Water, weight & activity','Record water with quick amounts, track weight, and record activity. Open history and trends to see earlier entries.'],
     ['Health items','Schedule medication, supplements and everyday tasks daily, weekly or monthly. Mark medication/supplements taken, tasks done, or occurrences skipped, and review completion history.'],

@@ -32,6 +32,10 @@ See [scope and verification](PHASE_2_6_RELEASE.md): Active/Done/Missed/All occur
 
 [Combined nutrition/health analysis and the direct Reschedule fix](PHASE_2_7_RELEASE.md) are bundled for this release. Published release notes establish deployment status.
 
+## Phase 2.8 — v2.8.0
+
+[Food Library, logging and tracked nutrients](FOOD_LIBRARY_AND_TRACKED_NUTRIENTS.md), including automatic seven-day Analysis loading and accessible checkbox controls. See [release scope and verification](RELEASE_2_8_0.md). Published GitHub release notes establish deployment status.
+
 ## Phase 3 — remaining roadmap
 
 The [Phase 3 backlog](PHASE_3_BACKLOG.md) records the locally implemented catalogue/quota subset, remaining catalogue operational work and the original AI, voice, export and external-agent/MCP roadmap. Implementation sequence, AI providers, costs and privacy arrangements need approval.

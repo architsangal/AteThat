@@ -920,7 +920,7 @@ type TextSummaryRequest struct {
 	FromTrackingDay string `protobuf:"bytes,1,opt,name=from_tracking_day,json=fromTrackingDay,proto3" json:"from_tracking_day,omitempty"`
 	ToTrackingDay   string `protobuf:"bytes,2,opt,name=to_tracking_day,json=toTrackingDay,proto3" json:"to_tracking_day,omitempty"`
 	Mode            string `protobuf:"bytes,3,opt,name=mode,proto3" json:"mode,omitempty"`                                           // DAY or RANGE. DAY health uses local calendar bounds; RANGE uses UTC.
-	NutrientFilter  string `protobuf:"bytes,4,opt,name=nutrient_filter,json=nutrientFilter,proto3" json:"nutrient_filter,omitempty"` // Describes the chart only; nutrition text always includes every source nutrient.
+	NutrientFilter  string `protobuf:"bytes,4,opt,name=nutrient_filter,json=nutrientFilter,proto3" json:"nutrient_filter,omitempty"` // Describes the chart; nutrition text follows saved tracked nutrients.
 }
 
 func (x *TextSummaryRequest) Reset() {

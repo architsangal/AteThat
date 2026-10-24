@@ -38,3 +38,10 @@
 .recipe-layout .panel { min-width: 0; }
 @media (max-width: 900px) { .recipe-layout { grid-template-columns: 1fr; } .nutrition-stat-grid { grid-template-columns: 1fr; } }
 @media (max-width: 540px) { .recipe-meta, .recipe-quantity { grid-template-columns: 1fr; } .nutrition-table th, .nutrition-table td { padding: 12px 6px; } .nutrition-stat-grid { gap: 10px; } }
+.tracked-selection { border: 0; padding: 0; margin: 0; min-width: 0; }
+.tracked-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: .75rem 1rem; padding-block: .8rem; }
+.account-identity dd { overflow-wrap: anywhere; }
+.quick-log-form { padding-block: .75rem; }
+.quick-log-form h2 { margin-top: 0; }
+.save-food-prompt { display: grid; gap: .75rem; margin-block: 1rem; }
+.save-food-prompt p { margin: 0; }

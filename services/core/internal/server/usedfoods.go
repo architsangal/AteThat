@@ -72,7 +72,7 @@ func (s *Server) ListUsedFoods(ctx context.Context, req *pb.ListUsedFoodsRequest
 	foodID := bson.M{"$cond": bson.A{bson.M{"$eq": bson.A{"$food_source.type", "USDA"}},
 		"$food_source.provider_food_id", "$food_source.custom_food_id"}}
 	pipeline := mongo.Pipeline{
-		{{Key: "$match", Value: bson.M{"user_id": userID, "logged_at_utc": bson.M{"$gte": from, "$lt": to}}}},
+		{{Key: "$match", Value: bson.M{"user_id": userID, "logged_at_utc": bson.M{"$gte": from, "$lt": to}, "food_source.type": bson.M{"$in": bson.A{"USDA", "CUSTOM"}}}}},
 		{{Key: "$lookup", Value: bson.M{"from": "food_log_groups", "localField": "food_log_group_id", "foreignField": "_id", "as": "group"}}},
 		{{Key: "$unwind", Value: "$group"}},
 		{{Key: "$match", Value: bson.M{"group.user_id": userID, "group.status": "CONFIRMED"}}},

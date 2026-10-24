@@ -185,7 +185,21 @@ func (s *Server) Preview(ctx context.Context, req *pb.PreviewFoodGroupRequest) (
 		var source foodSourceDoc
 		var baseAmount, baseUnit string
 		var provider map[string]foodNutrientDoc
+		if input.FoodType != "MANUAL" && input.ManualFood != nil {
+			return nil, invalid("manual food requires a manual reference")
+		}
 		switch input.FoodType {
+		case "MANUAL":
+			if input.ManualFood == nil || input.CustomFoodId != "" || input.ProviderFoodId != "" || input.ManualFood.Id != "" || input.ManualFood.Version != 0 {
+				return nil, invalid("invalid manual food")
+			}
+			food, err := customFoodInput(input.ManualFood)
+			if err != nil {
+				return nil, err
+			}
+			source = foodSourceDoc{Type: "MANUAL", Name: food.Name}
+			baseAmount, baseUnit = food.BaseQuantity.Amount.String(), food.BaseQuantity.Unit
+			provider = food.Nutrients
 		case "USDA":
 			if input.ProviderFoodId == "" || input.CustomFoodId != "" {
 				return nil, invalid("invalid USDA food reference")

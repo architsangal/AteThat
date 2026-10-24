@@ -34,6 +34,14 @@ func profileResponse(doc profileDoc) *pb.Profile {
 
 func (s *Server) profileWithIdentityState(ctx context.Context, userID primitive.ObjectID, doc profileDoc) (*pb.Profile, error) {
 	result := profileResponse(doc)
+	var user userDoc
+	if err := s.DB.Collection("users").FindOne(ctx, bson.M{"_id": userID}).Decode(&user); err != nil {
+		return nil, internal()
+	}
+	result.Email = user.EmailDisplay
+	if result.Email == "" {
+		result.Email = user.EmailNormalized
+	}
 	err := s.DB.Collection("auth_identities").FindOne(ctx, bson.M{"user_id": userID, "provider": "GOOGLE"}).Err()
 	if err == nil {
 		result.HasGoogleIdentity = true
@@ -207,8 +215,8 @@ func (s *Server) UpdatePreferences(ctx context.Context, req *pb.UpdatePreference
 		set["unit_system"] = req.GetUnitSystem()
 	}
 	if req.DashboardNutrients != nil {
-		if len(req.DashboardNutrients.Values) > 20 {
-			return nil, invalid("too many dashboard nutrients")
+		if err := validateTrackedNutrients(req.DashboardNutrients.Values); err != nil {
+			return nil, err
 		}
 		set["dashboard_nutrients"] = req.DashboardNutrients.Values
 	}
