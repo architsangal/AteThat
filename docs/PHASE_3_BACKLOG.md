@@ -68,6 +68,12 @@ Provide one ownership-enforced Core export capability for the UI and authorized 
 
 Design bounded ranges, pagination/streaming versus asynchronous jobs, decimal/time/source representations, download authentication and expiry. Exclude credentials/tokens. Test cross-user denial, large exports, partial failures and compacted ranges.
 
+### Agreed addition: emailed Analysis report — 24 October 2026
+
+Phase 3 only: provide an email report from the Analysis Explore flow, with a PDF attachment covering the applied date range, nutrition and selected health-item analysis, and the corresponding report details. Send to the authenticated user's verified account email. Include the applied timeline/timezone, selected nutrients and health items, units, missing-data context and generation time so the attachment agrees with the displayed analysis.
+
+Keep routine page viewing and automatic seven-day loading separate from email delivery: neither sends email. The explicit Explore flow should offer email delivery; confirm the final control wording and whether delivery is opt-in per exploration before implementation. Specify bounded report size/range, duplicate-request handling and clear generation/delivery success or failure feedback. No PDF generation, email delivery or background job is implemented by the current seven-day default change.
+
 ### D. Original roadmap: external agents and MCP
 
 An MCP adapter uses existing application services, never database credentials. Candidate tools include food search/detail/reviewed logging, nutrition/history, health schedules/actions, goals/profile and exports; final names/contracts need design.

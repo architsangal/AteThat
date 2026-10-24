@@ -1034,6 +1034,8 @@ components:
         onboarding_complete: { type: boolean, description: Completing or skipping the welcome guide persists per account. }
         version: { type: integer, minimum: 1 }
         display_name: { type: string, minLength: 1, maxLength: 80 }
+        email: { type: string, format: email, readOnly: true, description: Authenticated account email. }
+        has_google_identity: { type: boolean, readOnly: true }
         date_of_birth: { type: string, format: date, nullable: true }
         sex: { type: string, nullable: true }
         height: { $ref: '#/components/schemas/Quantity' }
@@ -1068,7 +1070,10 @@ components:
         unit_system: { type: string, enum: [METRIC, IMPERIAL] }
         dashboard_nutrients:
           type: array
-          items: { type: string, pattern: '^[A-Z][A-Z_]*$' }
+          description: Application-wide tracked nutrients for logging, Dashboard, Analysis and summaries. Energy remains included; source data is retained in full.
+          uniqueItems: true
+          maxItems: 49
+          items: { type: string, pattern: '^[A-Z][A-Z0-9_]*$' }
         analysis_health_item_ids:
           type: array
           maxItems: 12
@@ -1095,7 +1100,11 @@ components:
         unit_system: { type: string, enum: [METRIC, IMPERIAL] }
         dashboard_nutrients:
           type: array
-          items: { type: string, pattern: '^[A-Z][A-Z_]*$' }
+          description: Replaces the tracked nutrient selection. Requires ENERGY and distinct supported codes; omission preserves the saved selection.
+          uniqueItems: true
+          minItems: 1
+          maxItems: 49
+          items: { type: string, pattern: '^[A-Z][A-Z0-9_]*$' }
         analysis_health_item_ids:
           type: array
           maxItems: 12

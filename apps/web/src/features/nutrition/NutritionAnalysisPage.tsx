@@ -3,10 +3,11 @@ import { HealthItemAnalysis } from '../HealthItemAnalysis'
 import { readAnalysisPages, validateAnalysisRange, type AnalysisContext, type AnalysisRange } from '../health-analysis-model'
 import { AppDatePicker } from '../AppDatePicker'
 import { Form } from '../ui'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getAuthenticatedJson } from '../../api'
-import { display, known, label, nutrientFields, nutrientGroup, nutrientStats, rangeDays, shiftDay, targetForDay, type HistoricalTarget, type FoodGroup, type NutritionDay, type Page } from './model'
+import { display, known, label, nutrientGroup, nutrientStats, rangeDays, shiftDay, targetForDay, type HistoricalTarget, type FoodGroup, type NutritionDay, type Page } from './model'
+import { useTrackedNutrients } from './TrackedNutrients'
 
 type Targets = { active: { targets: Record<string, { active_value: string; unit: string }> } | null }
 
@@ -27,6 +28,7 @@ function Trend({ days, from, to, code }: { days: NutritionDay[]; from: string; t
 }
 
 export function NutritionAnalysisPage() {
+  const { codes } = useTrackedNutrients()
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [range, setRange] = useState<AnalysisRange | null>(null)
@@ -40,19 +42,11 @@ export function NutritionAnalysisPage() {
   const [groups, setGroups] = useState<FoodGroup[]>([])
   const [detailBusy, setDetailBusy] = useState(false)
   const [detailError, setDetailError] = useState('')
-  const [busy, setBusy] = useState(false)
+  const [busy, setBusy] = useState(true)
   const [error, setError] = useState('')
   const detailRequest = useRef(0)
-  useEffect(() => {
-    let active = true
-    getAuthenticatedJson<AnalysisContext & { tracking_day: string }>('/tracking-day/current').then(day => {
-      if (active) { setContext({timezone:day.timezone,daily_reset_time:day.daily_reset_time}); setTo(day.tracking_day); setFrom(shiftDay(day.tracking_day, -6)) }
-    }).catch(cause => { if (active) setError(cause.message) })
-    return () => { active = false; detailRequest.current++; analysisRequest.current++ }
-  }, [])
-
-  async function load() {
-    try { validateAnalysisRange(from,to) } catch(cause) { setError((cause as Error).message); return }
+  const load = useCallback(async (from: string, to: string) => {
+    try { validateAnalysisRange(from,to) } catch(cause) { setError((cause as Error).message); setBusy(false); return }
     const sequence=++analysisRequest.current
     const current=()=>sequence===analysisRequest.current
     setRange({from,to,revision:sequence});setDays([]);setTargetHistory([])
@@ -66,7 +60,18 @@ export function NutritionAnalysisPage() {
       setTargets(targetSelection); setDays(rows.sort((a, b) => a.tracking_day.localeCompare(b.tracking_day)))
     } catch (cause) { if(current())setError(cause instanceof Error ? cause.message : 'Could not load nutrition.') }
     finally { if(current())setBusy(false) }
-  }
+  }, [])
+  useEffect(() => {
+    let active = true
+    getAuthenticatedJson<AnalysisContext & { tracking_day: string }>('/tracking-day/current').then(day => {
+      if (!active) return
+      const firstDay = shiftDay(day.tracking_day, -6)
+      setContext({timezone:day.timezone,daily_reset_time:day.daily_reset_time})
+      setTo(day.tracking_day); setFrom(firstDay)
+      void load(firstDay, day.tracking_day)
+    }).catch(cause => { if (active) { setError(cause instanceof Error ? cause.message : 'Could not load your tracking day.'); setBusy(false) } })
+    return () => { active = false; detailRequest.current++; analysisRequest.current++ }
+  }, [load])
   async function drill(day: NutritionDay) {
     const request = ++detailRequest.current
     setDetailDay(day.tracking_day); setGroups([]); setDetailError(''); setDetailBusy(true)
@@ -86,7 +91,6 @@ export function NutritionAnalysisPage() {
     } catch (cause) { if (request === detailRequest.current) setDetailError(cause instanceof Error ? cause.message : 'Could not load food contributions.') }
     finally { if (request === detailRequest.current) setDetailBusy(false) }
   }
-  const codes = [...new Set([...nutrientFields.map(([key]) => key), ...days.flatMap(day => Object.keys(day.totals))])]
   const stats = nutrientStats(days, code)
   function historicalTarget(day:NutritionDay) {
     const target=targetForDay(targetHistory,day.tracking_day,code)
@@ -99,7 +103,7 @@ export function NutritionAnalysisPage() {
   const progress = target && target.unit === stats.unit && Number(target.active_value) > 0 && stats.average !== null ? stats.average / Number(target.active_value) * 100 : null
   return <>
     <div className="page-head"><div><span className="eyebrow">Your patterns, together</span><h1 tabIndex={-1}>Analysis</h1><p className="muted">Explore your nutrition and selected health routines over one timeline.</p></div></div>
-    <section className="panel analysis-timeline" aria-labelledby="analysis-timeline-title"><h2 id="analysis-timeline-title">Timeline</h2><p className="muted">Choose up to 366 Tracking Days. Explore refreshes both nutrition and health item analysis.</p><Form className="analysis-filter" onSubmit={event => { event.preventDefault(); void load() }}>
+    <section className="panel analysis-timeline" aria-labelledby="analysis-timeline-title"><h2 id="analysis-timeline-title">Timeline</h2><p className="muted">Your last 7 Tracking Days load automatically. Choose another range, then select Explore to refresh nutrition and health item analysis.</p><Form className="analysis-filter" onSubmit={event => { event.preventDefault(); void load(from, to) }}>
       <AppDatePicker label="From Tracking Day" value={from} onChange={setFrom} max={to || undefined} />
       <AppDatePicker label="Through Tracking Day" value={to} onChange={setTo} min={from || undefined} />
       <button className="button button-primary" disabled={busy || !from || !to || !context}>{busy ? 'Exploring…' : 'Explore'}</button>
@@ -112,7 +116,7 @@ export function NutritionAnalysisPage() {
     {busy?<section className="panel" role="status">Loading nutrition for the applied timeline…</section>:error&&range?<section className="panel" role="status">Nutrition could not be loaded. Select Explore to retry; health item results are loaded independently.</section>:!range ? <section className="panel nutrition-empty"><h2>A clearer picture of your food</h2><p>Choose a range to see trends, known-day averages, and food contributions.</p></section> : <>
       <div className="nutrition-stat-grid"><article className="panel"><span>Recorded days</span><h2>{days.length} <small>/ {rangeDays(range.from, range.to).length}</small></h2><p className="muted">Days without records are excluded from averages.</p></article><article className="panel"><span>Known-day average · {label(code)}</span><h2>{stats.average === null ? 'Unknown' : `${stats.average.toLocaleString(undefined, { maximumFractionDigits: 1 })} ${stats.unit}`}</h2><p className="muted">Based on {stats.count} days with known values.</p></article><article className="panel"><span>Against current daily target</span><h2>{progress === null ? '—' : `${progress.toFixed(0)}%`}</h2><p className="muted">{target ? `${target.active_value} ${target.unit}. Current target only; historical targets may differ.` : 'No active target for this nutrient.'}</p></article></div>
       <section className="panel"><div className="panel-top"><div><h2>Daily rhythm</h2><p className="muted">Tracking Day boundaries follow your saved timezone and reset time.</p></div><label>Nutrient<select value={code} onChange={e => setCode(e.target.value)}>{codes.map(key => <option key={key} value={key}>{label(key)}</option>)}</select></label></div><Trend days={days} from={range.from} to={range.to} code={code} /></section>
-      <section className="panel"><h2>The complete nutrient picture</h2><p className="muted">Averages use known recorded days only. Unknown or missing nutrients never become zero.</p>{['Energy & other nutrients', 'Fats', 'Vitamins', 'Minerals', 'Amino acids'].map(group => <details className="nutrient-section" open={group==='Energy & other nutrients'||group==='Fats'} key={group}><summary>{group}</summary><div className="nutrition-table-wrap"><table className="nutrition-table responsive-table"><thead><tr><th>Nutrient</th><th>Known-day average</th><th>Coverage</th><th>Recorded total</th></tr></thead><tbody>{codes.filter(key => nutrientGroup(key) === group).map(key => {
+      <section className="panel"><h2>Your tracked nutrients</h2><p className="muted">Averages use known recorded days only. Unknown or missing nutrients never become zero. <Link to="/app/settings">Choose tracked nutrients</Link></p>{['Energy & other nutrients', 'Fats', 'Vitamins', 'Minerals', 'Amino acids'].filter(group=>codes.some(key=>nutrientGroup(key)===group)).map(group => <details className="nutrient-section" open={group==='Energy & other nutrients'||group==='Fats'} key={group}><summary>{group}</summary><div className="nutrition-table-wrap"><table className="nutrition-table responsive-table"><thead><tr><th>Nutrient</th><th>Known-day average</th><th>Coverage</th><th>Recorded total</th></tr></thead><tbody>{codes.filter(key => nutrientGroup(key) === group).map(key => {
         const value = nutrientStats(days, key)
         return <tr key={key}><th><button className="quiet-link" onClick={() => setCode(key)}>{label(key)}</button></th><td data-label="Daily average">{value.average === null ? 'Unknown' : `${value.average.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${value.unit}`}</td><td data-label="Known days">{value.count}/{days.length} days</td><td data-label="Recorded total">{value.complete ? `${value.total.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${value.unit}` : 'Incomplete'}</td></tr>
       })}</tbody></table></div></details>)}</section>

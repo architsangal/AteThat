@@ -32,6 +32,7 @@ type logGroupBody struct {
 		} `json:"quantity"`
 		FoodState             string                  `json:"food_state"`
 		UserOverrideNutrition map[string]nutrientBody `json:"user_override_nutrition"`
+		ManualFood            *customFoodBody         `json:"manual_food"`
 	} `json:"items"`
 }
 
@@ -83,7 +84,11 @@ func (s *Server) previewFoodGroup(w http.ResponseWriter, r *http.Request, reques
 		for key, value := range item.UserOverrideNutrition {
 			overrides[key] = &pb.FoodNutrient{Status: value.Status, Amount: value.Amount, Unit: value.Unit}
 		}
-		items = append(items, &pb.FoodLogItemInput{Position: item.Position, FoodType: item.FoodReference.Type,
+		var manual *pb.UpsertCustomFoodRequest
+		if item.ManualFood != nil {
+			manual = customFoodRequest("", *item.ManualFood)
+		}
+		items = append(items, &pb.FoodLogItemInput{Position: item.Position, FoodType: item.FoodReference.Type, ManualFood: manual,
 			ProviderFoodId: item.FoodReference.ProviderFoodID, CustomFoodId: item.FoodReference.CustomFoodID,
 			Quantity:  &pb.FoodQuantity{Amount: item.Quantity.Amount, Unit: item.Quantity.Unit},
 			FoodState: item.FoodState, UserOverrideNutrition: overrides})

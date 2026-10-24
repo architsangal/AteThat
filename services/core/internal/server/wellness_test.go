@@ -30,6 +30,9 @@ func phaseTwoServer(t *testing.T) (*Server, context.Context, context.Context) {
 	t.Cleanup(func() { db.Drop(context.Background()); client.Disconnect(context.Background()) })
 	s := &Server{DB: db, Client: client}
 	user := primitive.NewObjectID()
+	if _, err := db.Collection("users").InsertOne(ctx, userDoc{ID: user, EmailDisplay: "local-qa@example.invalid"}); err != nil {
+		t.Fatal(err)
+	}
 	owner := context.WithValue(ctx, principalKey{}, user)
 	other := context.WithValue(ctx, principalKey{}, primitive.NewObjectID())
 	if _, err := db.Collection("user_profiles").InsertOne(ctx, profileDoc{UserID: user, Timezone: "Asia/Kolkata"}); err != nil {

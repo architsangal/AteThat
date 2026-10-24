@@ -51,6 +51,6 @@ message TextSummaryRequest {
   string from_tracking_day = 1;
   string to_tracking_day = 2;
   string mode = 3; // DAY or RANGE. DAY health uses local calendar bounds; RANGE uses UTC.
-  string nutrient_filter = 4; // Describes the chart only; nutrition text always includes every source nutrient.
+  string nutrient_filter = 4; // Describes the chart; nutrition text follows saved tracked nutrients.
 }
 message TextSummaryResponse { string text = 1; string generated_at = 2; bool partial = 3; string context = 4; }

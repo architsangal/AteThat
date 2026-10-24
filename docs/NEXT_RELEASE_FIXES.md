@@ -1,5 +1,11 @@
 # Next release — collected fixes
 
+## v2.8.0 — Food Library and focused nutrition
+
+Food Library/Recipes hierarchy, combined My foods/Quick Log/Search workflow, app-wide tracked nutrients, account email display, public wording cleanup and automatic seven-day Analysis loading. See [scope and compatibility](FOOD_LIBRARY_AND_TRACKED_NUTRIENTS.md) and [release verification](RELEASE_2_8_0.md). Published GitHub release notes establish deployment status. Emailed PDF Analysis reports are recorded for Phase 3 only.
+
+Includes app-wide accessible checkbox styling, larger labelled option rows, selected/unsaved nutrient counts, clearer Quick Log and Settings wording, and a proper fractional recipe-serving dialog. Reviewed locally in Chrome on desktop/mobile and light/dark themes.
+
 ## v2.7.1 — schedule wording and app-wide scrollbars
 
 See [release scope and verification](RELEASE_2_7_1.md). GitHub release notes establish actual publication/deployment status.

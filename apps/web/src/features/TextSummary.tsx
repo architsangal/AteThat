@@ -5,6 +5,7 @@ import { useDraftGuard } from './useDraftGuard'
 import { useDialogs } from './ui'
 import { label as nutrientLabel } from './nutrition/model'
 import { copySummaryText } from './summary-clipboard'
+import { useTrackedNutrients } from './nutrition/TrackedNutrients'
 
 type Summary = { text: string; context: string; generated_at: string; partial: boolean }
 type SummaryCardProps = {
@@ -50,11 +51,12 @@ export function TextSummaryCard({ from, to, mode, nutrient, source, draft, busy,
   </section>
 }
 export function TextSummary({ from, to, mode, nutrient = 'ALL' }: { from: string; to: string; mode: 'DAY' | 'RANGE'; nutrient?: string }) {
+  const {codes:tracked} = useTrackedNutrients()
   const dialogs = useDialogs()
   const [source, setSource] = useState<Summary | null>(null), [draft, setDraft] = useState('')
   const [busy, setBusy] = useState(false), [error, setError] = useState(''), [status, setStatus] = useState('')
   const [expanded, setExpanded] = useState(false), [selectForCopy, setSelectForCopy] = useState(false)
-  const area = useRef<HTMLTextAreaElement>(null), request = useRef(0), currentContext = `${mode}|${from}|${to}|${nutrient}`
+  const area = useRef<HTMLTextAreaElement>(null), request = useRef(0), currentContext = `${mode}|${from}|${to}|${nutrient}|${tracked.join(',')}`
   const dirty = source !== null && draft !== source.text
   useEffect(() => {
     if (selectForCopy && expanded) { area.current?.focus(); area.current?.select(); setSelectForCopy(false) }
@@ -65,7 +67,7 @@ export function TextSummary({ from, to, mode, nutrient = 'ALL' }: { from: string
     try {
       const next = await getAuthenticatedJson<Summary>(`/text-summary?${new URLSearchParams({ from, to, mode, nutrient })}`)
       if (id !== request.current) return
-      setSource(next); setDraft(next.text)
+      setSource({...next,context:currentContext}); setDraft(next.text)
     } catch (e) { if (id === request.current) setError(e instanceof Error ? e.message : 'Summary unavailable. Existing text has been kept.') }
     finally { if (id === request.current) setBusy(false) }
   }

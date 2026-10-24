@@ -38,6 +38,19 @@ func (s *Server) TextSummary(ctx context.Context, r *pb.TextSummaryRequest) (*pb
 		return nil, err
 	}
 	generated := time.Now().UTC()
+	preferences, err := s.GetPreferences(ctx, &pb.Empty{})
+	if err != nil {
+		return nil, err
+	}
+	selected := map[string]bool{"ENERGY": true}
+	for _, code := range preferences.DashboardNutrients {
+		selected[code] = true
+	}
+	if len(preferences.DashboardNutrients) == 0 {
+		for _, code := range []string{"PROTEIN", "CARBOHYDRATE", "FAT", "FIBER"} {
+			selected[code] = true
+		}
+	}
 	var out strings.Builder
 	partial := false
 	line := func(format string, args ...interface{}) { fmt.Fprintf(&out, format+"\n", args...) }
@@ -47,7 +60,7 @@ func (s *Server) TextSummary(ctx context.Context, r *pb.TextSummaryRequest) (*pb
 	}
 	line("AteThat factual Text Summary — %s to %s", r.FromTrackingDay, r.ToTrackingDay)
 	line("Generated %s; mode %s; current timezone %s; current nutrition reset %s.", generated.Format(time.RFC3339), r.Mode, current.Timezone, current.DailyResetTime)
-	line("Chart nutrient filter: %s. Text includes all represented nutrients. Missing values are unknown, never zero. No medical interpretation.", r.NutrientFilter)
+	line("Chart nutrient: %s. Nutrition includes your selected tracked nutrients. Missing values are unknown, never zero. No medical interpretation.", r.NutrientFilter)
 	line("\nNUTRITION — saved Tracking Day boundaries (not UTC calendar days)")
 	var days []*pb.NutritionDaySummary
 	cursor := ""
@@ -116,7 +129,7 @@ func (s *Server) TextSummary(ctx context.Context, r *pb.TextSummaryRequest) (*pb
 				baseline = v
 			}
 		}
-		line("Accepted target context (historical revisions; water is independent):")
+		line("Accepted targets over this period (water is independent):")
 		for _, v := range versions {
 			if v.Status != "ACTIVE" && v.Status != "SUPERSEDED" {
 				continue
@@ -124,9 +137,12 @@ func (s *Server) TextSummary(ctx context.Context, r *pb.TextSummaryRequest) (*pb
 			if v != baseline && (v.EffectiveFromTrackingDay < r.FromTrackingDay || v.EffectiveFromTrackingDay > r.ToTrackingDay) {
 				continue
 			}
-			line("  Revision %d effective %s; %s; reference %s (%s).", v.Revision, v.EffectiveFromTrackingDay, v.TargetBasis, summaryInline(v.SourceAttribution.GetName()), v.ReferenceSetVersion)
+			line("  Targets effective %s; %s; reference %s.", v.EffectiveFromTrackingDay, summaryTargetLabel(v.TargetBasis), summaryInline(v.SourceAttribution.GetName()))
 			targetCodes := []string{}
 			for code := range v.Targets {
+				if !selected[code] {
+					continue
+				}
 				targetCodes = append(targetCodes, code)
 			}
 			sort.Strings(targetCodes)
@@ -140,7 +156,7 @@ func (s *Server) TextSummary(ctx context.Context, r *pb.TextSummaryRequest) (*pb
 						origin = "GENERAL_BENCHMARK"
 					}
 				}
-				line("    Selected %s: %s %s (%s); reference point %s %s, not a range or upper limit.", code, value.ActiveValue, value.Unit, origin, value.ReferenceValue, value.Unit)
+				line("    Selected %s: %s %s (%s); reference point %s %s, not a range or upper limit.", code, value.ActiveValue, value.Unit, summaryTargetLabel(origin), value.ReferenceValue, value.Unit)
 			}
 		}
 	}
@@ -153,6 +169,9 @@ func (s *Server) TextSummary(ctx context.Context, r *pb.TextSummaryRequest) (*pb
 		line("%s: %d meals, %d foods; timezone %s, reset %s; compacted detail: %t.", day.TrackingDay, day.ConfirmedGroupCount, day.ConfirmedItemCount, day.Timezone, day.DailyResetTime, day.DetailCompacted)
 		codes := make([]string, 0, len(day.Totals))
 		for code := range day.Totals {
+			if !selected[code] {
+				continue
+			}
 			codes = append(codes, code)
 			keys[code] = true
 		}
@@ -202,13 +221,16 @@ func (s *Server) TextSummary(ctx context.Context, r *pb.TextSummaryRequest) (*pb
 		if accepted != nil {
 			codes = nil
 			for code := range accepted.Targets {
+				if !selected[code] {
+					continue
+				}
 				codes = append(codes, code)
 			}
 			sort.Strings(codes)
-			line("  Accepted targets revision %d, effective %s, basis %s:", accepted.Revision, accepted.EffectiveFromTrackingDay, accepted.TargetBasis)
+			line("  Accepted targets effective %s (%s):", accepted.EffectiveFromTrackingDay, summaryTargetLabel(accepted.TargetBasis))
 			for _, code := range codes {
 				v := accepted.Targets[code]
-				line("    %s: %s %s (%s)", code, v.ActiveValue, v.Unit, v.Provenance)
+				line("    %s: %s %s (%s)", code, v.ActiveValue, v.Unit, summaryTargetLabel(v.Provenance))
 			}
 		} else {
 			line("  No verified accepted target for this day.")
@@ -376,7 +398,7 @@ func (s *Server) TextSummary(ctx context.Context, r *pb.TextSummaryRequest) (*pb
 				} else if item := items[o.HealthItemId]; item != nil {
 					dose = "current configured dose: " + summaryInline(item.DosageAmountText) + " " + summaryInline(item.DosageUnitText) + " (not actual dose taken)"
 				}
-				line("%s %s: %s; %s; scheduled %s (%s %s %s); recorded completion %s; rescheduled to %s; occurrence %s.", o.Type, summaryInline(o.Name), state, dose, o.ScheduledAt, o.ScheduledLocalDate, o.ScheduledLocalTime, o.Timezone, summaryOrUnknown(o.CompletedAt), summaryOrUnknown(o.RescheduledTo), o.OccurrenceId)
+				line("%s %s: %s; %s; scheduled %s (%s %s %s); recorded completion %s; rescheduled to %s.", o.Type, summaryInline(o.Name), state, dose, o.ScheduledAt, o.ScheduledLocalDate, o.ScheduledLocalTime, o.Timezone, summaryOrUnknown(o.CompletedAt), summaryOrUnknown(o.RescheduledTo))
 				if o.OriginalScheduledAt != "" {
 					line("  Originally scheduled %s; this selection uses the new effective scheduled time.", o.OriginalScheduledAt)
 				}

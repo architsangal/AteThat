@@ -20,6 +20,9 @@ import { ThemeProvider, useTheme } from './theme'
 import { NutritionAnalysisPage } from './features/nutrition/NutritionAnalysisPage'
 import { display, label as foodLabel, nutrientFields, type Page } from './features/nutrition/model'
 import { NutrientInputs, NutrientOverrideInputs } from './features/nutrition/NutrientInputs'
+import { TrackedNutrientProvider, TrackedNutrientsSettings, useTrackedNutrients } from './features/nutrition/TrackedNutrients'
+import { QuickLog, LogTimestampInput, type ManualFood } from './features/nutrition/QuickLog'
+import { readAnalysisPages } from './features/health-analysis-model'
 import { RecipesPage } from './features/recipes/RecipesPage'
 import { WellnessPage, WellnessOverview } from './features/wellness/WellnessPage'
 import { ScheduleEditor, type SchedulableItem } from './features/wellness/ScheduleEditor'
@@ -39,7 +42,7 @@ const navigation: { label: string; to: string; icon: Icon }[] = [
   { label: 'Log food', to: '/app/log-food', icon: Plus },
   { label: 'History', to: '/app/history', icon: CalendarDays },
   { label: 'Analysis', to: '/app/analysis', icon: Activity },
-  { label: 'Foods & meals', to: '/app/meals', icon: UtensilsCrossed },
+  { label: 'Food Library', to: '/app/meals', icon: UtensilsCrossed },
   { label: 'Recipes', to: '/app/recipes', icon: UtensilsCrossed },
   { label: 'Water, weight & activity', to: '/app/wellness', icon: Activity },
   { label: 'Health items', to: '/app/health', icon: HeartPulse },
@@ -121,14 +124,14 @@ function PublicFooter() {
 
 function TermsPage() {
   return <div className="public-page"><PublicHeader /><main className="terms-page layout-width">
-    <div className="terms-heading"><span className="eyebrow">AteThat · Legal</span><h1 tabIndex={-1}>Terms and conditions</h1><p className="muted">Draft for local testing · Last updated 8 October 2026</p></div>
+    <div className="terms-heading"><span className="eyebrow">AteThat · Legal</span><h1 tabIndex={-1}>Terms and conditions</h1><p className="muted">Last updated 24 October 2026</p></div>
     <div className="terms-content">
-      <section><h2>About AteThat</h2><p>AteThat helps you record food, nutrition, and health routines. Features shown in the current local version are still under development. Availability, accuracy, and these terms may change before a public launch.</p></section>
+      <section><h2>About AteThat</h2><p>AteThat helps you record food, nutrition, and health routines. Features and availability may change as the service develops.</p></section>
       <section><h2>Your account and information</h2><p>Keep your sign-in credentials secure and provide information you have the right to use. You control the records you add to your account. Nutrition information, including USDA-derived values, can be incomplete or vary by product, preparation, and serving size.</p></section>
       <section><h2>Health information</h2><p>AteThat is a tracking tool, not a medical professional or a substitute for medical advice, diagnosis, or treatment. Check important nutrition or medication decisions with a qualified professional.</p></section>
       <section><h2>Account deletion and permanent removal</h2><p>A verified account-deletion request starts a <strong>30-day deletion-pending period</strong> and ends account access immediately. You may cancel the request during that period only by freshly verifying your sign-in method. At the end of the 30 days, user-owned account data is scheduled for permanent removal, except information we must retain to meet applicable legal obligations. Removed data may not be recoverable.</p><p>The 30-day period does not start merely by stopping use of AteThat or deleting a browser session.</p></section>
-      <section><h2>Service changes</h2><p>During development, the service may be interrupted, changed, or reset. Please do not rely on this local version as the only copy of important records. We will review and complete these terms, including operator and contact details, before public launch.</p></section>
-      <section><h2>Data storage and recovery</h2><p>AteThat currently uses MongoDB Atlas Free (M0) without application-managed backups, snapshots, or point-in-time recovery. We cannot guarantee restoration of records lost through accidental deletion, application errors, unauthorized access, or a storage-service failure. Keep a separate copy of information that is important to you. We do not currently promise a recovery time or a maximum amount of data that could be lost. This wording will be updated if verified backup and recovery capabilities are introduced.</p></section>
+      <section><h2>Service changes</h2><p>The service may be interrupted or changed. Keep a separate copy of records that are important to you.</p></section>
+      <section><h2>Data storage and recovery</h2><p>Restoration of lost or deleted records is not guaranteed. Data may be lost through accidental deletion, application errors, unauthorized access or service failures. Keep a separate copy of important information. We do not promise a recovery time or a maximum amount of data that could be lost.</p></section>
     </div>
     <Link className="quiet-link" to="/"><ArrowLeft size={16} /> Back to home</Link>
   </main><PublicFooter /></div>
@@ -358,7 +361,7 @@ function AppShell({ children }: { children: ReactNode }) {
   if (!authenticated) return <div className="not-found"><Brand /><p>Checking your session…</p></div>
   return <div className="app-shell"><aside className={`sidebar ${menuOpen ? 'sidebar-open' : ''}`}><div className="sidebar-head"><Brand /><button className="icon-button mobile-only" type="button" onClick={() => setMenuOpen(false)} aria-label="Close menu"><X size={20} /></button></div><nav className="sidebar-nav" aria-label="Main navigation">{navigation.map(({ label, to, icon: IconComponent }) => <NavLink onClick={() => setMenuOpen(false)} key={to} to={to === '/app/settings' && missingProfile.length ? profileAttentionHref(missingProfile) : to} end={to === '/app'} className={({ isActive }) => `nav-item ${isActive ? 'nav-item-active' : ''}`}><IconComponent size={19} /><span>{label}</span>{to === '/app/settings' && missingProfile.length > 0 && <small className="settings-profile-badge" title={`${missingProfile.length} optional profile details not provided`} aria-label={`${missingProfile.length} optional profile inputs missing`}>{missingProfile.length}</small>}</NavLink>)}</nav><div className="sidebar-foot"><span className="sidebar-foot-icon"><ShieldCheck size={18} /></span><p>Know what nourishes you.<small>Your daily view, at your pace.</small></p></div></aside>
     {menuOpen && <button className="mobile-scrim" type="button" aria-label="Close menu" onClick={() => setMenuOpen(false)} />}
-    <div className="app-main"><header className="app-header"><div className="app-header-left"><button className="icon-button mobile-only" type="button" aria-label="Open menu" onClick={() => setMenuOpen(true)}><Menu size={21} /></button><span className="app-header-title">AteThat</span></div><div className="app-header-right"><span className="header-timezone"><Clock3 size={15} /> Time shown in your account timezone</span><Link className="icon-button" to="/app/welcome?replay=1" aria-label="Open feature guide"><CircleHelp size={20} /></Link><ThemeButton /><Link className="button button-primary button-small header-log" to="/app/log-food"><Plus size={17} /> Log food</Link></div></header><main className="content"><div className="app-page-enter" key={location.pathname}>{children}</div></main></div>
+    <div className="app-main"><header className="app-header"><div className="app-header-left"><button className="icon-button mobile-only" type="button" aria-label="Open menu" onClick={() => setMenuOpen(true)}><Menu size={21} /></button><span className="app-header-title">AteThat</span></div><div className="app-header-right"><span className="header-timezone"><Clock3 size={15} /> Time shown in your account timezone</span><Link className="icon-button" to="/app/welcome?replay=1" aria-label="Open feature guide"><CircleHelp size={20} /></Link><ThemeButton /><Link className="button button-primary button-small header-log" to="/app/log-food"><Plus size={17} /> Log food</Link></div></header><main className="content"><div className="app-page-enter" key={location.pathname}><TrackedNutrientProvider>{children}</TrackedNutrientProvider></div></main></div>
     <nav className="bottom-nav" aria-label="Mobile navigation">{navigation.slice(0, 4).map(({ label, to, icon: IconComponent }) => <NavLink key={to} to={to === '/app/settings' && missingProfile.length ? profileAttentionHref(missingProfile) : to} end={to === '/app'} className={({ isActive }) => isActive ? 'bottom-item bottom-item-active' : 'bottom-item'}><IconComponent size={20} /><span>{label}</span></NavLink>)}<button type="button" className="bottom-item" onClick={() => setMenuOpen(true)}><Menu size={20} /><span>More</span></button></nav>
   </div>
 }
@@ -373,6 +376,7 @@ function EmptyState({ icon: IconComponent, title, text, action }: { icon: Icon; 
 
 type DashboardData = { tracking_day: string; timezone: string; daily_reset_time: string; nutrition: { totals: FoodResult['nutrients']; targets: FoodResult['nutrients']; progress: Record<string, { percent: string }> }; food_log_groups: { items: LoggedGroup[]; has_more: boolean } }
 function Dashboard() {
+  const { codes: tracked } = useTrackedNutrients()
   const [data, setData] = useState<DashboardData | null>(null)
   const [upcoming, setUpcoming] = useState<HealthHistoryEntry[]>([])
   const [upcomingLoading, setUpcomingLoading] = useState(true)
@@ -389,7 +393,7 @@ function Dashboard() {
   return <><PageHead eyebrow="Your daily view" title="Today at a glance" description="Your food and routines for today." action={<Link className="button button-primary" to="/app/log-food"><Plus size={17} /> Log food</Link>} />
     {error && <p className="form-message form-error" role="alert">{error}</p>}{data && <p className="muted">Tracking Day {data.tracking_day} · {data.timezone} · daily reset {data.daily_reset_time}</p>}
     <div className="dashboard-grid"><section className="panel energy-panel"><div className="panel-top"><span className="panel-kicker">Energy</span><span className="info-pill"><Info size={14} /> {data?.timezone || 'Account timezone'}</span></div><h2>{energy?.status === 'KNOWN' ? `${energy.amount} kcal` : 'No confirmed energy total yet'}</h2><p>{data?.nutrition.targets.ENERGY?.status === 'KNOWN' ? `Against your selected daily calorie target of ${data.nutrition.targets.ENERGY.amount} kcal. This is not a personalized calorie prescription.` : 'Choose nutrition targets in Settings to see progress.'}</p>{data.nutrition.targets.ENERGY?.status === 'KNOWN' && <div className="empty-meter"><span style={{ width: `${Math.min(100, Math.max(0, Number(data?.nutrition.progress.ENERGY?.percent || 0)))}%` }} /></div>}</section>
-      <section className="panel nutrient-panel"><div className="panel-top"><h2>Routine nutrients</h2><CircleHelp size={18} aria-hidden="true" /></div>{[['PROTEIN', 'Protein', 'protein'], ['CARBOHYDRATE', 'Carbohydrates', 'carbs'], ['FAT', 'Fat', 'fat'], ['FIBER', 'Fibre', 'fibre']].map(([key, label, color]) => <div className="nutrient-row" key={key}><div><span className={`nutrient-dot ${color}`} />{label}</div><span>{data?.nutrition.totals[key]?.status === 'KNOWN' ? `${data.nutrition.totals[key].amount} ${data.nutrition.totals[key].unit}` : 'unknown'}</span>{data.nutrition.targets[key]?.status === 'KNOWN' && <div className="nutrient-track"><span style={{ width: `${Math.min(100, Math.max(0, Number(data?.nutrition.progress[key]?.percent || 0)))}%` }} /></div>}</div>)}<Link className="quiet-link" to="/app/targets">View nutrition targets <ArrowRight size={16} /></Link></section></div>
+      <section className="panel nutrient-panel"><div className="panel-top"><h2>Routine nutrients</h2><CircleHelp size={18} aria-hidden="true" /></div>{tracked.filter(key=>key!=='ENERGY').map(key=>[key,foodLabel(key),key.toLowerCase()]).map(([key, label, color]) => <div className="nutrient-row" key={key}><div><span className={`nutrient-dot ${color}`} />{label}</div><span>{data?.nutrition.totals[key]?.status === 'KNOWN' ? `${data.nutrition.totals[key].amount} ${data.nutrition.totals[key].unit}` : 'unknown'}</span>{data.nutrition.targets[key]?.status === 'KNOWN' && <div className="nutrient-track"><span style={{ width: `${Math.min(100, Math.max(0, Number(data?.nutrition.progress[key]?.percent || 0)))}%` }} /></div>}</div>)}<Link className="quiet-link" to="/app/targets">View nutrition targets <ArrowRight size={16} /></Link></section></div>
     <div className="dashboard-grid dashboard-secondary"><section className="panel"><div className="panel-top"><h2>Today’s food</h2><Link className="quiet-link" to="/app/history">View history <ArrowRight size={15} /></Link></div>{data?.food_log_groups.items.length ? data.food_log_groups.items.map(group => <div className="dashboard-group" key={group.id}><strong>{group.label || foodLabel(group.meal_category)}</strong><span>{group.item_count} {group.item_count === 1 ? 'food' : 'foods'} · {group.aggregate_final_nutrition.ENERGY?.status === 'KNOWN' ? `${group.aggregate_final_nutrition.ENERGY.amount} kcal` : 'energy unknown'}</span></div>) : <EmptyState icon={UtensilsCrossed} title="No food logged yet" text="Use Log food above to add your first meal." />}</section><section className="panel"><div className="panel-top"><h2>Health routine</h2><Link className="quiet-link" to="/app/health">View items <ArrowRight size={15} /></Link></div>{upcomingLoading ? <Loading>Loading your routine…</Loading> : upcomingError ? <p role="status">{upcomingError}</p> : upcoming.length ? upcoming.map(item => <div className="dashboard-group" key={item.occurrence_id}><strong>{item.name}</strong><span>{item.scheduled_local.date} {item.scheduled_local.time} ({item.scheduled_local.timezone}) · {healthStatusLabel(item.status, item.type)}</span></div>) : <EmptyState icon={HeartPulse} title="No upcoming items" text="Scheduled medication, supplements and tasks for the next 24 hours appear here." />}</section></div>
     <WellnessOverview />
     <Link className="quiet-link" to="/app/target-calculations">How targets are calculated</Link>
@@ -403,12 +407,13 @@ type CustomFood = { id: string; version: number; name: string; description: stri
 type SavedMeal = { id: string; version: number; name: string; recipe_servings?: string; preparation?: string; components: { position: number; food_reference: { type: 'USDA' | 'CUSTOM'; provider_food_id: string | null; custom_food_id: string | null }; quantity: { amount: string; unit: string }; food_state: string }[] }
 type SavedFoodLink = { food_key: string; food_reference: { type: 'USDA' | 'CUSTOM'; provider_food_id: string | null; custom_food_id: string | null }; name: string; confirmed_log_count?: number }
 type SavedServing = { id: string; version: number; label: string; food_reference: { type: 'USDA' | 'CUSTOM'; provider_food_id: string | null; custom_food_id: string | null }; quantity: { amount: string; unit: string }; food_state: string }
-type DraftFood = { key: string; type: 'USDA' | 'CUSTOM'; id: string; name: string; foodState: string; quantity: string; unit: string; portion?: { label: string; amount: string }; portionCount?: string; overrides: Record<string, { status: string; amount: string; unit: string }> }
+type DraftFood = { key: string; type: 'USDA' | 'CUSTOM' | 'MANUAL'; id: string; name: string; foodState: string; quantity: string; unit: string; manual?: ManualFood; portion?: { label: string; amount: string }; portionCount?: string; overrides: Record<string, { status: string; amount: string; unit: string }> }
 type LoggedGroup = { id: string | null; tracking_day: string; item_count: number; meal_category: string; label: string; aggregate_final_nutrition: FoodResult['nutrients']; items: { id: string | null; position: number; food_source: { name: string }; quantity: { amount: string; unit: string }; final_nutrition: FoodResult['nutrients'] }[] }
 type GroupPreview = { preview_token: string; expires_at: string; group: LoggedGroup }
 
 
 function LogFood() {
+  const { codes: tracked } = useTrackedNutrients()
   const dialogs = useDialogs()
   const [searchMode, setSearchMode] = useState<'LOCAL'|'USDA'>('LOCAL')
   const [usage, setUsage] = useState<SearchUsage | null>(null)
@@ -417,7 +422,12 @@ function LogFood() {
   useEffect(() => { void refreshUsage() }, [])
   const [query, setQuery] = useState('')
   const [state, setState] = useState('')
-  const [source, setSource] = useState<'USDA' | 'CUSTOM' | 'MEAL'>('USDA')
+  const [tab, setTab] = useState<'MY' | 'QUICK' | 'SEARCH'>('MY')
+  const [source, setSource] = useState<'USDA' | 'CUSTOM' | 'MEAL'>('CUSTOM')
+  const [saveCandidate, setSaveCandidate] = useState<FoodResult | null>(null)
+  const [portionRecipe, setPortionRecipe] = useState<SavedMeal | null>(null)
+  const [recipeServings, setRecipeServings] = useState('1')
+  const [loggedAt, setLoggedAt] = useState('')
   const [savedSource, setSavedSource] = useState<'FAVOURITES' | 'RECENT' | 'FREQUENT' | ''>('')
   const [items, setItems] = useState<FoodResult[]>([])
   const [customFoods, setCustomFoods] = useState<CustomFood[]>([])
@@ -453,15 +463,15 @@ function LogFood() {
   useEffect(() => {
     if (source !== 'CUSTOM') return
     let active = true; setSourceLoading(true); setError('')
-    getAuthenticatedJson<{ items: CustomFood[] }>('/foods/custom?limit=50').then(page => { if (active) setCustomFoods(page.items) })
+    readAnalysisPages<CustomFood>(getAuthenticatedJson,'/foods/custom',{limit:'50'},()=>active).then(items => { if (active) setCustomFoods(items) })
       .catch(cause => { if (active) setError(cause instanceof Error ? cause.message : 'Could not load your foods.') }).finally(() => { if (active) setSourceLoading(false) })
     return () => { active = false }
   }, [source])
   useEffect(() => {
     if (source !== 'MEAL') return
     let active = true; setSourceLoading(true); setError('')
-    getAuthenticatedJson<{ items: SavedMeal[] }>('/meals?limit=50').then(page => { if (active) setMeals(page.items) })
-      .catch(cause => { if (active) setError(cause instanceof Error ? cause.message : 'Could not load saved meals.') }).finally(() => { if (active) setSourceLoading(false) })
+    readAnalysisPages<SavedMeal>(getAuthenticatedJson,'/meals',{limit:'50'},()=>active).then(items => { if (active) setMeals(items) })
+      .catch(cause => { if (active) setError(cause instanceof Error ? cause.message : 'Could not load recipes.') }).finally(() => { if (active) setSourceLoading(false) })
     return () => { active = false }
   }, [source])
   useEffect(() => {
@@ -604,14 +614,15 @@ function LogFood() {
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Food search is unavailable right now.') }
     finally { setSearching(false); void refreshUsage() }
   }
-  async function review() {
-    if (draft.length === 0 || draft.some(item => !Number.isFinite(Number(item.quantity)) || Number(item.quantity) <= 0)) { setError('Enter a positive amount for every food.'); setBasketOpen(true); return }
+  async function review(selection = draft) {
+    if (selection.length === 0 || selection.some(item => !Number.isFinite(Number(item.quantity)) || Number(item.quantity) <= 0)) { setError('Enter a positive amount for every food.'); setBasketOpen(true); return }
     setBusy(true); setError(''); setConfirmed(null)
     try {
       const response = await postAuthenticatedJson<GroupPreview>('/food-log-groups/preview', {
-        logged_at: new Date().toISOString(), meal_category: category, label,
-        items: draft.map((item, position) => ({ position,
-          food_reference: item.type === 'USDA' ? { type: 'USDA', provider_food_id: item.id } : { type: 'CUSTOM', custom_food_id: item.id },
+        logged_at: loggedAt ? new Date(loggedAt).toISOString() : new Date().toISOString(), meal_category: category, label,
+        items: selection.map((item, position) => ({ position,
+          food_reference: item.type === 'USDA' ? { type: 'USDA', provider_food_id: item.id } : item.type === 'MANUAL' ? { type: 'MANUAL' } : { type: 'CUSTOM', custom_food_id: item.id },
+          ...(item.manual ? {manual_food:item.manual}:{}),
           quantity: { amount: item.quantity, unit: item.unit }, food_state: item.foodState, user_override_nutrition: item.overrides || {} })),
       })
       setPreview(response); setBasketOpen(false); setConfirmationKey(crypto.randomUUID())
@@ -619,35 +630,75 @@ function LogFood() {
     finally { setBusy(false) }
   }
   async function saveMeal() {
-    const name = (await dialogs.prompt('Name this reusable meal'))?.trim()
+    const name = (await dialogs.prompt('Name this reusable recipe'))?.trim()
     if (!name) return
     setBusy(true); setError('')
     try {
-      await postAuthenticatedJson('/meals', { name, components: draft.map((item, position) => ({ position,
+      const reusable = await reusableDraft(draft)
+      await postAuthenticatedJson('/meals', { name, recipe_servings: '1', components: reusable.map((item, position) => ({ position,
         food_reference: item.type === 'USDA' ? { type: 'USDA', provider_food_id: item.id } : { type: 'CUSTOM', custom_food_id: item.id },
         quantity: { amount: item.quantity, unit: item.unit }, food_state: item.foodState })) })
-      setNotice(`Meal “${name}” saved to Foods & meals.`)
+      setNotice(`Recipe “${name}” saved. You can find it under My foods → Recipes.`)
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not save meal.') }
     finally { setBusy(false) }
   }
-  async function reviewMeal(meal: SavedMeal) {
-    if (draft.length && !(await dialogs.confirm('Replace your selected foods with this saved meal?'))) return
-    const servings = meal.recipe_servings ? (await dialogs.prompt(`This recipe makes ${meal.recipe_servings} servings. How many servings did you eat?`, '1')) : undefined
-    if (meal.recipe_servings && !servings) return
+  async function saveDraftFood(item: DraftFood): Promise<DraftFood> {
+    const result = await postAuthenticatedJson<GroupPreview>('/food-log-groups/preview', {
+      logged_at:new Date().toISOString(),meal_category:category,label:'',items:[{position:0,
+        food_reference:item.type==='USDA'?{type:'USDA',provider_food_id:item.id}:item.type==='MANUAL'?{type:'MANUAL'}:{type:'CUSTOM',custom_food_id:item.id},
+        ...(item.manual?{manual_food:item.manual}:{}),quantity:{amount:item.quantity,unit:item.unit},food_state:item.foodState,user_override_nutrition:item.overrides}]})
+    const food = await postAuthenticatedJson<CustomFood>('/foods/custom',{name:item.name,description:'',food_state:item.foodState,base_quantity:{amount:item.quantity,unit:item.unit},nutrients:result.group.items[0].final_nutrition})
+    const saved:DraftFood={...item,type:'CUSTOM',id:food.id,manual:undefined,overrides:{}}
+    setDraft(previous=>previous.map(value=>value.key===item.key?saved:value))
+    return saved
+  }
+  async function reusableDraft(selection: DraftFood[]) {
+    const result:DraftFood[]=[]
+    for(const item of selection) result.push(item.type==='MANUAL'||Object.keys(item.overrides).length ? await saveDraftFood(item) : item)
+    return result
+  }
+  async function addManual(food: ManualFood, save: boolean, reviewNow: boolean) {
+    if(draft.length>=50)throw new Error('A meal can contain up to 50 foods.')
+    setBusy(true);setError('')
+    try {
+      let entry:DraftFood={key:crypto.randomUUID(),type:'MANUAL',id:'',name:food.name,foodState:food.food_state,quantity:food.base_quantity.amount,unit:food.base_quantity.unit,manual:food,overrides:{}}
+      if(save) {
+        const saved=await postAuthenticatedJson<CustomFood>('/foods/custom',food)
+        entry={...entry,type:'CUSTOM',id:saved.id,manual:undefined}
+        setCustomFoods(previous=>[saved,...previous])
+      }
+      const next=[...draft,entry];setDraft(next);setPreview(null);setConfirmed(null)
+      setNotice(`${food.name} added${save?' and saved to Food Library':''}.`)
+      if(reviewNow)await review(next)
+    } finally {setBusy(false)}
+  }
+  async function saveSearchFood() {
+    if(!saveCandidate)return
+    setBusy(true);setError('')
+    try {
+      const full=await getAuthenticatedJson<FoodResult>(`/foods/provider/${encodeURIComponent(saveCandidate.food_reference.provider_food_id)}`)
+      const saved=await postAuthenticatedJson<CustomFood>('/foods/custom',{name:full.name,description:'',food_state:full.food_state,base_quantity:full.base_quantity,nutrients:full.nutrients})
+      setCustomFoods(previous=>[saved,...previous]);setSaveCandidate(null);setNotice(`${saved.name} saved to Food Library.`)
+    }catch(cause){setError(cause instanceof Error?cause.message:'Could not save food.')}
+    finally{setBusy(false)}
+  }
+  async function reviewMeal(meal: SavedMeal, servings: string) {
     setBusy(true); setError(''); setConfirmed(null)
     try {
       const response = await postAuthenticatedJson<GroupPreview>(`/meals/${meal.id}/preview`, {
         logged_at: new Date().toISOString(), meal_category: category, label: label || meal.name, ...(servings ? { servings } : {}) })
       if (!mounted.current) return
-      setPreview(response); setBasketOpen(false); setConfirmationKey(crypto.randomUUID())
-      setLabel(label || meal.name)
-      setDraft(meal.components.map((component, index) => ({
+      const additions: DraftFood[] = meal.components.map((component, index) => ({
         key: crypto.randomUUID(), type: component.food_reference.type,
         id: component.food_reference.type === 'USDA' ? component.food_reference.provider_food_id || '' : component.food_reference.custom_food_id || '',
         name: response.group.items[index].food_source.name, foodState: component.food_state,
         quantity: response.group.items[index].quantity.amount, unit: response.group.items[index].quantity.unit, overrides: {},
-      })))
-    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not preview saved meal.') }
+      }))
+      if(draft.length + additions.length > 50) throw new Error('A meal can contain up to 50 foods. Remove an item before adding this recipe.')
+      setDraft(previous => [...previous, ...additions]); setPreview(null)
+      setPortionRecipe(null)
+      setNotice(`${meal.name} added to your meal. Add other foods or recipes, then review.`)
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not add this recipe. Please try again.') }
     finally { setBusy(false) }
   }
   async function confirm() {
@@ -671,36 +722,40 @@ function LogFood() {
       }} /></label><button className="icon-button" type="button" aria-label={`Remove ${item.name}`} disabled={busy} onClick={() => { setDraft(previous => previous.filter(food => food.key !== item.key)); setPreview(null) }}><X size={17} /></button></div>
       {mappedServings(item).length > 0 && <label className="draft-meta">Portion<select aria-label={`Portion for ${item.name}`} value={item.portion?.label || ''} onChange={event => { const serving = mappedServings(item).find(value => value.label === event.target.value); setDraft(previous => previous.map(food => food.key === item.key ? { ...food, quantity: serving?.quantity.amount || food.quantity, portion: serving ? { label: serving.label, amount: serving.quantity.amount } : undefined, portionCount: '1', overrides: {} } : food)); setPreview(null) }}><option value="">{item.unit === 'g' ? 'Grams' : 'Millilitres'}</option>{mappedServings(item).map(serving => <option key={serving.id} value={serving.label}>{serving.label} = {serving.quantity.amount} {serving.quantity.unit}</option>)}</select></label>}
       {item.portion && <small className="muted">{item.quantity} {item.unit} total</small>}
-      <details className="secondary-details"><summary>More options for {item.name}</summary><div className="secondary-actions"><button className="quiet-link" disabled={busy} onClick={() => void favourite(item)}>Save favourite</button><button className="quiet-link" disabled={busy} onClick={() => void saveServing(item)}>Save household portion</button></div>
+      <details className="secondary-details"><summary>More options for {item.name}</summary><div className="secondary-actions">{item.type !== 'MANUAL' && <><button className="quiet-link" disabled={busy} onClick={() => void favourite(item)}>Save favourite</button><button className="quiet-link" disabled={busy} onClick={() => void saveServing(item)}>Save household portion</button></>}{(item.type !== 'CUSTOM' || Object.keys(item.overrides).length > 0) && <button className="quiet-link" disabled={busy} onClick={async()=>{setBusy(true);setError('');try{await saveDraftFood(item);setNotice(`${item.name} saved to Food Library.`)}catch(cause){setError(cause instanceof Error?cause.message:'Could not save food.')}finally{setBusy(false)}}}>Save this food to Food Library</button>}</div>
         {!mappedServings(item).length && <p className="muted">Weigh the food once to save your own household portion, such as 1 bowl = 150 g. We do not guess weights.</p>}
         <details><summary>Edit nutrition</summary><p className="muted">Values apply to the amount above. Leave blank to use the source. Changing the amount clears these edits.</p><NutrientOverrideInputs values={item.overrides} onChange={(code, amount, unit) => setOverride(item.key, code, amount, unit)} /></details>
       </details>
     </div>)}
     {draft.length > 0 && <><label className="draft-meta">Meal<select value={category} onChange={event => { setCategory(event.target.value); setPreview(null) }}>{['BREAKFAST','LUNCH','DINNER','SNACK','OTHER'].map(value => <option key={value} value={value}>{foodLabel(value)}</option>)}</select></label>
-      <details className="secondary-details"><summary>Name or save this meal</summary><label className="draft-meta">Meal name (optional)<input maxLength={160} value={label} onChange={event => { setLabel(event.target.value); setPreview(null) }} /></label><button className="quiet-link" disabled={busy} onClick={saveMeal}>Save as reusable meal</button></details>
-      <button className="button button-primary full-width" disabled={busy || draft.length > 50} onClick={review}>{busy ? 'Preparing review…' : 'Review'}</button>
+      <LogTimestampInput value={loggedAt} onChange={value=>{setLoggedAt(value);setPreview(null)}}/>
+      <details className="secondary-details"><summary>Name or save this recipe</summary><label className="draft-meta">Meal name (optional)<input maxLength={160} value={label} onChange={event => { setLabel(event.target.value); setPreview(null) }} /></label><button className="quiet-link" disabled={busy} onClick={saveMeal}>Save combination as recipe</button></details>
+      <button className="button button-primary full-width" disabled={busy || draft.length > 50} onClick={() => void review()}>{busy ? 'Preparing review…' : 'Review'}</button>
     </>}
   </fieldset>
-  return <><PageHead eyebrow="Food logging" title="Log food" description="Search, add your foods, then review and log your meal." />
+  return <><PageHead eyebrow="Food logging" title="Log food" description="Choose saved foods, enter a quick log or search. Mix items, review and log your meal." />
     <div className="page-notice" ref={noticeRef}>{confirmed && <p className="form-message form-success" role="status">Logged {confirmed.item_count} {confirmed.item_count === 1 ? 'food' : 'foods'} for {confirmed.tracking_day}. <Link to={`/app/history?tracking_day=${confirmed.tracking_day}`}>View history</Link></p>}</div>
     {notice && <p className="compact-notice" role="status">{notice}</p>}{error && <p className="form-message form-error" role="alert">{error}</p>}
     <div className="food-log-layout"><section className="panel food-discovery">
-      <div className="filter-row" role="group" aria-label="Food source">{(['USDA','CUSTOM','MEAL'] as const).map(value => <button className={`filter-chip ${source === value ? 'filter-chip-active' : ''}`} aria-pressed={source === value} key={value} onClick={() => { if (value !== source) { setSourceLoading(value !== 'USDA'); setSource(value) } setError('') }}>{value === 'USDA' ? 'Search foods' : value === 'CUSTOM' ? 'My foods' : 'Saved meals'}</button>)}</div>
-      {source === 'USDA' ? <>
-        <div className="search-source-switch" role="group" aria-label="Search database">{(['LOCAL','USDA'] as const).map(mode => <button type="button" key={mode} className={`filter-chip ${searchMode === mode ? 'filter-chip-active' : ''}`} aria-pressed={searchMode === mode} disabled={searching} onClick={() => { setSearchMode(mode); setItems([]); setCursor(null); setSearched(false); setError('') }}>{mode === 'LOCAL' ? 'Local database' : 'Search USDA'}</button>)}</div>
-        <div className="search-account-status" aria-live="polite">{usage ? <><span>{usage.catalogue_count.toLocaleString()} foods in local database</span><span>{usage.local_searches_today} local searches today · unlimited</span><span>{usage.usda_remaining} of {usage.usda_limit} USDA searches left today</span><small>USDA allowance resets at {new Date(usage.resets_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',timeZone:'UTC'})} UTC. Your custom foods are in My foods.</small></> : <span>{usageError || 'Loading search allowance…'}</span>}{usageError && <button type="button" className="quiet-link" onClick={() => void refreshUsage()}>Retry</button>}</div>
-        <Form className="food-search-form" onSubmit={event => search(event)}><label className="search-field"><Search size={19} /><input type="search" placeholder="Search foods, e.g. banana" aria-label="Search foods" data-validation-message="Enter a food name with 2–100 characters." maxLength={100} value={query} onChange={event => setQuery(event.target.value)} minLength={2} required /></label><button className="button button-primary" disabled={searching || (searchMode === 'USDA' && usage?.usda_remaining === 0)}>{searching ? 'Searching…' : searchMode === 'USDA' ? 'Search USDA' : 'Search local'}</button><details className="search-filters"><summary>Filters</summary><label>Preparation<select value={state} onChange={event => setState(event.target.value)}><option value="">Any preparation</option><option value="RAW">Raw</option><option value="COOKED">Cooked</option></select></label></details></Form>
-        {!searched && !searching && <p className="muted">{searchMode === 'LOCAL' ? 'Search foods already in the database without using your USDA allowance. Can’t find a food? Choose Search USDA.' : 'Find new foods in USDA and add them to the shared local database. Each search or next page uses one search from your daily allowance.'}</p>}
-        <div className="food-results">{searched && usage && <p className="muted" role="status">{usage.matched_count.toLocaleString()} matches in {searchMode === 'LOCAL' ? 'the local database' : 'USDA'}</p>}{rankFoods(items, query).map(item => <article className="food-result" key={item.food_reference.provider_food_id}><div><h3>{item.name}</h3><p>{item.data_type === 'Branded' ? 'Packaged product' : 'USDA food'} · per {item.base_quantity.amount} {item.base_quantity.unit}{item.food_state !== 'UNKNOWN' ? ` · ${foodLabel(item.food_state)}` : ''}</p><p>{display(item.nutrients.ENERGY)}</p><details className="secondary-details"><summary>Source & nutrition</summary><p>{['PROTEIN','CARBOHYDRATE','FAT','FIBER'].map(code => `${foodLabel(code)}: ${display(item.nutrients[code])}`).join(' · ')}</p><p>{item.data_type || 'USDA'} · FDC {item.food_reference.provider_food_id}{item.food_state === 'UNKNOWN' ? ' · Preparation not supplied by source' : ''}</p><a className="quiet-link" href={item.source_url} target="_blank" rel="noreferrer">View USDA record</a></details></div><button className="button button-outline button-small" aria-label={`Add ${item.name} (FDC ${item.food_reference.provider_food_id})`} disabled={busy || draft.length >= 50} onClick={() => addFood(item)}>Add</button></article>)}</div>
+      <div className="filter-row" role="group" aria-label="Log food options">{(['MY','QUICK','SEARCH'] as const).map(value=><button type="button" key={value} className={`filter-chip ${tab===value?'filter-chip-active':''}`} aria-pressed={tab===value} onClick={()=>{setTab(value);if(value==='MY')setSource('CUSTOM');if(value==='SEARCH')setSource('USDA');setError('')}}>{value==='MY'?'My foods':value==='QUICK'?'Quick log':'Search'}</button>)}</div>
+      {tab==='MY'&&<><p className="muted">Mix individual foods and recipe portions in the same meal.</p><div className="filter-row" role="group" aria-label="My foods">{(['CUSTOM','MEAL'] as const).map(value=><button key={value} type="button" className={`filter-chip ${source===value?'filter-chip-active':''}`} aria-pressed={source===value} onClick={()=>{setSource(value);setError('')}}>{value==='CUSTOM'?'Food Library':'Recipes'}</button>)}</div></>}
+      {tab==='QUICK'?<QuickLog busy={busy} onAdd={addManual} category={category} onCategory={value=>{setCategory(value);setPreview(null)}} loggedAt={loggedAt} onLoggedAt={value=>{setLoggedAt(value);setPreview(null)}}/>:source === 'USDA' ? <>
+        <div className="search-source-switch" role="group" aria-label="Food search source">{(['LOCAL','USDA'] as const).map(mode => <button type="button" key={mode} className={`filter-chip ${searchMode === mode ? 'filter-chip-active' : ''}`} aria-pressed={searchMode === mode} disabled={searching} onClick={() => { setSearchMode(mode); setItems([]); setCursor(null); setSearched(false); setError('') }}>{mode === 'LOCAL' ? 'AteThat foods' : 'Search USDA'}</button>)}</div>
+        <div className="search-account-status" aria-live="polite">{usage ? <><span>{usage.catalogue_count.toLocaleString()} {usage.catalogue_count === 1 ? 'food' : 'foods'} available in AteThat foods</span><span>{usage.usda_remaining} of {usage.usda_limit} USDA searches left today</span><small>USDA allowance resets at {new Date(usage.resets_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',timeZone:'UTC'})} UTC. Your saved foods are in Food Library.</small></> : <span>{usageError || 'Loading search allowance…'}</span>}{usageError && <button type="button" className="quiet-link" onClick={() => void refreshUsage()}>Retry</button>}</div>
+        <Form className="food-search-form" onSubmit={event => search(event)}><label className="search-field"><Search size={19} /><input type="search" placeholder="Search foods, e.g. banana" aria-label="Search foods" data-validation-message="Enter a food name with 2–100 characters." maxLength={100} value={query} onChange={event => setQuery(event.target.value)} minLength={2} required /></label><button className="button button-primary" disabled={searching || (searchMode === 'USDA' && usage?.usda_remaining === 0)}>{searching ? 'Searching…' : searchMode === 'USDA' ? 'Search USDA' : 'Search AteThat'}</button><details className="search-filters"><summary>Filters</summary><label>Preparation<select value={state} onChange={event => setState(event.target.value)}><option value="">Any preparation</option><option value="RAW">Raw</option><option value="COOKED">Cooked</option></select></label></details></Form>
+        {!searched && !searching && <p className="muted">{searchMode === 'LOCAL' ? 'Search foods already available in AteThat without using your USDA allowance. Can’t find a food? Choose Search USDA.' : 'Find new foods in USDA and add them to AteThat foods. Each search or next page uses one search from your daily allowance.'}</p>}
+        {saveCandidate&&<div className="form-message save-food-prompt"><p>Save {saveCandidate.name} to Food Library for reuse?</p><div className="history-actions"><button type="button" className="button button-outline button-small" disabled={busy} onClick={()=>void saveSearchFood()}>Save to Food Library</button><button type="button" className="quiet-link" disabled={busy} onClick={()=>setSaveCandidate(null)}>Not now</button></div><small>Combine foods below and choose Save combination as recipe to reuse the whole meal.</small></div>}
+        <div className="food-results">{searched && usage && <p className="muted" role="status">{usage.matched_count.toLocaleString()} {usage.matched_count === 1 ? 'match' : 'matches'} in {searchMode === 'LOCAL' ? 'AteThat foods' : 'USDA'}</p>}{rankFoods(items, query).map(item => <article className="food-result" key={item.food_reference.provider_food_id}><div><h3>{item.name}</h3><p>{item.data_type === 'Branded' ? 'Packaged product' : 'USDA food'} · per {item.base_quantity.amount} {item.base_quantity.unit}{item.food_state !== 'UNKNOWN' ? ` · ${foodLabel(item.food_state)}` : ''}</p><p>{display(item.nutrients.ENERGY)}</p><details className="secondary-details"><summary>Source & nutrition</summary><p>{tracked.filter(code=>code!=='ENERGY').map(code => `${foodLabel(code)}: ${display(item.nutrients[code])}`).join(' · ')}</p><p>{item.data_type || 'USDA'} · FDC {item.food_reference.provider_food_id}{item.food_state === 'UNKNOWN' ? ' · Preparation not supplied by source' : ''}</p><a className="quiet-link" href={item.source_url} target="_blank" rel="noreferrer">View USDA record</a></details></div><button className="button button-outline button-small" aria-label={`Add ${item.name} (FDC ${item.food_reference.provider_food_id})`} disabled={busy || draft.length >= 50} onClick={() => {addFood(item);setSaveCandidate(item)}}>Add</button></article>)}</div>
         {searched && !searching && !items.length && !error && <p className="muted">No matching foods. Try another name or preparation filter.</p>}{cursor && <button className="quiet-link" disabled={searching} onClick={() => void search(undefined, cursor)}>Load more foods</button>}
-      </> : sourceLoading ? <Loading>Loading {source === 'CUSTOM' ? 'your foods' : 'saved meals'}…</Loading> : source === 'CUSTOM' ? <div className="food-results">{!customFoods.length && !error && <p>No foods saved yet. <Link to="/app/meals">Create a food</Link>; your selected foods will stay here.</p>}{customFoods.map(food => <article className="food-result" key={food.id}><div><h3>{food.name}</h3><p>{food.base_quantity.amount} {food.base_quantity.unit} · {foodLabel(food.food_state)}</p></div><button className="button button-outline button-small" disabled={busy || draft.length >= 50} onClick={() => addFood(food)}>Add</button></article>)}</div> : <div className="food-results">{!meals.length && !error && <p>No saved meals yet. Add foods and choose “Save as reusable meal” under Selected foods.</p>}{meals.filter(meal => !meal.recipe_servings).map(meal => <article className="food-result" key={meal.id}><div><h3>{meal.name}</h3><p>{meal.components.length} {meal.components.length === 1 ? 'food' : 'foods'}</p></div><button className="button button-outline button-small" disabled={busy} onClick={() => void reviewMeal(meal)}>Review meal</button></article>)}<Link className="quiet-link" to="/app/recipes">Log a recipe portion →</Link></div>}
-      <details className="secondary-details saved-foods"><summary>Recent, favourites & saved portions</summary><div className="filter-row">{(['RECENT','FAVOURITES','FREQUENT'] as const).map(value => <button key={value} className={`filter-chip ${savedSource === value ? 'filter-chip-active' : ''}`} aria-pressed={savedSource === value} onClick={() => setSavedSource(value)}>{foodLabel(value)}</button>)}</div>
+      </> : sourceLoading ? <Loading>Loading {source === 'CUSTOM' ? 'Food Library' : 'recipes'}…</Loading> : source === 'CUSTOM' ? <div className="food-results">{!customFoods.length && !error && <p>No foods saved yet. <Link to="/app/meals">Create a food</Link>; your selected foods will stay here.</p>}{customFoods.map(food => <article className="food-result" key={food.id}><div><h3>{food.name}</h3><p>{food.base_quantity.amount} {food.base_quantity.unit} · {foodLabel(food.food_state)}</p></div><button className="button button-outline button-small" disabled={busy || draft.length >= 50} onClick={() => addFood(food)}>Add</button></article>)}</div> : <div className="food-results">{!meals.length && !error && <p>No recipes yet. Combine foods and save them as a recipe, or create one on the Recipes page.</p>}{meals.map(meal => <article className="food-result" key={meal.id}><div><h3>{meal.name}</h3><p>{meal.components.length} {meal.components.length === 1 ? 'food' : 'foods'}</p></div><button className="button button-outline button-small" disabled={busy} onClick={() => {setPortionRecipe(meal);setRecipeServings('1');setError('')}}>Add recipe</button></article>)}<Link className="quiet-link" to="/app/recipes">Manage recipes →</Link></div>}
+      <details className="secondary-details saved-foods"><summary>Recent foods, favourites & saved portions</summary><div className="filter-row">{(['RECENT','FAVOURITES'] as const).map(value => <button key={value} className={`filter-chip ${savedSource === value ? 'filter-chip-active' : ''}`} aria-pressed={savedSource === value} onClick={() => setSavedSource(value)}>{foodLabel(value)}</button>)}</div>
         {savedLoading ? <Loading /> : savedSource && !savedLinks.length ? <p className="muted">No {savedSource.toLowerCase()} foods yet.</p> : savedLinks.map(link => <article className="food-result" key={link.food_key}><h3>{link.name}</h3><div className="history-actions"><button className="button button-outline button-small" disabled={busy} onClick={() => void addSavedLink(link)}>Add</button>{savedSource === 'FAVOURITES' && <button className="quiet-link" disabled={busy} onClick={() => void removeFavourite(link)}>Unsave</button>}</div></article>)}{savedCursor && <button className="quiet-link" disabled={busy} onClick={() => void moreSavedLinks()}>More saved foods</button>}
         <button className="quiet-link" aria-expanded={showServings} onClick={() => setShowServings(!showServings)}>{showServings ? 'Hide' : 'Show'} saved portions</button>{showServings && <>{!servings.length && <p className="muted">Save a household portion from a selected food’s More options menu.</p>}{servings.map(serving => <article className="food-result" key={serving.id}><div><h3>{serving.label}</h3><p>{serving.quantity.amount} {serving.quantity.unit}</p></div><div className="history-actions"><button className="button button-outline button-small" disabled={busy} onClick={() => void addServing(serving)}>Add</button><details><summary>Manage</summary><button className="quiet-link" disabled={busy} onClick={() => void renameServing(serving)}>Rename</button><button className="quiet-link" disabled={busy} onClick={() => void deleteServing(serving)}>Delete</button></details></div></article>)}{servingCursor && <button className="quiet-link" disabled={busy} onClick={() => void moreServings()}>More portions</button>}</>}
       </details>
     </section><aside className="panel food-basket">{basket}</aside></div>
-    {draft.length > 0 && !preview && <div className="food-mobile-action"><button className="quiet-link" type="button" aria-label="Edit selected foods" disabled={busy} onClick={() => setBasketOpen(true)}>{draft.length} {draft.length === 1 ? 'food' : 'foods'} · Edit</button><button className="button button-primary" disabled={busy} onClick={review}>{busy ? 'Preparing…' : 'Review'}</button></div>}
+    {draft.length > 0 && !preview && <div className="food-mobile-action"><button className="quiet-link" type="button" aria-label="Edit selected foods" disabled={busy} onClick={() => setBasketOpen(true)}>{draft.length} {draft.length === 1 ? 'food' : 'foods'} · Edit</button><button className="button button-primary" disabled={busy} onClick={() => void review()}>{busy ? 'Preparing…' : 'Review'}</button></div>}
     {basketOpen && !preview && <Modal title="Your selected foods" onClose={() => setBasketOpen(false)} busy={busy}>{error && <p role="alert" className="form-message form-error">{error}</p>}{basket}</Modal>}
+    {portionRecipe && <Modal title="Add recipe to meal" busy={busy} onClose={()=>setPortionRecipe(null)}><Form className="auth-form" onSubmit={event=>{event.preventDefault();void reviewMeal(portionRecipe,recipeServings)}}><div><h3>{portionRecipe.name}</h3><p className="muted">The full recipe makes {portionRecipe.recipe_servings || '1'} {Number(portionRecipe.recipe_servings || '1')===1?'serving':'servings'}. Choose how much you ate.</p></div><label>Servings eaten<input type="number" min="0.001" step="any" value={recipeServings} onChange={event=>setRecipeServings(event.target.value)} required/><small>For half a serving, enter 0.5. You can add more foods or recipes afterwards.</small></label>{error&&<p className="form-message form-error" role="alert">{error}</p>}<div className="dialog-actions"><button className="button button-outline" type="button" disabled={busy} onClick={()=>setPortionRecipe(null)}>Cancel</button><button className="button button-primary" type="submit" disabled={busy}>{busy?'Adding…':'Add to meal'}</button></div></Form></Modal>}
     {preview && <Modal title="Review your meal" onClose={() => setPreview(null)} busy={busy}>
       <p>{label || foodLabel(category)} · {preview.group.tracking_day}{reviewDay ? ` · ${reviewDay.timezone}` : ''}</p>
       {preview.group.items.map(item => <div className="review-food" key={item.position}><strong>{item.food_source.name}</strong><span>{item.quantity.amount} {item.quantity.unit}</span></div>)}
@@ -839,6 +894,7 @@ function CustomFoodsPage() {
     const values = Object.fromEntries(new FormData(form))
     const nutrients: Record<string, { status: string; amount?: string; unit: string }> = { ...editing?.nutrients }
     for (const [key, unit] of nutrientFields) {
+      if (!Object.prototype.hasOwnProperty.call(values, key)) continue
       const amount = String(values[key] || '').trim()
       nutrients[key] = amount ? { status: 'KNOWN', amount, unit } : { status: 'UNKNOWN', unit }
     }
@@ -850,7 +906,7 @@ function CustomFoodsPage() {
       } else {
         await postAuthenticatedJson('/foods/custom', body)
       }
-      form.reset(); setEditing(null); setCreating(false); await reload(); setMessage(editing ? 'Your custom food was updated.' : 'Your custom food was saved.')
+      form.reset(); setEditing(null); setCreating(false); await reload(); setMessage(editing ? 'Your food was updated.' : 'Your food was saved.')
     } catch (cause) { setError(cause instanceof Error ? cause.message : `Could not ${editing ? 'update' : 'save'} custom food.`) }
     finally { setBusy(false) }
   }
@@ -861,45 +917,11 @@ function CustomFoodsPage() {
     catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not delete food.') }
     finally { setBusy(false) }
   }
-  return <><PageHead eyebrow="Your kitchen" title="Foods & meals" description="Your saved foods and reusable meals. Recipes with a serving yield have their own collection." action={<button className="button button-primary" onClick={() => setCreating(true)}>New food</button>} />
-    {error && <p className="form-message form-error" role="alert">{error}</p>}{message && <p className="form-message form-success" role="status">{message}</p>}<div className="collection-layout"><section className="panel"><h2>My foods</h2>{loading ? <Loading>Loading your foods…</Loading> : !error && foods.length === 0 && <EmptyState icon={UtensilsCrossed} title="No custom foods yet" text="Save a product or food using nutrition values you know." />}{foods.map(food => <article className="food-result" key={food.id}><div><h3>{food.name}</h3><p>{food.base_quantity.amount} {food.base_quantity.unit} · {food.food_state.toLowerCase()}</p></div><div className="history-actions"><button className="quiet-link" type="button" disabled={busy} onClick={() => { setEditing(food); setError(''); setMessage('') }}>Edit</button><button className="quiet-link" type="button" disabled={busy} onClick={() => remove(food.id)}>Delete</button></div></article>)}{foodCursor && <button className="button button-outline button-small" type="button" disabled={busy} onClick={() => void moreFoods()}>Load more</button>}</section></div><SavedMealsManager />{(creating || editing) && <Modal title={editing ? `Edit ${editing.name}` : 'New food'} busy={busy} onClose={() => { setCreating(false); setEditing(null) }}><Form key={editing?.id || 'new'} className="custom-food-form" onSubmit={saveFood}><label>Name<input name="name" required minLength={2} maxLength={120} defaultValue={editing?.name || ''} /></label><label>Description<input name="description" maxLength={500} defaultValue={editing?.description || ''} /></label><label>Food state<select name="food_state" defaultValue={editing?.food_state || 'PREPARED'}><option value="PREPARED">Prepared</option><option value="RAW">Raw</option><option value="COOKED">Cooked</option><option value="UNKNOWN">Unknown</option></select></label><div className="custom-food-base"><label>Base amount<input name="base_amount" type="number" min="0.001" step="any" defaultValue={editing?.base_quantity.amount || '100'} required /></label><label>Unit<select name="base_unit" defaultValue={editing?.base_quantity.unit || 'g'}><option>g</option><option>ml</option></select></label></div><p className="muted">Enter nutrients for the base amount. Leave unknown values empty.</p><NutrientInputs values={editing?.nutrients} />{error && <p className="form-message form-error" role="alert">{error}</p>}{message && <p className="form-message form-success" role="status">{message}</p>}<div className="history-actions"><button className="button button-primary" type="submit" disabled={busy}>{busy ? 'Saving…' : editing ? 'Save changes' : 'Save custom food'}</button><button className="button button-outline" type="button" disabled={busy} onClick={() => { setEditing(null); setCreating(false); setError(''); setMessage('') }}>Cancel</button></div></Form></Modal>}
+  return <><PageHead eyebrow="Your kitchen" title="Food Library" description="Save individual foods with nutrition you know. Combine them on the Recipes page." action={<button className="button button-primary" onClick={() => setCreating(true)}>New food</button>} />
+    {error && <p className="form-message form-error" role="alert">{error}</p>}{message && <p className="form-message form-success" role="status">{message}</p>}<div className="collection-layout"><section className="panel"><h2>Your saved foods</h2>{loading ? <Loading>Loading your foods…</Loading> : !error && foods.length === 0 && <EmptyState icon={UtensilsCrossed} title="No foods saved yet" text="Save a product or food using nutrition values you know." />}{foods.map(food => <article className="food-result" key={food.id}><div><h3>{food.name}</h3><p>{food.base_quantity.amount} {food.base_quantity.unit} · {food.food_state.toLowerCase()}</p></div><div className="history-actions"><button className="quiet-link" type="button" disabled={busy} onClick={() => { setEditing(food); setError(''); setMessage('') }}>Edit</button><button className="quiet-link" type="button" disabled={busy} onClick={() => remove(food.id)}>Delete</button></div></article>)}{foodCursor && <button className="button button-outline button-small" type="button" disabled={busy} onClick={() => void moreFoods()}>Load more</button>}</section></div>{(creating || editing) && <Modal title={editing ? `Edit ${editing.name}` : 'New food'} busy={busy} onClose={() => { setCreating(false); setEditing(null) }}><Form key={editing?.id || 'new'} className="custom-food-form" onSubmit={saveFood}><label>Name<input name="name" required minLength={2} maxLength={120} defaultValue={editing?.name || ''} /></label><label>Description<input name="description" maxLength={500} defaultValue={editing?.description || ''} /></label><label>Food state<select name="food_state" defaultValue={editing?.food_state || 'PREPARED'}><option value="PREPARED">Prepared</option><option value="RAW">Raw</option><option value="COOKED">Cooked</option><option value="UNKNOWN">Unknown</option></select></label><div className="custom-food-base"><label>Base amount<input name="base_amount" type="number" min="0.001" step="any" defaultValue={editing?.base_quantity.amount || '100'} required /></label><label>Unit<select name="base_unit" defaultValue={editing?.base_quantity.unit || 'g'}><option>g</option><option>ml</option></select></label></div><p className="muted">Enter nutrients for the base amount. Leave unknown values empty.</p><NutrientInputs values={editing?.nutrients} />{error && <p className="form-message form-error" role="alert">{error}</p>}{message && <p className="form-message form-success" role="status">{message}</p>}<div className="history-actions"><button className="button button-primary" type="submit" disabled={busy}>{busy ? 'Saving…' : editing ? 'Save changes' : 'Save food'}</button><button className="button button-outline" type="button" disabled={busy} onClick={() => { setEditing(null); setCreating(false); setError(''); setMessage('') }}>Cancel</button></div></Form></Modal>}
   </>
 }
 
-function SavedMealsManager() {
-  const dialogs = useDialogs()
-  const [loading, setLoading] = useState(true)
-  const [meals, setMeals] = useState<SavedMeal[]>([])
-  const [cursor, setCursor] = useState<string | null>(null)
-  const [error, setError] = useState('')
-  const [busy, setBusy] = useState(false)
-  async function load(nextCursor?: string) {
-    const query = new URLSearchParams({ limit: '50' })
-    if (nextCursor) query.set('cursor', nextCursor)
-    const page = await getAuthenticatedJson<{ items: SavedMeal[]; page: { next_cursor: string | null } }>(`/meals?${query}`)
-    setMeals(previous => nextCursor ? [...previous, ...page.items] : page.items)
-    setCursor(page.page.next_cursor)
-  }
-  useEffect(() => { load().catch(cause => setError(cause instanceof Error ? cause.message : 'Could not load meals.')).finally(() => setLoading(false)) }, [])
-  async function rename(meal: SavedMeal) {
-    const name = (await dialogs.prompt('Saved meal name', meal.name))?.trim()
-    if (!name || name === meal.name) return
-    setBusy(true); setError('')
-    try {
-      await patchAuthenticatedJson(`/meals/${meal.id}`, { version: meal.version, name, components: meal.components, recipe_servings: meal.recipe_servings || '', preparation: meal.preparation || '' })
-      await load()
-    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not rename meal.') }
-    finally { setBusy(false) }
-  }
-  async function remove(meal: SavedMeal) {
-    if (!(await dialogs.confirm(`Delete saved meal ${meal.name}? Historical food logs remain unchanged.`))) return
-    setBusy(true); setError('')
-    try { await deleteAuthenticatedJson(`/meals/${meal.id}`); await load() }
-    catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not delete meal.') }
-    finally { setBusy(false) }
-  }
-  return <section className="panel section-panel"><div className="panel-top"><h2>Saved meals</h2><Link className="quiet-link" to="/app/log-food">Build a meal <ArrowRight size={15} /></Link></div>{error && <p className="form-message form-error" role="alert">{error}</p>}{loading && <Loading>Loading saved meals…</Loading>}{!loading && !error && meals.filter(meal => !meal.recipe_servings).length === 0 && <p className="muted">No saved meals yet. Add foods in Log food, then save the selection as a meal.</p>}{meals.filter(meal => !meal.recipe_servings).map(meal => <article className="food-result" key={meal.id}><div><h3>{meal.name}</h3><p>{meal.components.length} {meal.components.length === 1 ? 'food' : 'foods'}</p></div><div className="history-actions"><button className="quiet-link" type="button" disabled={busy} onClick={() => void rename(meal)}>Rename</button><button className="quiet-link" type="button" disabled={busy} onClick={() => void remove(meal)}>Delete</button></div></article>)}{cursor && <button className="button button-outline button-small" type="button" disabled={busy} onClick={() => void load(cursor)}>Load more</button>}</section>
-}
 
 type HealthItem = { id: string; version: number; type: string; name: string; dosage: { amount_text: string; unit_text: string }; instructions: string; notes: string; start_date: string; active: boolean; schedule: { timezone: string; recurrence: { frequency: string; interval: number; weekdays: string[]; local_times: string[] }; effective_from_date: string } }
 function HealthPage() {
@@ -1041,7 +1063,7 @@ function Settings() {
   const { theme, setTheme } = useTheme()
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  const [profile, setProfile] = useState<{ version: number; display_name: string; timezone: string; date_of_birth?: string; height?: {amount:string;unit:string}; weight?: {amount:string;unit:string}; goal?:string; sex?:string; activity_level?:string; has_google_identity: boolean } | null>(null)
+  const [profile, setProfile] = useState<{ email: string; version: number; display_name: string; timezone: string; date_of_birth?: string; height?: {amount:string;unit:string}; weight?: {amount:string;unit:string}; goal?:string; sex?:string; activity_level?:string; has_google_identity: boolean } | null>(null)
   const [preferences, setPreferences] = useState<{ version: number; daily_reset_time: string; unit_system: string; dashboard_nutrients: string[] } | null>(null)
   const [trackingDay, setTrackingDay] = useState<{ tracking_day: string; timezone: string; daily_reset_time: string; as_of_utc: string } | null>(null)
   const [saveMessage, setSaveMessage] = useState(params.get('deletion_cancelled') ? 'Your account deletion request was cancelled and your account was restored.' : '')
@@ -1052,7 +1074,7 @@ function Settings() {
   useEffect(() => {
     let active = true
     Promise.all([
-      getAuthenticatedJson<{ version: number; display_name: string; timezone: string; date_of_birth?: string; height?: {amount:string;unit:string}; weight?: {amount:string;unit:string}; goal?:string; sex?:string; activity_level?:string; has_google_identity: boolean }>('/profile'),
+      getAuthenticatedJson<{ email: string; version: number; display_name: string; timezone: string; date_of_birth?: string; height?: {amount:string;unit:string}; weight?: {amount:string;unit:string}; goal?:string; sex?:string; activity_level?:string; has_google_identity: boolean }>('/profile'),
       getAuthenticatedJson<{ version: number; daily_reset_time: string; unit_system: string; dashboard_nutrients: string[] }>('/preferences'),
       getAuthenticatedJson<{ tracking_day: string; timezone: string; daily_reset_time: string; as_of_utc: string }>('/tracking-day/current'),
     ]).then(([nextProfile, nextPreferences, nextTrackingDay]) => {
@@ -1085,8 +1107,9 @@ function Settings() {
     setSaving(true); setSaveError(''); setSaveMessage('')
     try {
       const values = Object.fromEntries(new FormData(event.currentTarget))
+      const latest = await getAuthenticatedJson<{version: number}>('/preferences')
       const updated = await patchAuthenticatedJson<typeof preferences>('/preferences', {
-        version: preferences.version, daily_reset_time: values.daily_reset_time, unit_system: values.unit_system,
+        version: latest.version, daily_reset_time: values.daily_reset_time, unit_system: values.unit_system,
       })
       setPreferences(updated)
       await refreshTrackingDay()
@@ -1127,14 +1150,16 @@ function Settings() {
   if (!profile || !preferences || !trackingDay) return <><Link className="quiet-link guide-replay" to="/app/welcome?replay=1"><CircleHelp size={17} /> Open setup & feature guide</Link><PageHead title="Profile & settings" description="Your profile, timezone and preferences." />{saveError ? <p role="alert">{saveError}</p> : <Loading>Loading settings…</Loading>}</>
   return <>
     <Link className="quiet-link guide-replay" to="/app/welcome?replay=1"><CircleHelp size={17} /> Open setup & feature guide</Link>
-    <PageHead eyebrow="Your account" title="Profile & settings" description="Choose how AteThat looks and set the timezone used for your account." action={<button className="button button-outline" type="button" onClick={logout}>Log out</button>} />
+    <PageHead eyebrow="Your account" title="Profile & settings" description="Manage your account, nutrition preferences and appearance." action={<button className="button button-outline" type="button" onClick={logout}>Log out</button>} />
+    <section className="panel section-panel account-identity" aria-labelledby="account-title"><h2 id="account-title">Your account</h2><dl className="nutrition-summary"><div><dt>Email</dt><dd>{profile.email || 'Email unavailable'}</dd></div><div><dt>Google sign-in</dt><dd>{profile.has_google_identity ? 'Linked to this email' : 'Not linked'}</dd></div></dl></section>
     <ProfileAttention fields={missingDetails} />
+    <TrackedNutrientsSettings />
     <TargetSettings />
     <div className="settings-grid">
 
       <section className="panel settings-profile" id="profile-details">
         <div className="panel-top"><h2>Profile & timezone</h2><Clock3 size={19} /></div>
-        <p className="muted">Timestamps are stored in UTC and shown using your chosen timezone. Highlighted fields below match the Settings badge. All these extra profile details are optional.</p>
+        <p className="muted">Dates and times are shown in your chosen timezone. Highlighted fields below match the Settings badge. All these extra profile details are optional.</p>
         {profile ? <Form key={profile.version} className="auth-form" onSubmit={saveProfile}>
           <label>Display name<input name="display_name" required maxLength={80} defaultValue={profile.display_name} /></label>
           <div id="profile-field-date_of_birth" className={profileFieldClass('date_of_birth')}>
