@@ -325,6 +325,20 @@ func (s *Server) TextSummary(ctx context.Context, r *pb.TextSummaryRequest) (*pb
 	if len(records) == 0 && wellnessOK {
 		line("No wellness records; absence is not zero activity or consumption.")
 	}
+	line("\nESTIMATED CALORIE DEFICIT — saved Tracking Days")
+	line("Effective maintenance + additional logged workout calories - recorded food calories. Positive is deficit; negative is surplus. Estimates only; unlogged meals can overstate a deficit. Food targets are separate.")
+	energyDays, energyErr := s.DailyWellness(ctx, &pb.FullAnalysisRequest{From: r.FromTrackingDay, To: r.ToTrackingDay})
+	if energyErr != nil {
+		failed("Calorie deficit")
+	} else {
+		for _, day := range energyDays.Items {
+			if day.CalorieDeficit == "" {
+				line("%s: deficit unavailable (maintenance, food or workout calories missing); not zero.", day.TrackingDay)
+				continue
+			}
+			line("%s: maintenance %s kcal + additional workouts %s kcal - recorded food %s kcal = signed deficit %s kcal (maintenance revision %d).", day.TrackingDay, day.MaintenanceKcal, day.WorkoutKcal, day.FoodKcal, day.CalorieDeficit, day.MaintenanceRevision)
+		}
+	}
 	// Health occurrences are a different domain from nutrition Tracking Days.
 	healthFrom, healthTo := from, to.AddDate(0, 0, 1)
 	if r.Mode == "DAY" {

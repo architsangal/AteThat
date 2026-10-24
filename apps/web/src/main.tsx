@@ -9,6 +9,7 @@ import './features/health-ui.css'
 import './features/health-analysis.css'
 import './scrollbars.css'
 import './features/checkboxes.css'
+import './features/wellness/energy-water.css'
 
 const router = createBrowserRouter([{ path: '*', element: <App /> }])
 ReactDOM.createRoot(document.getElementById('root')!).render(

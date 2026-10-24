@@ -96,7 +96,7 @@ func (s *Server) previewFoodGroup(w http.ResponseWriter, r *http.Request, reques
 	result, err := s.FoodLog.Preview(s.rpcContext(ctx, pb.FoodLogService_Preview_FullMethodName, user.UserID, user.SessionFamily),
 		&pb.PreviewFoodGroupRequest{LoggedAt: body.LoggedAt, MealCategory: body.MealCategory, Label: body.Label, Items: items, RecipeYield: body.RecipeYield, RecipePortions: body.RecipePortions})
 	if err != nil {
-		s.rpcProblem(w, requestID, err)
+		s.foodReviewProblem(w, requestID, err)
 		return
 	}
 	s.json(w, 201, map[string]interface{}{"preview_token": result.PreviewToken, "expires_at": result.ExpiresAt, "group": foodGroupJSON(result.Group)})

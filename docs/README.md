@@ -1,5 +1,9 @@
 # AteThat documentation and phase roadmap
 
+## Next release candidate — energy and hydration
+
+Maintenance baselines, additional workout calories, signed deficit and water trends are implemented locally. See [release readiness and deployment order](ENERGY_WATER_RELEASE_READINESS.md). These are Phase 2 follow-up improvements, not a claim that the candidate is already in production.
+
 [Next-release fixes](NEXT_RELEASE_FIXES.md) collects pending UX changes to address together before the next release.
 
 Reconciled: 2026-10-22. Owner scope decisions override historical proposals. Release tags are code checkpoints, not database backups or a recovery guarantee.

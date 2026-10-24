@@ -1,5 +1,19 @@
 # Next release — collected fixes
 
+## Pending — maintenance, workouts, calorie deficit and water trends
+
+Implemented locally and undergoing final release preparation. See [scope, formulas, compatibility and verification](ENERGY_WATER_RELEASE_READINESS.md). No push, deployment or release publication is implied. Includes the USDA review fix below.
+
+## Pending — USDA review validation and useful errors
+
+Diagnosed with Chrome's actual food-review request and a local regression using public USDA food 2053888 (DEEP, INDIAN GOURMET PANEER), 200 g, Dinner and no overrides. USDA detail returns some zeros as `0E-8`; the importer previously retained this spelling while downstream validation accepted only ordinary decimals. This produced a generic 422, despite valid user inputs.
+
+Local fix canonicalizes provider numbers with exact decimal/rational arithmetic, bounded exponents and no binary-float rounding. Scientific zero becomes `0`; absent nutrients remain unknown. Already cached raw USDA responses are normalized on read, so no cache deletion or production-record migration is required. User-entered quantity validation stays strict.
+
+Food-review errors now provide safe, actionable amount/unit/date/meal/nutrition-edit instructions. Unprocessable provider nutrition gets a distinct source-data error and Quick log/alternate-entry guidance, not blame on the user's fields. Structured failure logs contain only operation, request ID, RPC code and allowlisted reason—never raw payloads, food/health records, credentials or arbitrary RPC text. Other routes, including login, keep their existing error policy.
+
+Verified locally: exact paneer regression failed before the fix with `invalid nutrient amount`, then passed with 572 kcal, 42.86 g protein, 35.72 g fat, 7.14 g carbohydrate and known zero fiber/iron/vitamin C. API/Core suites, source-number bounds/precision tests and public-error/log redaction checks passed. No production meals were confirmed; implementation is not pushed or deployed.
+
 ## v2.8.1 — visible Dashboard progress bars
 
 Fix missing painted fill boxes in Dashboard energy and nutrient meters. Fills now have block layout, full track height, rounded ends and theme-aware colors; carbohydrate/fiber colors match their dots. Existing percentages and 0–100% visual clamping are unchanged. No API, data or target calculation changes.
