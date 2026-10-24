@@ -1,0 +1,33 @@
+.energy-water-section { margin-top: 20px; }
+.energy-water-section h2 { margin: 8px 0 12px; }
+.energy-water-section > .panel-top { align-items: flex-start; flex-wrap: wrap; }
+.energy-water-section > .panel-top h2 { margin-bottom: 0; }
+.tracking-facts { display: flex; flex-wrap: wrap; gap: 12px 28px; padding: 16px 0; color: var(--text-muted); font-size: .85rem; }
+.tracking-facts strong { color: var(--text); }
+.connected-trend { margin: 20px 0 0; min-width: 0; }
+.connected-chart-scroll { width: 100%; overflow-x: auto; border: 1px solid var(--border); border-radius: 14px; padding: 10px 0; background: var(--surface-soft); }
+.connected-chart-scroll svg { display: block; max-width: none; }
+.connected-trend text { fill: var(--text-muted); font: 11px Inter,system-ui,sans-serif; }
+.connected-trend figcaption, .tracking-caution { font-size: .78rem; color: var(--text-muted); line-height: 1.6; margin-top: 12px; }
+.chart-zero { stroke: var(--text-soft); stroke-width: 1; }
+.chart-goal { stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 6 5; }
+.water-analysis .chart-line, .water-analysis .chart-point { stroke: var(--accent); }
+.daily-energy-water { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.daily-energy-water > article { min-width: 0; padding: 20px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface-soft); }
+.daily-energy-water h3 { margin: 0 0 14px; }
+.tracking-value { display: block; font-size: clamp(1.25rem,2vw,1.8rem); line-height: 1.3; }
+.tracking-day-note { display: block; font-size: .75rem; color: var(--text-muted); margin-top: 8px; }
+.daily-energy-water .muted { font-size: .82rem; line-height: 1.6; }
+.daily-energy-water .secondary-actions { margin-top: 16px; }
+.water-progress { display: block; width: 100%; height: 10px; margin: 20px 0; border: 0; border-radius: 99px; overflow: hidden; accent-color: var(--accent); background: var(--surface-raised); }
+.water-progress::-webkit-progress-bar { background: var(--surface-raised); border-radius: 99px; }
+.water-progress::-webkit-progress-value { background: var(--accent); border-radius: 99px; }
+.water-progress::-moz-progress-bar { background: var(--accent); border-radius: 99px; }
+.maintenance-settings .auth-form { max-width: 680px; margin: 18px 0; }
+.maintenance-estimate { display: grid; gap: 12px; padding: 16px; background: var(--surface-soft); border: 1px solid var(--border); border-radius: 12px; }
+.maintenance-estimate p { margin: 0; }
+.maintenance-estimate .button { justify-self: start; }
+.maintenance-estimate small { color: var(--text-muted); line-height: 1.6; }
+.maintenance-explanation { display: grid; gap: 14px; padding-top: 14px; font-size: .85rem; overflow-wrap: anywhere; }
+.maintenance-explanation p { margin: 0; }
+@media(max-width:700px) { .daily-energy-water { grid-template-columns: 1fr; gap: 16px; }.daily-energy-water > article { padding: 16px; } }

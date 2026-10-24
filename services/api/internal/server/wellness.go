@@ -29,6 +29,10 @@ func (s *Server) wellnessRoute(w http.ResponseWriter, r *http.Request, requestID
 		return
 	}
 	rpc := func(method string) context.Context { return s.rpcContext(ctx, method, user.UserID, user.SessionFamily) }
+	if path == "/wellness/maintenance" || path == "/wellness/analysis" {
+		s.wellnessAnalysisRoute(w, r, requestID, rpc, path)
+		return
+	}
 	if path == "/wellness/settings" {
 		var result *pb.WellnessSettings
 		var err error

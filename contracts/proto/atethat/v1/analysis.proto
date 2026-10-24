@@ -4,6 +4,7 @@ package atethat.v1;
 
 import "atethat/v1/foods.proto";
 import "atethat/v1/health.proto";
+import "atethat/v1/targets.proto";
 
 service AnalysisService {
   rpc NutritionHistory(NutritionHistoryRequest) returns (NutritionHistoryPage);
@@ -34,7 +35,30 @@ service WellnessService {
   rpc DeleteRecord(WellnessDeleteRequest) returns (FoodEmpty);
   rpc GetSettings(FoodEmpty) returns (WellnessSettings);
   rpc SaveSettings(WellnessSettings) returns (WellnessSettings);
+  rpc GetMaintenance(FoodEmpty) returns (MaintenancePlan);
+  rpc SaveMaintenance(MaintenanceSaveRequest) returns (MaintenancePlan);
+  rpc DailyWellness(FullAnalysisRequest) returns (DailyWellnessPage);
 }
+message MaintenanceRevision {
+  uint64 revision = 1; string kcal = 2; string mode = 3;
+  string effective_from_tracking_day = 4; string created_at = 5;
+  uint64 profile_version = 6; string equation = 7;
+  string height_cm = 8; string weight_kg = 9; uint32 age = 10; string sex = 11;
+}
+message MaintenancePlan {
+  uint64 version = 1; string suggested_kcal = 2; string equation = 3;
+  string unavailable_reason = 4; uint64 profile_version = 5;
+  TargetInputs inputs = 6; repeated MaintenanceRevision history = 7;
+  string tracking_day = 8;
+}
+message MaintenanceSaveRequest { uint64 version = 1; string kcal = 2; string mode = 3; uint64 profile_version = 4; }
+message DailyWellness {
+  string tracking_day = 1; string maintenance_kcal = 2; string food_kcal = 3;
+  string workout_kcal = 4; string calorie_deficit = 5; string water_ml = 6;
+  uint32 workout_count = 7; uint32 workouts_without_calories = 8;
+  string workout_minutes = 9; uint64 maintenance_revision = 10;
+}
+message DailyWellnessPage { repeated DailyWellness items = 1; string water_target_ml = 2; }
 message WellnessRecord {
   string id = 1; uint64 version = 2; string kind = 3;
   string amount = 4; string unit = 5; string logged_at = 6;

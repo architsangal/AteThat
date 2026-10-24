@@ -145,6 +145,8 @@ Install [`deploy/production/server/atethat-deploy`](../deploy/production/server/
 
 ### 7.3 DNS and TLS order
 
+Preview-build configuration reconciled 2026-10-25: use `npx wrangler versions upload` for the static-only frontend. This creates a version URL without promoting production and avoids the observed beta `wrangler preview` duplicate-name failure (100338) on repeated branch builds. Production remains `npx wrangler deploy` on `main`. Both build commands must include `VITE_API_BASE_URL=https://api.atethat.architsangal.in/api/v1` and `VITE_GOOGLE_SIGNIN_ENABLED=true`; the preview configuration previously omitted `/api/v1`. No branch protection or production routing is weakened. Named isolated-resource previews are not needed for this assets-only Worker.
+
 1. Create `A  api.atethat  →  <VPS public IP>` in Cloudflare and initially set it to **DNS-only**.
 2. Put the production `.env` on the VPS and run the first Compose deployment. Caddy then obtains its public certificate.
 3. Confirm `https://api.atethat.architsangal.in/healthz` returns `{"status":"ok"}`.
