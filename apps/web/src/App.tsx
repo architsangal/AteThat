@@ -25,6 +25,7 @@ import { QuickLog, LogTimestampInput, type ManualFood } from './features/nutriti
 import { readAnalysisPages } from './features/health-analysis-model'
 import { RecipesPage } from './features/recipes/RecipesPage'
 import { WellnessPage, WellnessOverview } from './features/wellness/WellnessPage'
+import { MaintenanceSettings, DailyEnergyWaterOverview } from './features/wellness/EnergyWater'
 import { ScheduleEditor, type SchedulableItem } from './features/wellness/ScheduleEditor'
 import { HealthAdherence } from './features/wellness/HealthAdherence'
 import { HealthOccurrences } from './features/HealthOccurrences'
@@ -395,6 +396,7 @@ function Dashboard() {
     <div className="dashboard-grid"><section className="panel energy-panel"><div className="panel-top"><span className="panel-kicker">Energy</span><span className="info-pill"><Info size={14} /> {data?.timezone || 'Account timezone'}</span></div><h2>{energy?.status === 'KNOWN' ? `${energy.amount} kcal` : 'No confirmed energy total yet'}</h2><p>{data?.nutrition.targets.ENERGY?.status === 'KNOWN' ? `Against your selected daily calorie target of ${data.nutrition.targets.ENERGY.amount} kcal. This is not a personalized calorie prescription.` : 'Choose nutrition targets in Settings to see progress.'}</p>{data.nutrition.targets.ENERGY?.status === 'KNOWN' && <div className="empty-meter"><span style={{ width: `${Math.min(100, Math.max(0, Number(data?.nutrition.progress.ENERGY?.percent || 0)))}%` }} /></div>}</section>
       <section className="panel nutrient-panel"><div className="panel-top"><h2>Routine nutrients</h2><CircleHelp size={18} aria-hidden="true" /></div>{tracked.filter(key=>key!=='ENERGY').map(key=>[key,foodLabel(key),key.toLowerCase()]).map(([key, label, color]) => <div className="nutrient-row" key={key}><div><span className={`nutrient-dot ${color}`} />{label}</div><span>{data?.nutrition.totals[key]?.status === 'KNOWN' ? `${data.nutrition.totals[key].amount} ${data.nutrition.totals[key].unit}` : 'unknown'}</span>{data.nutrition.targets[key]?.status === 'KNOWN' && <div className="nutrient-track"><span style={{ width: `${Math.min(100, Math.max(0, Number(data?.nutrition.progress[key]?.percent || 0)))}%` }} /></div>}</div>)}<Link className="quiet-link" to="/app/targets">View nutrition targets <ArrowRight size={16} /></Link></section></div>
     <div className="dashboard-grid dashboard-secondary"><section className="panel"><div className="panel-top"><h2>Today’s food</h2><Link className="quiet-link" to="/app/history">View history <ArrowRight size={15} /></Link></div>{data?.food_log_groups.items.length ? data.food_log_groups.items.map(group => <div className="dashboard-group" key={group.id}><strong>{group.label || foodLabel(group.meal_category)}</strong><span>{group.item_count} {group.item_count === 1 ? 'food' : 'foods'} · {group.aggregate_final_nutrition.ENERGY?.status === 'KNOWN' ? `${group.aggregate_final_nutrition.ENERGY.amount} kcal` : 'energy unknown'}</span></div>) : <EmptyState icon={UtensilsCrossed} title="No food logged yet" text="Use Log food above to add your first meal." />}</section><section className="panel"><div className="panel-top"><h2>Health routine</h2><Link className="quiet-link" to="/app/health">View items <ArrowRight size={15} /></Link></div>{upcomingLoading ? <Loading>Loading your routine…</Loading> : upcomingError ? <p role="status">{upcomingError}</p> : upcoming.length ? upcoming.map(item => <div className="dashboard-group" key={item.occurrence_id}><strong>{item.name}</strong><span>{item.scheduled_local.date} {item.scheduled_local.time} ({item.scheduled_local.timezone}) · {healthStatusLabel(item.status, item.type)}</span></div>) : <EmptyState icon={HeartPulse} title="No upcoming items" text="Scheduled medication, supplements and tasks for the next 24 hours appear here." />}</section></div>
+    <DailyEnergyWaterOverview />
     <WellnessOverview />
     <Link className="quiet-link" to="/app/target-calculations">How targets are calculated</Link>
     <TextSummary from={data.tracking_day} to={data.tracking_day} mode="DAY" />
@@ -1155,6 +1157,7 @@ function Settings() {
     <ProfileAttention fields={missingDetails} />
     <TrackedNutrientsSettings />
     <TargetSettings />
+    <MaintenanceSettings />
     <div className="settings-grid">
 
       <section className="panel settings-profile" id="profile-details">

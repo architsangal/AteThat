@@ -20,6 +20,64 @@ tags:
 security:
   - bearerAuth: []
 paths:
+  /wellness/maintenance:
+    get:
+      tags: [Wellness]
+      operationId: getMaintenance
+      summary: Get owner-scoped maintenance estimate and immutable baseline history
+      responses:
+        '200':
+          description: Profile estimate, effective inputs, saved revisions and current Tracking Day
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MaintenancePlan' }
+        default: { $ref: '#/components/responses/Problem' }
+    put:
+      tags: [Wellness]
+      operationId: saveMaintenance
+      summary: Save a reviewed manual or calculated maintenance baseline
+      description: First baseline starts today; subsequent revisions start next Tracking Day. Existing food targets are unchanged. Version is shared with water settings. Calculated mode requires the current profile version and exact suggested value.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [version, kcal, mode]
+              properties:
+                version: { type: integer, minimum: 0 }
+                kcal: { type: string, maxLength: 32 }
+                mode: { type: string, enum: [MANUAL, CALCULATED] }
+                profile_version: { type: integer, minimum: 0 }
+      responses:
+        '200':
+          description: Updated maintenance plan
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MaintenancePlan' }
+        default: { $ref: '#/components/responses/Problem' }
+  /wellness/analysis:
+    get:
+      tags: [Wellness]
+      operationId: dailyWellness
+      summary: Owner-scoped daily maintenance, food, workout, deficit and water totals
+      description: Inclusive saved Tracking Day range, maximum 366 days. Empty decimal strings mean unknown or unavailable, never inferred zero. Deficit equals effective maintenance plus additional logged workout calories minus known recorded food calories. A workout without calories makes the deficit unavailable. No workout records means zero additional logged workout calories. Water goal is current, not historical.
+      parameters:
+        - { name: from_tracking_day, in: query, required: true, schema: { type: string, format: date } }
+        - { name: to_tracking_day, in: query, required: true, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: Daily wellness values
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, water_target_ml]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/DailyWellness' } }
+                  water_target_ml: { type: string }
+        default: { $ref: '#/components/responses/Problem' }
   /health-items/occurrences:
     get:
       tags: [Health]
@@ -689,6 +747,53 @@ components:
         application/problem+json:
           schema: { $ref: '#/components/schemas/Problem' }
   schemas:
+    MaintenancePlan:
+      type: object
+      required: [version, suggested_kcal, equation, unavailable_reason, profile_version, inputs, history, tracking_day]
+      properties:
+        version: { type: integer, minimum: 0 }
+        suggested_kcal: { type: string }
+        equation: { type: string }
+        unavailable_reason: { type: string }
+        profile_version: { type: integer, minimum: 0 }
+        tracking_day: { type: string, format: date }
+        inputs:
+          type: object
+          properties:
+            height_cm: { type: string }
+            weight_kg: { type: string }
+            assumed_height: { type: boolean }
+            assumed_weight: { type: boolean }
+            age: { type: integer }
+            sex: { type: string }
+        history:
+          type: array
+          items:
+            type: object
+            properties:
+              revision: { type: integer }
+              kcal: { type: string }
+              mode: { type: string, enum: [MANUAL, CALCULATED] }
+              effective_from_tracking_day: { type: string, format: date }
+              created_at: { type: string, format: date-time }
+              equation: { type: string }
+              height_cm: { type: string }
+              weight_kg: { type: string }
+              age: { type: integer }
+              sex: { type: string }
+    DailyWellness:
+      type: object
+      properties:
+        tracking_day: { type: string, format: date }
+        maintenance_kcal: { type: string }
+        food_kcal: { type: string }
+        workout_kcal: { type: string }
+        calorie_deficit: { type: string, description: Signed decimal; positive deficit, negative surplus; empty when unavailable }
+        water_ml: { type: string }
+        workout_count: { type: integer, minimum: 0 }
+        workouts_without_calories: { type: integer, minimum: 0 }
+        workout_minutes: { type: string }
+        maintenance_revision: { type: integer, minimum: 0 }
     AccountDeletionRequest:
       type: object
       additionalProperties: false

@@ -64,7 +64,11 @@ func scaleNutrition(input map[string]foodNutrientDoc, quantity, base string) (ma
 			result[key] = value
 			continue
 		}
-		scaled, err := foods.Scale(value.Amount.String(), quantity, base)
+		sourceAmount, ok := foods.CanonicalNutrientAmount(value.Amount.String())
+		if !ok {
+			return nil, invalid("invalid nutrient amount")
+		}
+		scaled, err := foods.Scale(sourceAmount, quantity, base)
 		if err != nil {
 			return nil, err
 		}
@@ -212,7 +216,7 @@ func (s *Server) Preview(ctx context.Context, req *pb.PreviewFoodGroupRequest) (
 			baseAmount, baseUnit = food.BaseAmount, food.BaseUnit
 			provider, err = nutritionDoc(food.Nutrients)
 			if err != nil {
-				return nil, err
+				return nil, status.Error(codes.FailedPrecondition, "SOURCE_NUTRITION_INVALID")
 			}
 		case "CUSTOM":
 			if input.CustomFoodId == "" || input.ProviderFoodId != "" {

@@ -230,9 +230,10 @@ func (s *Server) DeleteRecord(ctx context.Context, r *pb.WellnessDeleteRequest) 
 }
 
 type wellnessSettingsDoc struct {
-	UserID      primitive.ObjectID    `bson:"user_id"`
-	WaterTarget *primitive.Decimal128 `bson:"water_target_ml,omitempty"`
-	Version     int64                 `bson:"version"`
+	UserID      primitive.ObjectID        `bson:"user_id"`
+	WaterTarget *primitive.Decimal128     `bson:"water_target_ml,omitempty"`
+	Version     int64                     `bson:"version"`
+	Maintenance []*pb.MaintenanceRevision `bson:"maintenance_history,omitempty"`
 }
 
 func (s *Server) GetSettings(ctx context.Context, _ *pb.FoodEmpty) (*pb.WellnessSettings, error) {

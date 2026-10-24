@@ -114,7 +114,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 8*time.Second)
 	defer cancel()
 	switch {
-	case path == "/wellness/records" || strings.HasPrefix(path, "/wellness/records/") || path == "/wellness/settings":
+	case path == "/wellness/records" || strings.HasPrefix(path, "/wellness/records/") || path == "/wellness/settings" || path == "/wellness/maintenance" || path == "/wellness/analysis":
 		s.wellnessRoute(w, r, requestID, ctx, path)
 	case path == "/auth/register" && r.Method == http.MethodPost:
 		s.register(w, r, requestID, ctx)

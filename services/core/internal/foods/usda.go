@@ -134,8 +134,8 @@ func Normalize(raw rawFood) Food {
 				if valueID != id || strings.ToUpper(valueUnit) != selection.unit || value == "" {
 					continue
 				}
-				if number, err := strconv.ParseFloat(value.String(), 64); err == nil && number >= 0 {
-					result.Nutrients[selection.key] = Nutrient{Status: "KNOWN", Amount: value.String(), Unit: result.Nutrients[selection.key].Unit}
+				if amount, ok := CanonicalNutrientAmount(value.String()); ok {
+					result.Nutrients[selection.key] = Nutrient{Status: "KNOWN", Amount: amount, Unit: result.Nutrients[selection.key].Unit}
 					found = true
 					break
 				}
@@ -164,8 +164,8 @@ func Normalize(raw rawFood) Food {
 			if !strings.EqualFold(strings.TrimSpace(valueName), name) || !strings.EqualFold(valueUnit, "G") || value == "" {
 				continue
 			}
-			if number, err := strconv.ParseFloat(value.String(), 64); err == nil && number >= 0 {
-				result.Nutrients[key] = Nutrient{Status: "KNOWN", Amount: value.String(), Unit: "g"}
+			if amount, ok := CanonicalNutrientAmount(value.String()); ok {
+				result.Nutrients[key] = Nutrient{Status: "KNOWN", Amount: amount, Unit: "g"}
 				break
 			}
 		}
