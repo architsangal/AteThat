@@ -124,7 +124,7 @@ func (s *Server) SearchUSDA(ctx context.Context, req *pb.SearchUSDARequest) (*pb
 		bson.M{"$inc": bson.M{"usda": 1}, "$setOnInsert": bson.M{"expires_at": time.Now().UTC().Add(48 * time.Hour)}},
 		options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)).Decode(&reservation)
 	if mongo.IsDuplicateKeyError(err) || err == mongo.ErrNoDocuments {
-		return nil, status.Error(codes.ResourceExhausted, "Your 10 daily USDA searches have been used. Search the local database or try again after midnight UTC.")
+		return nil, status.Error(codes.ResourceExhausted, "Your 10 daily USDA searches have been used. Search AteThat foods or try again after midnight UTC.")
 	}
 	if err != nil {
 		return nil, status.Error(codes.Unavailable, "Search allowance unavailable")
@@ -164,7 +164,7 @@ func (s *Server) SearchUSDA(ctx context.Context, req *pb.SearchUSDARequest) (*pb
 	for _, item := range items {
 		_, err := s.Client.Database(s.Cfg.Database+"_foods").Collection("foods").UpdateOne(ctx, bson.M{"_id": item.ID}, bson.M{"$set": bson.M{"food": usdaFoodPB(item, "UNKNOWN"), "name": item.Name, "fetched_at": time.Now().UTC()}}, options.Update().SetUpsert(true))
 		if err != nil {
-			return nil, status.Error(codes.Unavailable, "Could not update local food database")
+			return nil, status.Error(codes.Unavailable, "Food search is temporarily unavailable. Please try again later.")
 		}
 	}
 	result.MatchedCount = uint64(total)

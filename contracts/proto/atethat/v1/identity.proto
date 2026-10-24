@@ -110,6 +110,7 @@ message Profile {
   string updated_at = 11;
   bool has_google_identity = 12;
   bool onboarding_complete = 13;
+  string email = 14; // Authenticated account email, read-only.
 }
 message UpdateProfileRequest {
   uint64 version = 1;

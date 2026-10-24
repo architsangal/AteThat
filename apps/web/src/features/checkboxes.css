@@ -1,0 +1,102 @@
+/* Shared checkbox contract, loaded after form and feature styles. */
+:root input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-grid;
+  place-content: center;
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  min-height: 20px;
+  padding: 0;
+  margin: 0;
+  border: 1.5px solid var(--text-soft);
+  border-radius: 6px;
+  background: var(--surface-soft);
+  color: var(--on-primary);
+  cursor: pointer;
+  box-shadow: none;
+  vertical-align: middle;
+}
+:root input[type="checkbox"]::before {
+  content: "";
+  width: 11px;
+  height: 9px;
+  background: currentColor;
+  clip-path: polygon(14% 42%, 0 61%, 40% 100%, 100% 17%, 80% 0, 38% 65%);
+  transform: scale(0);
+}
+:root input[type="checkbox"]:checked {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+:root input[type="checkbox"]:checked::before { transform: scale(1); }
+:root input[type="checkbox"]:hover:not(:disabled) { border-color: var(--primary); }
+:root input[type="checkbox"]:focus:not(:focus-visible) { box-shadow: none !important; }
+:root input[type="checkbox"]:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; box-shadow: 0 0 0 3px var(--focus-soft) !important; }
+:root input[type="checkbox"]:disabled { cursor: not-allowed; background: var(--surface-raised); border-color: var(--border-strong); color: var(--text-muted); }
+
+.check-option,
+.auth-form .check-option,
+.flow-dialog .check-option {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+  min-height: 48px;
+  padding: 14px;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-soft);
+  cursor: pointer;
+  font-size: .84rem;
+  line-height: 1.5;
+}
+.check-option:has(input:checked) { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 7%, var(--surface)); }
+.check-option:hover:has(input:not(:disabled)) { border-color: var(--primary); }
+.check-option:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 3px; }
+:root .check-option input[type="checkbox"]:focus-visible { outline: none; box-shadow: none !important; }
+.check-option:has(input:disabled) { cursor: default; border-color: var(--border); }
+.check-option input { margin-top: 1px; }
+.check-option-copy { display: grid; gap: 5px; min-width: 0; flex: 1; overflow-wrap: anywhere; }
+.check-option-copy > span { font-weight: 600; color: var(--text); }
+.check-option .check-option-copy small { font-size: .78rem; font-weight: 400; color: var(--text-muted); line-height: 1.5; }
+.check-option-badge { flex: 0 0 auto; align-self: center; padding: 3px 7px; border-radius: 6px; background: var(--surface-raised); color: var(--text-muted); font-size: .67rem; font-weight: 600; white-space: nowrap; }
+.tracked-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 10px; padding: 12px 4px 4px; }
+.tracked-grid .check-option { align-items: center; padding: 12px; }
+.nutrient-preferences-header { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.nutrient-preferences-header h2 { margin: 0; }
+.nutrient-preferences-count { color: var(--text-muted); font-size: .8rem; }
+.nutrient-preferences .nutrient-section { margin-top: 14px; }
+.nutrient-preferences summary { display: flex; align-items: center; gap: 10px; list-style: none; }
+.nutrient-preferences summary::-webkit-details-marker { display: none; }
+.nutrient-preferences summary::before { content: ""; width: 7px; height: 7px; border-right: 1.5px solid var(--text-muted); border-bottom: 1.5px solid var(--text-muted); transform: rotate(-45deg); margin-right: 4px; }
+.nutrient-preferences details[open] > summary::before { transform: rotate(45deg); margin-top: -3px; }
+.nutrient-group-count { margin-left: auto; font-size: .75rem; color: var(--text-muted); font-weight: 400; }
+.nutrient-selection-footer { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; padding-top: 4px; }
+.nutrient-selection-footer small { max-width: 32rem; line-height: 1.5; }
+.quick-log-choices { display: grid; gap: 12px; }
+.weekday-list label { min-height: 44px; gap: 9px; padding: 10px 12px; cursor: pointer; }
+.weekday-list label:has(input:checked) { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 7%, var(--surface)); }
+.flow-dialog .checkbox-label,
+.target-scope-choice { min-height: 48px; padding: 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-soft); cursor: pointer; }
+label.target-scope-choice { display: flex; align-items: flex-start; gap: 12px; }
+.flow-dialog .checkbox-label:has(input:checked),
+.target-scope-choice:has(input:checked) { border-color: var(--primary); }
+/* Calendar dates remain full-size labelled choices, with a focusable native input. */
+.month-days label { cursor: pointer; }
+:root .month-days input[type="checkbox"] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; }
+.month-days span { min-height: 44px; }
+.month-days input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: 2px; }
+@media (max-width: 540px) {
+  .tracked-grid { grid-template-columns: 1fr; }
+  .nutrient-selection-footer { align-items: stretch; flex-direction: column; }
+  .nutrient-selection-footer .button { width: 100%; }
+}
+@media (forced-colors: active) {
+  :root input[type="checkbox"] { appearance: auto; -webkit-appearance: auto; color: CanvasText; }
+  :root input[type="checkbox"]::before { display: none; }
+  .check-option:has(input:checked) { border-color: Highlight; }
+}

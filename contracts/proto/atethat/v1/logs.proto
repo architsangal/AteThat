@@ -31,6 +31,8 @@ message FoodLogItemInput {
   FoodQuantity quantity = 5;
   string food_state = 6;
   map<string, FoodNutrient> user_override_nutrition = 7;
+  // MANUAL entries supply a private one-time food, without creating a library item.
+  UpsertCustomFoodRequest manual_food = 8;
 }
 
 message PreviewFoodGroupRequest {

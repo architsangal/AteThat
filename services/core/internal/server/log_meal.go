@@ -35,10 +35,11 @@ func (s *Server) PreviewMeal(ctx context.Context, req *pb.PreviewMealRequest) (*
 	for _, component := range meal.Components {
 		quantity := component.Quantity
 		if req.Servings != "" {
-			if meal.RecipeServings == "" {
-				return nil, invalid("portion scaling requires a recipe yield")
-			}
-			amount, err := foods.Scale(component.Quantity.Amount, req.Servings, meal.RecipeServings)
+			yield := meal.RecipeServings
+			if yield == "" {
+				yield = "1"
+			} // Older saved meals represent one complete serving.
+			amount, err := foods.Scale(component.Quantity.Amount, req.Servings, yield)
 			if err != nil || amount == "0" {
 				return nil, invalid("invalid recipe portion")
 			}

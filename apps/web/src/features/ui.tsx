@@ -4,6 +4,7 @@ import { display, label, type Nutrition } from './nutrition/model'
 import { isTextTooShort } from './form-validation'
 import { AppTimeInput } from './AppTimeInput'
 import { AppDatePicker } from './AppDatePicker'
+import { useTrackedNutrients } from './nutrition/TrackedNutrients'
 
 export function Loading({ children = 'Loading…' }: { children?: ReactNode }) {
   return <p className="loading-state" role="status">{children}</p>
@@ -32,11 +33,11 @@ export function Modal({ title, children, onClose, busy = false, initialFocus = '
 }
 
 export function NutritionSummary({ values }: { values: Nutrition }) {
-  const primary = ['ENERGY', 'PROTEIN', 'CARBOHYDRATE', 'FAT', 'FIBER']
+  const { codes: primary } = useTrackedNutrients()
   const other = Object.entries(values).filter(([code, value]) => !primary.includes(code) && value.status === 'KNOWN')
   const missing = Object.values(values).filter(value => value.status !== 'KNOWN').length
   return <><dl className="nutrition-summary">{primary.map(code => <div key={code}><dt>{label(code)}</dt><dd>{display(values[code])}</dd></div>)}</dl>
-    <details className="secondary-details"><summary>More nutrition details</summary><dl className="nutrition-summary">{other.map(([code, value]) => <div key={code}><dt>{label(code)}</dt><dd>{display(value)}</dd></div>)}</dl>
+    <details className="secondary-details"><summary>All nutrition details</summary><dl className="nutrition-summary">{other.map(([code, value]) => <div key={code}><dt>{label(code)}</dt><dd>{display(value)}</dd></div>)}</dl>
       {missing > 0 && <p className="muted">{missing} nutrients have no source value. Unknown values are not counted as zero.</p>}
     </details></>
 }
