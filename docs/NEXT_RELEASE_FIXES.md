@@ -1,5 +1,11 @@
 # Next release — collected fixes
 
+## v2.8.1 — visible Dashboard progress bars
+
+Fix missing painted fill boxes in Dashboard energy and nutrient meters. Fills now have block layout, full track height, rounded ends and theme-aware colors; carbohydrate/fiber colors match their dots. Existing percentages and 0–100% visual clamping are unchanged. No API, data or target calculation changes.
+
+Local Chrome checks verified the 469/2000 kcal example at 23.45%, empty/partial/full tracks, light/dark colors and a 390px viewport without horizontal overflow. Production build and 56 frontend regressions passed. Published release notes establish deployment status.
+
 ## v2.8.0 — Food Library and focused nutrition
 
 Food Library/Recipes hierarchy, combined My foods/Quick Log/Search workflow, app-wide tracked nutrients, account email display, public wording cleanup and automatic seven-day Analysis loading. See [scope and compatibility](FOOD_LIBRARY_AND_TRACKED_NUTRIENTS.md) and [release verification](RELEASE_2_8_0.md). Published GitHub release notes establish deployment status. Emailed PDF Analysis reports are recorded for Phase 3 only.

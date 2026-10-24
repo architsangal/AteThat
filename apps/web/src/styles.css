@@ -436,6 +436,20 @@ select {
 
 /* Page and feedback spacing is owned by features/spacing.css. */
 .wellness-dashboard { margin-top: 20px; }
+/* Meter fills need their own painted box; inline width alone is not visible. */
+.empty-meter, .nutrient-track { overflow: hidden; }
+.empty-meter > span, .nutrient-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--energy);
+}
+.nutrient-row:has(.protein) .nutrient-track > span { background: var(--protein); }
+.nutrient-dot.carbohydrate { background: var(--carbs); }
+.nutrient-row:has(.carbohydrate) .nutrient-track > span { background: var(--carbs); }
+.nutrient-row:has(.fat) .nutrient-track > span { background: var(--fat); }
+.nutrient-dot.fiber { background: var(--fibre); }
+.nutrient-row:has(.fiber) .nutrient-track > span { background: var(--fibre); }
 .adherence-counts { display: flex; flex-wrap: wrap; gap: 18px; margin: 18px 0; }
 .wellness-overview { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
 .wellness-overview strong { display: block; margin-top: 10px; font-size: 1.2rem; }
