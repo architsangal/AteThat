@@ -1,0 +1,15 @@
+# Public discovery rules for https://atethat.architsangal.in/
+# Private account and token pages must never be crawled or indexed.
+User-agent: *
+Allow: /
+Disallow: /app/
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /resend-verification
+Disallow: /verify-email
+Disallow: /reset-password
+Disallow: /email-login
+Disallow: /cancel-deletion
+
+Sitemap: https://atethat.architsangal.in/sitemap.xml
