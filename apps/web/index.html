@@ -4,14 +4,57 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#f8f9ff" />
-    <meta name="description" content="AteThat — Know what nourishes you." />
-    <title>AteThat — Know what nourishes you</title>
+    <meta name="description" content="AteThat is a private food, nutrition, water, workout and routine tracker that helps you understand your day at a glance." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://atethat.architsangal.in/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="AteThat" />
+    <meta property="og:title" content="AteThat — Food, nutrition and routine tracking" />
+    <meta property="og:description" content="Keep food, nutrition, water, workouts and routines in one clear private place." />
+    <meta property="og:url" content="https://atethat.architsangal.in/" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="AteThat — Food, nutrition and routine tracking" />
+    <meta name="twitter:description" content="Keep food, nutrition, water, workouts and routines in one clear private place." />
+    <title>AteThat — Food, nutrition and routine tracking</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet" />
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!--
+        This concise public content is deliberately present in the initial HTML.
+        React replaces it with the interactive version after it loads, while
+        search engines and no-JavaScript visitors can still understand the site.
+        No account-specific or health-record data belongs here.
+      -->
+      <main>
+        <h1>AteThat: food, nutrition and routine tracking</h1>
+        <p>AteThat is a private daily tracker for food, nutrition, water, workouts and health routines.</p>
+        <p>Log food, review nutrition, track water and activity, and keep routines such as medication, supplements or personal tasks in one clear place.</p>
+        <p><a href="/signup">Create an account</a> or <a href="/login">log in</a> to your private dashboard.</p>
+        <h2>What you can track</h2>
+        <ul>
+          <li>Food, recipes and nutrition details</li>
+          <li>Water intake, weight and workouts</li>
+          <li>Daily nutrition, calorie balance and activity trends</li>
+          <li>Personal routines, medication, supplements and tasks</li>
+        </ul>
+        <p>AteThat is a tracking tool and does not provide medical advice.</p>
+      </main>
+    </div>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "AteThat",
+        "url": "https://atethat.architsangal.in/",
+        "applicationCategory": "HealthApplication",
+        "operatingSystem": "Web",
+        "description": "A private food, nutrition, water, workout and routine tracker.",
+        "isAccessibleForFree": true
+      }
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
