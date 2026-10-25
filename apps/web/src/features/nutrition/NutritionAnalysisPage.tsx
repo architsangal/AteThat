@@ -12,7 +12,7 @@ import { DeficitAnalysis, WaterAnalysis, useDailyWellness } from '../wellness/En
 
 type Targets = { active: { targets: Record<string, { active_value: string; unit: string }> } | null }
 
-function Trend({ days, from, to, code }: { days: NutritionDay[]; from: string; to: string; code: string }) {
+export function Trend({ days, from, to, code }: { days: NutritionDay[]; from: string; to: string; code: string }) {
   const dates = rangeDays(from, to)
   const unit = days.find(day => day.totals[code])?.totals[code].unit
   const values = dates.map(day => {
@@ -20,12 +20,12 @@ function Trend({ days, from, to, code }: { days: NutritionDay[]; from: string; t
     return nutrient?.unit === unit ? known(nutrient) : null
   })
   const max = Math.max(1, ...values.filter((v): v is number => v !== null))
-  const points = values.map((value, i) => value === null ? null : { x: 34 + i * 624 / Math.max(1, dates.length - 1), y: 165 - value / max * 135, value, day: dates[i] })
-  return <figure className="nutrition-trend"><svg viewBox="0 0 700 205" role="img" aria-label={`${label(code)} by Tracking Day; gaps indicate no known value`}>
+  const points = values.flatMap((value, i) => value === null ? [] : [{ x: 34 + i * 624 / Math.max(1, dates.length - 1), y: 165 - value / max * 135, value, day: dates[i] }])
+  return <figure className="nutrition-trend"><svg viewBox="0 0 700 205" role="img" aria-label={`${label(code)} by Tracking Day; lines connect recorded values across missing days, without adding zero values`}>
     {[0, .5, 1].map(ratio => <g key={ratio}><line x1="34" x2="658" y1={165 - ratio * 135} y2={165 - ratio * 135} className="chart-grid" /><text x="2" y={169 - ratio * 135}>{Math.round(max * ratio)}</text></g>)}
-    {points.map((point, i) => point && <g key={point.day}>{i > 0 && points[i - 1] && <line x1={points[i - 1]!.x} y1={points[i - 1]!.y} x2={point.x} y2={point.y} className="chart-line" />}<circle cx={point.x} cy={point.y} r="4" className="chart-point"><title>{point.day}: {point.value}</title></circle></g>)}
+    {points.map((point, i) => <g key={point.day}>{i > 0 && <line x1={points[i - 1].x} y1={points[i - 1].y} x2={point.x} y2={point.y} className="chart-line" />}<circle cx={point.x} cy={point.y} r="4" className="chart-point"><title>{`${point.day}: ${point.value}`}</title></circle></g>)}
     <text x="34" y="195">{from}</text><text x="658" y="195" textAnchor="end">{to}</text>
-  </svg><figcaption>Daily {label(code).toLowerCase()} · gaps mean no known value. See exact values in the daily table below.</figcaption></figure>
+  </svg><figcaption>Daily {label(code).toLowerCase()} · lines connect recorded values. Missing days have no dots and are not counted as zero. See exact values in the daily table below.</figcaption></figure>
 }
 
 export function NutritionAnalysisPage() {

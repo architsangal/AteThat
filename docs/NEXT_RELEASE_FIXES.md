@@ -1,5 +1,11 @@
 # Next release — collected fixes
 
+## Pending after v2.9.0 — connect recorded chart points across missing days
+
+Daily rhythm, calorie-deficit and water charts now connect successive known points even when unrecorded days lie between them. The original calendar positions remain unchanged. Missing days have no dot and no synthetic zero; explicitly recorded zero values remain real points. Chart captions and accessible descriptions explain the distinction. This updates the v2.9.0 gap-breaking presentation; stored data, totals and averages are unchanged.
+
+Local validation: 62 frontend regressions and production build passed, including direct 3 → missing → 6 connection checks for both chart components. Not yet pushed or deployed.
+
 ## Pending — maintenance, workouts, calorie deficit and water trends
 
 Implemented locally and undergoing final release preparation. See [scope, formulas, compatibility and verification](ENERGY_WATER_RELEASE_READINESS.md). No push, deployment or release publication is implied. Includes the USDA review fix below.
