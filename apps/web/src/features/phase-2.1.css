@@ -58,7 +58,6 @@ h1:focus { outline: none; }
 .targets-layout.single-panel { grid-template-columns: minmax(0,1fr); max-width: 760px; }
 .flow-dialog .recipe-review { margin-top: 16px; }
 .settings-profile { order: -1; }
-.app-page-enter > * { opacity: 1; animation: none; }
 @media (min-width: 1101px) { .food-basket > .panel-top h2 { font-size: 1.1rem; } }
 @media (max-width: 1100px) {
   .app-shell { display: block; }
@@ -103,7 +102,6 @@ h1:focus { outline: none; }
   .theme-option > svg { display: none; }
 }
 
-.app-page-enter > .dashboard-grid > .panel, .app-page-enter > .two-column > .panel { opacity: 1; animation: none; }
 /* Refined interaction language: stable surfaces, a single focus ring, inline feedback. */
 .search-field { transition: border-color .15s, box-shadow .15s; }
 .search-field:focus-within { border-color: var(--focus); box-shadow: 0 0 0 3px var(--focus-soft); }
